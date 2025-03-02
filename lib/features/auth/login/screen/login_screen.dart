@@ -180,7 +180,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                             TextSpan(
                                               recognizer: TapGestureRecognizer()
                                                 ..onTap = () {
-                                                  // Navigate to sign up screen
+                                                  context.pushNamed(
+                                                      RoutesName.signup);
                                                 },
                                               text: 'Sign Up',
                                               style: AppTheme.smallBodyTheme(
@@ -284,9 +285,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           icon: FontAwesomeIcons.google,
                           onTap: () {
                             // Process google login
+                            print('Google login');
                             ref
                                 .read(authProvider.notifier)
-                                .signInWithGoogle(true);
+                                .signInWithGoogle(true); // false for signup
+                            context.goNamed(RoutesName.home);
                           },
                         ),
                         const Gap(10),

@@ -52,7 +52,7 @@ class AuthRepository {
                 userCredential.user!.uid,
               );
 
-        print("apiResult $apiResult");
+        print("apiResult ${apiResult.fold((l) => l, (r) => r.message)}");
 
         return apiResult.fold(
           (user) => right(userCredential),
