@@ -4,6 +4,7 @@ import 'package:page_transition/page_transition.dart';
 import 'package:zenzen/config/constants.dart';
 import 'package:zenzen/features/auth/splash/screen/intro_screen.dart';
 import 'package:zenzen/features/auth/splash/screen/splash_screen.dart';
+import 'package:zenzen/features/home/screen/home_screen.dart';
 
 import '../features/auth/login/screen/login_screen.dart';
 import '../utils/custom_transition.dart';
@@ -36,6 +37,15 @@ class RouteConfig {
             key: state.pageKey,
             child: const LoginScreen(),
             transitionType: PageTransitionType.leftToRight,
+          ),
+        ),
+        GoRoute(
+          path: '/home',
+          name: RoutesName.home,
+          pageBuilder: (context, state) => customTransitionPage(
+            key: state.pageKey,
+            child: const HomeScreen(),
+            transitionType: PageTransitionType.rightToLeft,
           ),
         ),
       ],
