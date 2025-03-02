@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "418667716249",
+    "project_id": "zenzen-5adb7",
+    "storage_bucket": "zenzen-5adb7.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:418667716249:android:62b445da39f3ed746d2208",
+        "android_client_info": {
+          "package_name": "com.example.zenzen"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCI3zIqSA8QefqmmzW_EfziXK0zfYf52SU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
