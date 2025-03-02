@@ -25,8 +25,12 @@ class AuthApiService {
 
       print('response: ${response.data}');
 
-      final user = UserModel.fromJson(response.data);
-      return Left(user);
+      if (response.statusCode == 200) {
+        final user = UserModel.fromJson(response.data);
+        return Left(user);
+      } else {
+        return Right(ApiFailure.custom(response.data['message']));
+      }
     } on DioException catch (e) {
       return Right(ApiFailure.fromDioException(e));
     }

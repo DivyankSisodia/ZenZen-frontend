@@ -1,18 +1,18 @@
 import 'package:firebase_auth/firebase_auth.dart';
 
 class UserModel {
-  final String userName;
+  final String? userName;
   final String email;
-  final String avatar;
+  final String? avatar;
   final String? token;
   final String? mobile;
-  final String? isVerified;
+  final bool? isVerified;
   final String? userStatus;
 
   UserModel({
-    required this.userName,
+    this.userName,
     required this.email,
-    required this.avatar,
+    this.avatar,
     this.token,
     this.mobile,
     this.isVerified,
@@ -20,18 +20,20 @@ class UserModel {
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
+    print('json: $json');
     return UserModel(
-      userName: json['userName'],
-      email: json['email'],
-      avatar: json['avatar'],
+      userName: json['userName'] ?? '',
+      email: json['email'] ?? '',
+      avatar: json['avatar'] ?? '',
       token: json['token'],
       mobile: json['mobile'],
-      isVerified: json['isVerified'],
+      isVerified: json['isVerified'] ?? false,
       userStatus: json['user_status'],
     );
   }
 
   Map<String, dynamic> toJson() {
+    print('toJson: $email');
     return {
       'userName': userName,
       'email': email,
@@ -49,7 +51,7 @@ class UserModel {
     String? avatar,
     String? token,
     String? mobile,
-    String? isVerified,
+    bool? isVerified,
     String? userStatus,
   }) {
     return UserModel(

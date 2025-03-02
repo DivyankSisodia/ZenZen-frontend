@@ -1,3 +1,5 @@
+// ignore_for_file: non_constant_identifier_names
+
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -6,9 +8,11 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
 import 'package:zenzen/config/app_theme.dart';
+import 'package:zenzen/features/auth/login/provider/auth_provider.dart';
 import 'package:zenzen/features/auth/login/viewmodel/oauth_viewmodel.dart';
 
 import '../../../../config/constants.dart';
+import '../../../../data/failure.dart';
 import '../../../../utils/common/custom_textfield.dart';
 import '../../../../utils/common/social_media.dart';
 
@@ -28,6 +32,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final FocusNode emailFocus = FocusNode();
   final FocusNode passwordFocus = FocusNode();
 
+  late bool isLoading;
+
   @override
   void dispose() {
     super.dispose();
@@ -37,10 +43,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final authState = ref.watch(authProvider);
+    final OAuthState = ref.watch(authProvider);
+    final authState = ref.watch(authViewModelProvider);
+    final authViewModel = ref.watch(authViewModelProvider.notifier);
     ref.listen(authProvider, (previous, next) {
       if (next.failure != null) {
-        if (next.failure!.message == "Email already exists") {
+        if (next.failure!.error == "Email already exists") {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: const Text(
@@ -51,26 +59,23 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   // Switch to sign in mode or auto-sign in
                   ref
                       .read(authProvider.notifier)
-                      .signInWithGoogle(true); // true for login
+                      .signInWithGoogle(true, context); // true for login
                 },
               ),
             ),
           );
         } else {
+          print(next.failure!.error);
           // Handle other errors
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(next.failure!.message)),
+            SnackBar(content: Text(next.failure!.error)),
           );
         }
       }
-
-      if (!previous!.isLoggedIn && next.isLoggedIn) {
-        context.push(RoutesName.home);
-      }
     });
     return Scaffold(
-      body: authState.isLoading
-          ? const CircularProgressIndicator.adaptive()
+      body: OAuthState.isLoading
+          ? const Center(child: CircularProgressIndicator.adaptive())
           : Container(
               padding: const EdgeInsets.all(30),
               color: AppColors.getBackgroundColor(context),
@@ -212,49 +217,80 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                   ],
                                 ),
                                 const Gap(20),
-                                Align(
-                                  alignment: Alignment.center,
-                                  child: ElevatedButton(
-                                    onHover: (value) {
-                                      if (value) {
-                                        print('Hovering');
-                                      } else {
-                                        print('Not hovering');
-                                      }
-                                    },
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: AppColors.primary,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(8),
+                                authState.isLoading
+                                    ? const CircularProgressIndicator.adaptive()
+                                    : Align(
+                                        alignment: Alignment.center,
+                                        child: ElevatedButton(
+                                          onHover: (value) {
+                                            if (value) {
+                                              print('Hovering');
+                                            } else {
+                                              print('Not hovering');
+                                            }
+                                          },
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: AppColors.primary,
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(8),
+                                            ),
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 30,
+                                              vertical: 10,
+                                            ),
+                                          ),
+                                          onPressed: () {
+                                            if (_formKey.currentState!
+                                                .validate()) {
+                                              authViewModel.login(
+                                                emailController.text,
+                                                passwordController.text,
+                                                context,
+                                              );
+                                            }
+                                          },
+                                          child: Container(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 30,
+                                              vertical: 10,
+                                            ),
+                                            width: double.infinity,
+                                            child: Text(
+                                              textAlign: TextAlign.center,
+                                              'Sign In',
+                                              style: AppTheme.smallBodyTheme(
+                                                      context)
+                                                  .copyWith(
+                                                      color: Colors.white),
+                                            ),
+                                          ),
+                                        ),
                                       ),
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 30,
-                                        vertical: 10,
-                                      ),
-                                    ),
-                                    onPressed: () {
-                                      if (_formKey.currentState!.validate()) {
-                                        // Process login
-                                        print('Email: ${emailController.text}');
-                                        print(
-                                            'Password: ${passwordController.text}');
-                                      }
-                                    },
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 30,
-                                        vertical: 10,
-                                      ),
-                                      width: double.infinity,
-                                      child: Text(
-                                        textAlign: TextAlign.center,
-                                        'Sign In',
-                                        style: AppTheme.smallBodyTheme(context)
-                                            .copyWith(color: Colors.white),
-                                      ),
-                                    ),
-                                  ),
-                                ),
+                                authState.hasError
+                                    ? Container(
+                                        width: double.infinity,
+                                        padding: const EdgeInsets.all(10),
+                                        margin: const EdgeInsets.only(top: 10),
+                                        decoration: BoxDecoration(
+                                          color: Colors.red[100],
+                                          borderRadius:
+                                              BorderRadius.circular(8),
+                                        ),
+                                        child: Text(
+                                          textAlign: TextAlign.center,
+                                          (authState.error is ApiFailure)
+                                              ? (authState.error as ApiFailure)
+                                                  .error // Correct way to access the error message
+                                              : "An unexpected error occurred",
+                                          style:
+                                              AppTheme.smallBodyTheme(context)
+                                                  .copyWith(
+                                            color: Colors.red,
+                                          ),
+                                        ),
+                                      )
+                                    : Container(),
                               ],
                             ),
                           ),
@@ -286,10 +322,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           onTap: () {
                             // Process google login
                             print('Google login');
-                            ref
-                                .read(authProvider.notifier)
-                                .signInWithGoogle(true); // false for signup
-                            context.goNamed(RoutesName.home);
+                            ref.read(authProvider.notifier).signInWithGoogle(
+                                true, context); // false for signup
                           },
                         ),
                         const Gap(10),

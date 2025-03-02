@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:device_preview/device_preview.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';

@@ -1,11 +1,13 @@
+// ignore_for_file: implementation_imports
+
 import 'package:dio/src/dio_exception.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class ApiFailure {
-  final String message;
+  final String error;
   final String? code;
 
-  ApiFailure(this.message, {this.code});
+  ApiFailure(this.error, {this.code});
 
   factory ApiFailure.custom(String message) {
     return ApiFailure(message);
@@ -22,10 +24,10 @@ class ApiFailure {
 }
 
 class AuthFailure {
-  final String message;
+  final String error;
   final String? code;
 
-  AuthFailure(this.message, {this.code});
+  AuthFailure(this.error, {this.code});
 
   factory AuthFailure.fromDioException(DioException e) {
     return AuthFailure(
@@ -38,10 +40,10 @@ class AuthFailure {
     return AuthFailure(e.message ?? 'Authentication failed', code: e.code);
   }
 
-  factory AuthFailure.custom(String message) {
-    return AuthFailure(message);
+  factory AuthFailure.custom(String error) {
+    return AuthFailure(error);
   }
 
   @override
-  String toString() => 'AuthFailure: $message (code: $code)';
+  String toString() => 'AuthFailure: $error (code: $code)';
 }

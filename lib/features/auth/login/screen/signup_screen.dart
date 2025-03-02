@@ -40,7 +40,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
     final authState = ref.watch(authProvider);
     ref.listen(authProvider, (previous, next) {
       if (next.failure != null) {
-        if (next.failure!.message == "Email already exists") {
+        if (next.failure!.error == "Email already exists") {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: const Text(
@@ -51,15 +51,16 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                   // Switch to sign in mode or auto-sign in
                   ref
                       .read(authProvider.notifier)
-                      .signInWithGoogle(false); // true for login
+                      .signInWithGoogle(false, context); // true for login
                 },
               ),
             ),
           );
         } else {
+          print('Error: ${next.failure!.error}');
           // Handle other errors
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(next.failure!.message)),
+            SnackBar(content: Text(next.failure!.error)),
           );
         }
       }
@@ -69,234 +70,228 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
       }
     });
     return Scaffold(
-        body: authState.isLoading
-            ? const CircularProgressIndicator.adaptive()
-            : Container(
-                padding: const EdgeInsets.all(30),
-                color: AppColors.getBackgroundColor(context),
-                alignment: Alignment.center,
-                child: SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      const Gap(20),
-                      Text(
-                        'Sign Up',
-                        style: AppTheme.largeBodyTheme(context),
-                      ),
-                      const Gap(10),
-                      Text(
-                        'Hola Aimgo! Let\'s get started',
-                        style: AppTheme.smallBodyTheme(context),
-                      ),
-                      const Gap(20),
-                      Card(
-                        elevation: 10,
-                        color: Colors.white,
-                        child: Padding(
-                          padding: const EdgeInsets.all(20),
-                          child: Form(
-                            key: _formKey,
-                            child: AutofillGroup(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Sign up with your email and password',
-                                    style: AppTheme.smallBodyTheme(context)
-                                        .copyWith(
-                                            fontSize: 20,
-                                            fontWeight: FontWeight.w500),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                  const Gap(20),
-                                  Text(
-                                    'Email',
-                                    style: AppTheme.smallBodyTheme(context),
-                                    textAlign: TextAlign.start,
-                                  ),
-                                  const Gap(5),
-                                  CustomTextField(
-                                    autofillHints: const [AutofillHints.email],
-                                    onFieldSubmitted: (value) {
-                                      TextInput.finishAutofillContext();
-                                    },
-                                    focusNode: emailFocus,
-                                    controller: emailController,
-                                    hint: 'Enter your email',
-                                    validator: (value) {
-                                      if (value == null || value.isEmpty) {
-                                        return 'Please enter your email';
-                                      } else if (!RegExp(
-                                              r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
-                                          .hasMatch(value)) {
-                                        return 'Invalid email format';
-                                      }
-                                      return null;
-                                    },
-                                  ),
-                                  const Gap(10),
-                                  Text(
-                                    'Password',
-                                    style: AppTheme.smallBodyTheme(context),
-                                    textAlign: TextAlign.start,
-                                  ),
-                                  const Gap(5),
-                                  CustomTextField(
-                                    obscureText: true,
-                                    autofillHints: const [
-                                      AutofillHints.password
-                                    ],
-                                    onFieldSubmitted: (value) {
-                                      emailFocus.unfocus();
-                                      passwordFocus.unfocus();
-                                    },
-                                    focusNode: passwordFocus,
-                                    hint: 'Enter your password',
-                                    validator: (value) {
-                                      if (value == null || value.isEmpty) {
-                                        return 'Please enter your password';
-                                      } else if (value.length < 6) {
-                                        return 'Password must be at least 6 characters';
-                                      }
-                                      return null;
-                                    },
-                                    controller: passwordController,
-                                  ),
-                                  const Gap(15),
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Flexible(
-                                        child: RichText(
-                                          text: TextSpan(
-                                            text: 'Already have an account? ',
-                                            style:
-                                                AppTheme.smallBodyTheme(context)
-                                                    .copyWith(
-                                              color: AppColors.primary,
-                                              fontSize: 15,
-                                            ),
-                                            children: [
-                                              TextSpan(
-                                                recognizer:
-                                                    TapGestureRecognizer()
-                                                      ..onTap = () {
-                                                        context.pop();
-                                                      },
-                                                text: 'Sign In',
-                                                style: AppTheme.smallBodyTheme(
-                                                        context)
-                                                    .copyWith(
-                                                  color: AppColors.onSecondary,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const Gap(20),
-                                  Align(
-                                    alignment: Alignment.center,
-                                    child: ElevatedButton(
-                                      onHover: (value) {
-                                        if (value) {
-                                          print('Hovering');
-                                        } else {
-                                          print('Not hovering');
-                                        }
-                                      },
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: AppColors.primary,
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(8),
-                                        ),
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 30,
-                                          vertical: 10,
-                                        ),
-                                      ),
-                                      onPressed: () {
-                                        if (_formKey.currentState!.validate()) {
-                                          // Process login
-                                          print(
-                                              'Email: ${emailController.text}');
-                                          print(
-                                              'Password: ${passwordController.text}');
-                                        }
-                                      },
-                                      child: Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 30,
-                                          vertical: 10,
-                                        ),
-                                        width: double.infinity,
-                                        child: Text(
-                                          textAlign: TextAlign.center,
-                                          'Sign In',
+      body: authState.isLoading
+          ? const CircularProgressIndicator.adaptive()
+          : Container(
+              padding: const EdgeInsets.all(30),
+              color: AppColors.getBackgroundColor(context),
+              alignment: Alignment.center,
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    const Gap(20),
+                    Text(
+                      'Sign Up',
+                      style: AppTheme.largeBodyTheme(context),
+                    ),
+                    const Gap(10),
+                    Text(
+                      'Hola Aimgo! Let\'s get started',
+                      style: AppTheme.smallBodyTheme(context),
+                    ),
+                    const Gap(20),
+                    Card(
+                      elevation: 10,
+                      color: Colors.white,
+                      child: Padding(
+                        padding: const EdgeInsets.all(20),
+                        child: Form(
+                          key: _formKey,
+                          child: AutofillGroup(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Sign up with your email and password',
+                                  style: AppTheme.smallBodyTheme(context)
+                                      .copyWith(
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.w500),
+                                  textAlign: TextAlign.center,
+                                ),
+                                const Gap(20),
+                                Text(
+                                  'Email',
+                                  style: AppTheme.smallBodyTheme(context),
+                                  textAlign: TextAlign.start,
+                                ),
+                                const Gap(5),
+                                CustomTextField(
+                                  autofillHints: const [AutofillHints.email],
+                                  onFieldSubmitted: (value) {
+                                    TextInput.finishAutofillContext();
+                                  },
+                                  focusNode: emailFocus,
+                                  controller: emailController,
+                                  hint: 'Enter your email',
+                                  validator: (value) {
+                                    if (value == null || value.isEmpty) {
+                                      return 'Please enter your email';
+                                    } else if (!RegExp(
+                                            r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
+                                        .hasMatch(value)) {
+                                      return 'Invalid email format';
+                                    }
+                                    return null;
+                                  },
+                                ),
+                                const Gap(10),
+                                Text(
+                                  'Password',
+                                  style: AppTheme.smallBodyTheme(context),
+                                  textAlign: TextAlign.start,
+                                ),
+                                const Gap(5),
+                                CustomTextField(
+                                  obscureText: true,
+                                  autofillHints: const [AutofillHints.password],
+                                  onFieldSubmitted: (value) {
+                                    emailFocus.unfocus();
+                                    passwordFocus.unfocus();
+                                  },
+                                  focusNode: passwordFocus,
+                                  hint: 'Enter your password',
+                                  validator: (value) {
+                                    if (value == null || value.isEmpty) {
+                                      return 'Please enter your password';
+                                    } else if (value.length < 6) {
+                                      return 'Password must be at least 6 characters';
+                                    }
+                                    return null;
+                                  },
+                                  controller: passwordController,
+                                ),
+                                const Gap(15),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Flexible(
+                                      child: RichText(
+                                        text: TextSpan(
+                                          text: 'Already have an account? ',
                                           style:
                                               AppTheme.smallBodyTheme(context)
                                                   .copyWith(
-                                                      color: Colors.white),
+                                            color: AppColors.primary,
+                                            fontSize: 15,
+                                          ),
+                                          children: [
+                                            TextSpan(
+                                              recognizer: TapGestureRecognizer()
+                                                ..onTap = () {
+                                                  context.pop();
+                                                },
+                                              text: 'Sign In',
+                                              style: AppTheme.smallBodyTheme(
+                                                      context)
+                                                  .copyWith(
+                                                color: AppColors.onSecondary,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ],
                                         ),
                                       ),
                                     ),
+                                  ],
+                                ),
+                                const Gap(20),
+                                Align(
+                                  alignment: Alignment.center,
+                                  child: ElevatedButton(
+                                    onHover: (value) {
+                                      if (value) {
+                                        print('Hovering');
+                                      } else {
+                                        print('Not hovering');
+                                      }
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: AppColors.primary,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 30,
+                                        vertical: 10,
+                                      ),
+                                    ),
+                                    onPressed: () {
+                                      if (_formKey.currentState!.validate()) {
+                                        // Process login
+                                        print('Email: ${emailController.text}');
+                                        print(
+                                            'Password: ${passwordController.text}');
+                                      }
+                                    },
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 30,
+                                        vertical: 10,
+                                      ),
+                                      width: double.infinity,
+                                      child: Text(
+                                        textAlign: TextAlign.center,
+                                        'Sign In',
+                                        style: AppTheme.smallBodyTheme(context)
+                                            .copyWith(color: Colors.white),
+                                      ),
+                                    ),
                                   ),
-                                ],
-                              ),
+                                ),
+                              ],
                             ),
                           ),
                         ),
                       ),
-                      const Gap(20),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        child: Row(
-                          children: [
-                            const Expanded(child: Divider()),
-                            const Gap(10),
-                            Text(
-                              'Or sign in with',
-                              style: AppTheme.smallBodyTheme(context),
-                            ),
-                            const Gap(10),
-                            const Expanded(child: Divider()),
-                          ],
-                        ),
-                      ),
-                      const Gap(20),
-                      Row(
+                    ),
+                    const Gap(20),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: Row(
                         children: [
-                          SocialMediaIcon(
-                            text: 'Google',
-                            icon: FontAwesomeIcons.google,
-                            onTap: () {
-                              // Process google login
-                              print('Google login');
-                              ref
-                                  .read(authProvider.notifier)
-                                  .signInWithGoogle(false);
-                              context.pushNamed(RoutesName.home);
-                            },
+                          const Expanded(child: Divider()),
+                          const Gap(10),
+                          Text(
+                            'Or sign in with',
+                            style: AppTheme.smallBodyTheme(context),
                           ),
                           const Gap(10),
-                          SocialMediaIcon(
-                            text: 'Apple',
-                            icon: FontAwesomeIcons.apple,
-                            onTap: () {
-                              // Process apple login
-                            },
-                          ),
+                          const Expanded(child: Divider()),
                         ],
-                      )
-                    ],
-                  ),
+                      ),
+                    ),
+                    const Gap(20),
+                    Row(
+                      children: [
+                        SocialMediaIcon(
+                          text: 'Google',
+                          icon: FontAwesomeIcons.google,
+                          onTap: () {
+                            // Process google login
+                            print('Google login');
+                            ref
+                                .read(authProvider.notifier)
+                                .signInWithGoogle(false, context);
+                            context.pushNamed(RoutesName.home);
+                          },
+                        ),
+                        const Gap(10),
+                        SocialMediaIcon(
+                          text: 'Apple',
+                          icon: FontAwesomeIcons.apple,
+                          onTap: () {
+                            // Process apple login
+                          },
+                        ),
+                      ],
+                    )
+                  ],
                 ),
-              ));
+              ),
+            ),
+    );
   }
 }

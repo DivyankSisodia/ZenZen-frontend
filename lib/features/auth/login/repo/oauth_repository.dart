@@ -6,12 +6,12 @@ import 'package:zenzen/data/api/auth_api.dart';
 import '../../../../data/failure.dart';
 import '../model/user_model.dart';
 
-class AuthRepository {
+class OAuthRepository {
   final FirebaseAuth _auth;
   final GoogleSignIn _googleSignIn;
   final AuthApiService _apiService;
 
-  AuthRepository({
+  OAuthRepository({
     required FirebaseAuth auth,
     required GoogleSignIn googleSignIn,
     required AuthApiService apiService,
@@ -52,11 +52,11 @@ class AuthRepository {
                 userCredential.user!.uid,
               );
 
-        print("apiResult ${apiResult.fold((l) => l, (r) => r.message)}");
+        print("apiResult ${apiResult.fold((l) => l, (r) => r.error)}");
 
         return apiResult.fold(
           (user) => right(userCredential),
-          (failure) => left(AuthFailure(failure.message)),
+          (failure) => left(AuthFailure(failure.error)),
         );
       }
       // Mobile implementation - keep your existing code
@@ -97,7 +97,7 @@ class AuthRepository {
 
         return apiResult.fold(
           (user) => right(userCredential),
-          (failure) => left(AuthFailure(failure.message)),
+          (failure) => left(AuthFailure(failure.error)),
         );
       }
     } on FirebaseAuthException catch (e) {

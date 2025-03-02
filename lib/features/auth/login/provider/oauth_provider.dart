@@ -42,11 +42,12 @@ final dioProvider = Provider<Dio>((ref) {
 
 final authApiServiceProvider = Provider<AuthApiService>((ref) {
   final dio = ref.watch(dioProvider);
+  print(ApiRoutes.baseUrl);
   return AuthApiService(ApiRoutes.baseUrl, dio);
 });
 
-final authRepositoryProvider = Provider<AuthRepository>((ref) {
-  return AuthRepository(
+final authRepositoryProvider = Provider<OAuthRepository>((ref) {
+  return OAuthRepository(
     auth: ref.watch(firebaseAuthProvider),
     googleSignIn: ref.watch(googleSignInProvider),
     apiService: ref.watch(authApiServiceProvider),

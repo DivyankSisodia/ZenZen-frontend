@@ -1,4 +1,7 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:zenzen/config/constants.dart';
 
 import '../../../../data/failure.dart';
 import '../model/user_model.dart';
@@ -32,7 +35,7 @@ class AuthState {
 }
 
 class AuthNotifier extends StateNotifier<AuthState> {
-  final AuthRepository _repository;
+  final OAuthRepository _repository;
 
   AuthNotifier(this._repository) : super(AuthState()) {
     // Check if user is already logged in
@@ -48,17 +51,20 @@ class AuthNotifier extends StateNotifier<AuthState> {
       (user) =>
           state = state.copyWith(isLoading: false, user: user, failure: null),
       (failure) => state = state.copyWith(
-          isLoading: false,
-          failure: null), // Just set loading to false, no error
+        isLoading: false,
+        failure: null,
+      ), // Just set loading to false, no error
     );
   }
 
-  Future<void> signInWithGoogle(bool isLogin) async {
+  Future<void> signInWithGoogle(bool isLogin, BuildContext context) async {
     state = state.copyWith(isLoading: true, failure: null);
 
     final result = isLogin == true
         ? await _repository.signInWithGoogle(true)
         : await _repository.signInWithGoogle(false);
+
+    print('result: $result');
 
     result.fold(
       (failure) => state = state.copyWith(isLoading: false, failure: failure),
@@ -66,6 +72,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
         final userModel = UserModel.fromUserCredential(userCredential);
         state =
             state.copyWith(isLoading: false, user: userModel, failure: null);
+        context.goNamed(RoutesName.home);
       },
     );
   }
