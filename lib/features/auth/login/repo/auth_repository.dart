@@ -15,4 +15,13 @@ class AuthRepository {
   Future<Either<UserModel, ApiFailure>> signup(String email, String password) {
     return remoteDataSource.signUp(email, password);
   }
+
+  Future<Either<UserModel, ApiFailure>> registerInfo(String email, String userName, String mobile, String avatar) {
+    return remoteDataSource.register(email, userName, mobile, avatar);
+  }
+
+  Future<Either<UserModel, ApiFailure>> getCurrentUser(
+      String token) {
+    return remoteDataSource.getUser(token);
+  }
 }

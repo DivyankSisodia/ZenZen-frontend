@@ -3,6 +3,7 @@ import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:zenzen/features/auth/login/viewmodel/auth_viewmodel.dart';
 
 import '../../../../config/constants.dart';
 import '../../../../data/api/auth_api.dart';
@@ -41,9 +42,10 @@ final dioProvider = Provider<Dio>((ref) {
 });
 
 final authApiServiceProvider = Provider<AuthApiService>((ref) {
+  final tokens = ref.watch(tokenManagerProvider);
   final dio = ref.watch(dioProvider);
   print(ApiRoutes.baseUrl);
-  return AuthApiService(ApiRoutes.baseUrl, dio);
+  return AuthApiService(ApiRoutes.baseUrl, dio, tokens);
 });
 
 final authRepositoryProvider = Provider<OAuthRepository>((ref) {

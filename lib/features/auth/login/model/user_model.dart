@@ -8,6 +8,8 @@ class UserModel {
   final String? mobile;
   final bool? isVerified;
   final String? userStatus;
+  final String? accessToken;
+  final String? refreshToken;
 
   UserModel({
     this.userName,
@@ -17,6 +19,8 @@ class UserModel {
     this.mobile,
     this.isVerified,
     this.userStatus,
+    this.accessToken,
+    this.refreshToken,
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
@@ -29,6 +33,8 @@ class UserModel {
       mobile: json['mobile'],
       isVerified: json['isVerified'] ?? false,
       userStatus: json['user_status'],
+      accessToken: json['tokens']['accessToken'],
+      refreshToken: json['tokens']['refreshToken'],
     );
   }
 
@@ -42,6 +48,10 @@ class UserModel {
       'mobile': mobile,
       'isVerified': isVerified,
       'user_status': userStatus,
+      'tokens': {
+        'accessToken': accessToken,
+        'refreshToken': refreshToken,
+      },
     };
   }
 
@@ -53,6 +63,8 @@ class UserModel {
     String? mobile,
     bool? isVerified,
     String? userStatus,
+    String? accessToken,
+    String? refreshToken,
   }) {
     return UserModel(
       userName: userName ?? this.userName,
@@ -62,6 +74,8 @@ class UserModel {
       mobile: mobile ?? this.mobile,
       isVerified: isVerified ?? this.isVerified,
       userStatus: userStatus ?? this.userStatus,
+      accessToken: accessToken ?? this.accessToken,
+      refreshToken: refreshToken ?? this.refreshToken,
     );
   }
 

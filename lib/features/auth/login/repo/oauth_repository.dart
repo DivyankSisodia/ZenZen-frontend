@@ -90,7 +90,7 @@ class OAuthRepository {
                 userCredential.user!.email!,
                 userCredential.user!.uid,
               )
-            : await _apiService.register(
+            : await _apiService.signUp(
                 userCredential.user!.email!,
                 userCredential.user!.uid,
               );
@@ -109,17 +109,17 @@ class OAuthRepository {
   }
 
   // Get current user
-  Future<Either<UserModel, AuthFailure>> getCurrentUser() async {
+  Future<Either<UserModel, ApiFailure>> getCurrentUser(String? token) async {
     try {
       final firebaseUser = _auth.currentUser;
 
       if (firebaseUser == null) {
-        return right(AuthFailure.custom('No user is signed in'));
+        return right(ApiFailure.custom('No user is signed in'));
       }
 
-      return await _apiService.getUser();
+      return await _apiService.getUser(token!);
     } catch (e) {
-      return right(AuthFailure.custom(e.toString()));
+      return right(ApiFailure.custom(e.toString()));
     }
   }
 

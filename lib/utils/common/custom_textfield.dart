@@ -12,6 +12,7 @@ class CustomTextField extends StatelessWidget {
     this.obscureText,
     this.onFieldSubmitted,
     this.autofillHints,
+    this.keyboardType = TextInputType.emailAddress,
   });
 
   final TextEditingController controller;
@@ -21,10 +22,12 @@ class CustomTextField extends StatelessWidget {
   final bool? obscureText;
   final Function(String)? onFieldSubmitted;
   final Iterable<String>? autofillHints;
+  final TextInputType? keyboardType;
 
   @override
   Widget build(BuildContext context) {
     return TextFormField(
+      keyboardType: keyboardType,
       onFieldSubmitted: onFieldSubmitted,
       focusNode: focusNode,
       textInputAction: TextInputAction.next,

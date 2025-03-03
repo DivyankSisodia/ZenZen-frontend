@@ -5,6 +5,7 @@ class RoutesName {
   static const String home = "home";
   static const String profile = "profile";
   static const String signup = "signup";
+  static const String registerInfo = "register-info";
 }
 
 class ApiRoutes {
@@ -19,4 +20,5 @@ class ApiRoutes {
   static const String forgotPassword = "/auth/forgot-password";
   static const String resetPassword = "/auth/reset-password";
   static const String getAccessToken = "/auth/get-access-token";
+  static const String user = "/auth/user";
 }

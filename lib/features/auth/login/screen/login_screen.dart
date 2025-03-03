@@ -15,6 +15,7 @@ import '../../../../config/constants.dart';
 import '../../../../data/failure.dart';
 import '../../../../utils/common/custom_textfield.dart';
 import '../../../../utils/common/social_media.dart';
+import '../viewmodel/auth_viewmodel.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -32,8 +33,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final FocusNode emailFocus = FocusNode();
   final FocusNode passwordFocus = FocusNode();
 
-  late bool isLoading;
-
   @override
   void dispose() {
     super.dispose();
@@ -44,8 +43,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final OAuthState = ref.watch(authProvider);
-    final authState = ref.watch(authViewModelProvider);
-    final authViewModel = ref.watch(authViewModelProvider.notifier);
+    final authState = ref.watch(authStateProvider);
+    final authViewModel = ref.watch(authStateProvider.notifier);
     ref.listen(authProvider, (previous, next) {
       if (next.failure != null) {
         if (next.failure!.error == "Email already exists") {

@@ -4,8 +4,11 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:gap/gap.dart';
+import 'package:go_router/go_router.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
+import 'package:zenzen/config/app_router.dart';
 import 'package:zenzen/config/app_theme.dart';
+import 'package:zenzen/config/constants.dart';
 
 import '../../../../utils/common/custom_textfield.dart';
 import '../../../../utils/common/social_media.dart';
@@ -73,6 +76,7 @@ class _DesktopIntroState extends ConsumerState<DesktopIntro> {
               itemCount: 3,
               itemBuilder: (context, index) {
                 return Container(
+                  height: MediaQuery.of(context).size.height / 1.5,
                   padding: const EdgeInsets.all(20),
                   alignment: Alignment.center,
                   color: Colors.white,
@@ -141,9 +145,17 @@ class _DesktopIntroState extends ConsumerState<DesktopIntro> {
               },
             ),
           ),
+          const Gap(15),
+          Container(
+            height: MediaQuery.of(context).size.height - 100,
+            width: 2,
+            color: AppColors.primary,
+          ),
+          const Gap(5),
           Expanded(
             child: Container(
-              padding: const EdgeInsets.all(30),
+              padding: const EdgeInsets.all(50),
+              margin: const EdgeInsets.all(20),
               color: AppColors.getBackgroundColor(context),
               alignment: Alignment.center,
               child: Column(
@@ -250,6 +262,8 @@ class _DesktopIntroState extends ConsumerState<DesktopIntro> {
                                             recognizer: TapGestureRecognizer()
                                               ..onTap = () {
                                                 // Navigate to sign up screen
+                                                context
+                                                    .goNamed(RoutesName.signup);
                                               },
                                             text: 'Sign Up',
                                             style:

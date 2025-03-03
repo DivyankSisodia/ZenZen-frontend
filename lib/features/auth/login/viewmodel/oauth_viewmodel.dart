@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:go_router/go_router.dart';
 import 'package:zenzen/config/constants.dart';
 
@@ -38,14 +39,20 @@ class AuthNotifier extends StateNotifier<AuthState> {
   final OAuthRepository _repository;
 
   AuthNotifier(this._repository) : super(AuthState()) {
+    _initializeAuth();
+  }
+  
+  Future<void> _initializeAuth() async {
+    const FlutterSecureStorage storage = FlutterSecureStorage();
+    final token = await storage.read(key: 'access_token');
     // Check if user is already logged in
-    _checkCurrentUser();
+    _checkCurrentUser(token);
   }
 
-  Future<void> _checkCurrentUser() async {
+  Future<void> _checkCurrentUser(String? token) async {
     state = state.copyWith(isLoading: true);
 
-    final result = await _repository.getCurrentUser();
+    final result = await _repository.getCurrentUser(token!);
 
     result.fold(
       (user) =>

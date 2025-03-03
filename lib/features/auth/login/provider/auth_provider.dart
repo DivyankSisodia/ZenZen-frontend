@@ -21,10 +21,9 @@ final authRemoteDataSourceProvider = Provider<AuthApiService>(
   (ref) => AuthApiService(
     ApiRoutes.baseUrl, 
     ref.read(dioProvider),
+    ref.read(tokenManagerProvider),
   ),
 );
-
-
 
 // Repository Provider
 final authRepositoryProvider = Provider<AuthRepository>(
@@ -32,7 +31,4 @@ final authRepositoryProvider = Provider<AuthRepository>(
 );
 
 // ViewModel Provider
-final authViewModelProvider =
-    StateNotifierProvider<AuthViewModel, AsyncValue<UserModel?>>(
-  (ref) => AuthViewModel(ref.read(authRepositoryProvider)),
-);
+
