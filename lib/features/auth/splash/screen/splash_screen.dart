@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -16,21 +15,17 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    // Use kIsWeb instead of Platform checks
-    if (!kIsWeb) {
-      // For mobile platforms
-      context.goNamed(RoutesName.intro);
-    } else {
-      // For web platform
-      Future.delayed(const Duration(seconds: 2), () {
-        context.goNamed(RoutesName.intro);
-      });
-    }
 
-    // Alternatively, you could simplify to just:
-    // Future.delayed(const Duration(seconds: 3), () {
-    //   Navigator.pushReplacementNamed(context, '/intro');
-    // });
+    // Schedule navigation after the first frame
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // Apply a 2-second delay for all platforms
+      Future.delayed(const Duration(seconds: 2), () {
+        if (mounted) {
+          // Check if the widget is still mounted
+          context.goNamed(RoutesName.intro);
+        }
+      });
+    });
   }
 
   @override

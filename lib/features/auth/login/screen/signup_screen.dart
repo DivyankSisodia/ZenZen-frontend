@@ -7,7 +7,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
-import 'package:zenzen/features/auth/login/provider/auth_provider.dart';
 import 'package:zenzen/features/auth/login/viewmodel/oauth_viewmodel.dart';
 
 import '../../../../config/app_theme.dart';

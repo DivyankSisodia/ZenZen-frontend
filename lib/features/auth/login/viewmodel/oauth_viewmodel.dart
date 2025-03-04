@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:go_router/go_router.dart';
 import 'package:zenzen/config/constants.dart';
 
@@ -38,31 +37,8 @@ class AuthState {
 class AuthNotifier extends StateNotifier<AuthState> {
   final OAuthRepository _repository;
 
-  AuthNotifier(this._repository) : super(AuthState()) {
-    _initializeAuth();
-  }
-  
-  Future<void> _initializeAuth() async {
-    const FlutterSecureStorage storage = FlutterSecureStorage();
-    final token = await storage.read(key: 'access_token');
-    // Check if user is already logged in
-    _checkCurrentUser(token);
-  }
-
-  Future<void> _checkCurrentUser(String? token) async {
-    state = state.copyWith(isLoading: true);
-
-    final result = await _repository.getCurrentUser(token!);
-
-    result.fold(
-      (user) =>
-          state = state.copyWith(isLoading: false, user: user, failure: null),
-      (failure) => state = state.copyWith(
-        isLoading: false,
-        failure: null,
-      ), // Just set loading to false, no error
-    );
-  }
+   AuthNotifier(this._repository)
+      : super(AuthState());
 
   Future<void> signInWithGoogle(bool isLogin, BuildContext context) async {
     state = state.copyWith(isLoading: true, failure: null);

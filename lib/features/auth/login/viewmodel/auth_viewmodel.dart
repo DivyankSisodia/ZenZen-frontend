@@ -17,19 +17,6 @@ class AuthViewModel extends StateNotifier<AsyncValue<UserModel?>> {
   AuthViewModel(this.repository, this.tokenManager)
       : super(const AsyncValue.data(null));
 
-  // Check authentication status on init
-  Future<void> checkAuthStatus(String token) async {
-    final isLoggedIn = await tokenManager.isLoggedIn();
-    if (isLoggedIn) {
-      // Optionally fetch user data here
-      final result = await repository.getCurrentUser(token);
-      state = result.fold(
-        (user) => AsyncValue.data(user),
-        (error) => const AsyncValue.data(null),
-      );
-    }
-  }
-
 
   Future<void> login(
       String email, String password, BuildContext context) async {

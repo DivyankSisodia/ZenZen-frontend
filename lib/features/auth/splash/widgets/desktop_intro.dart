@@ -6,7 +6,6 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
-import 'package:zenzen/config/app_router.dart';
 import 'package:zenzen/config/app_theme.dart';
 import 'package:zenzen/config/constants.dart';
 

@@ -33,11 +33,13 @@ class UserModel {
       mobile: json['mobile'],
       isVerified: json['isVerified'] ?? false,
       userStatus: json['user_status'],
-      accessToken: json['tokens']['accessToken'],
-      refreshToken: json['tokens']['refreshToken'],
+      accessToken:
+          json['tokens'] != null ? json['tokens']['accessToken'] : null,
+      refreshToken:
+          json['tokens'] != null ? json['tokens']['refreshToken'] : null,
     );
   }
-
+  
   Map<String, dynamic> toJson() {
     print('toJson: $email');
     return {

@@ -45,11 +45,11 @@ class OAuthRepository {
         final apiResult = isLogin == true
             ? await _apiService.login(
                 userCredential.user!.email!,
-                userCredential.user!.uid,
+                "test1234",
               )
             : await _apiService.signUp(
                 userCredential.user!.email!,
-                userCredential.user!.uid,
+                "test1234",
               );
 
         print("apiResult ${apiResult.fold((l) => l, (r) => r.error)}");
@@ -88,11 +88,11 @@ class OAuthRepository {
         final apiResult = isLogin == true
             ? await _apiService.login(
                 userCredential.user!.email!,
-                userCredential.user!.uid,
+                "test1234",
               )
             : await _apiService.signUp(
                 userCredential.user!.email!,
-                userCredential.user!.uid,
+                "test1234",
               );
 
         return apiResult.fold(

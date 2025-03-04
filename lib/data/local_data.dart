@@ -1,4 +1,5 @@
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class LocalData {
   SharedPreferences? _prefs;
@@ -20,9 +21,6 @@ class LocalData {
     return preferences.getString('theme') ?? 'dark';
   }
 }
-
-
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class TokenManager {
   static const String _accessTokenKey = 'access_token';
