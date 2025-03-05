@@ -9,6 +9,7 @@ import 'package:zenzen/features/auth/splash/screen/splash_screen.dart';
 import 'package:zenzen/features/home/screen/home_screen.dart';
 
 import '../features/auth/login/screen/login_screen.dart';
+import '../features/auth/login/screen/verify_user_screen.dart';
 import '../utils/custom_transition.dart';
 
 class RouteConfig {
@@ -67,6 +68,18 @@ class RouteConfig {
             child: const RegisterScreen(),
             transitionType: PageTransitionType.rightToLeft,
           ),
+        ),
+        GoRoute(
+          path: '/verify-user',
+          name: RoutesName.verifyUser,
+          pageBuilder: (context, state) {
+            final email = state.extra as String;
+            return customTransitionPage(
+              key: state.pageKey,
+              child: VerifyUserScreen(email: email),
+              transitionType: PageTransitionType.rightToLeft,
+            );
+          },
         ),
       ],
     );

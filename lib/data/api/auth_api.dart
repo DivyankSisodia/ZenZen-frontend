@@ -1,7 +1,9 @@
 import 'package:dio/dio.dart';
 import 'package:fpdart/fpdart.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:zenzen/config/constants.dart';
 import 'package:zenzen/data/failure.dart';
+import 'package:zenzen/features/auth/login/model/otp_model.dart';
 import 'package:zenzen/features/auth/login/model/user_model.dart';
 
 import '../local_data.dart';
@@ -35,8 +37,10 @@ class AuthApiService {
                 );
 
                 if (refreshResponse.statusCode == 200) {
-                  final newAccessToken = refreshResponse.data['tokens']['access'];
-                  final newRefreshToken = refreshResponse.data['tokens']['refresh'];
+                  final newAccessToken =
+                      refreshResponse.data['tokens']['access'];
+                  final newRefreshToken =
+                      refreshResponse.data['tokens']['refresh'];
 
                   await tokenManager.saveTokens(
                     accessToken: newAccessToken,
@@ -63,9 +67,7 @@ class AuthApiService {
   }
 
   Future<Either<UserModel, ApiFailure>> login(
-    String email,
-    String password,
-  ) async {
+      String email, String password) async {
     try {
       final response = await dio.post(
         '$baseUrl${ApiRoutes.login}',
@@ -76,12 +78,21 @@ class AuthApiService {
       );
 
       print('response: ${response.data}');
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+
+      // Check if isVerified exists and is a boolean
+      if (response.data != null && response.data.containsKey('isVerified')) {
+        prefs.setBool('isVerified', response.data['isVerified'] == true);
+      } else {
+        prefs.setBool('isVerified', false);
+      }
 
       if (response.statusCode == 200) {
         final user = UserModel.fromJson(response.data);
         return Left(user);
       } else {
-        return Right(ApiFailure.custom(response.data['message']));
+        return Right(
+            ApiFailure.custom(response.data['message'] ?? 'Unknown error'));
       }
     } on DioException catch (e) {
       return Right(ApiFailure.fromDioException(e));
@@ -110,9 +121,7 @@ class AuthApiService {
           'mobile': mobile,
           'avatar': avatar,
         },
-        options: headers.isNotEmpty
-            ? Options(headers: headers)
-            : Options(),
+        options: headers.isNotEmpty ? Options(headers: headers) : Options(),
       );
 
       print('API service response: ${response.data}');
@@ -149,7 +158,6 @@ class AuthApiService {
 
   Future<Either<UserModel, ApiFailure>> getUser(String token) async {
     try {
-
       final accessToken = await tokenManager.getAccessToken();
 
       final Map<String, dynamic> headers = {};
@@ -164,6 +172,43 @@ class AuthApiService {
       print('response: ${response.data}');
 
       final user = UserModel.fromJson(response.data);
+      return Left(user);
+    } on DioException catch (e) {
+      return Right(ApiFailure.fromDioException(e));
+    }
+  }
+
+  Future<Either<OtpModel, ApiFailure>> verifyUser(String email, String otp) async {
+    try {
+      final response = await dio.post(
+        '$baseUrl${ApiRoutes.verifyUser}',
+        data: {
+          'email': email,
+          'otp': otp,
+        },
+      );
+
+      print('response: ${response.data}');
+
+      final user = OtpModel.fromJson(response.data);
+      return Left(user);
+    } on DioException catch (e) {
+      return Right(ApiFailure.fromDioException(e));
+    }
+  }
+
+  Future<Either<OtpModel, ApiFailure>> sendOTP(String email) async {
+    try {
+      final response = await dio.post(
+        '$baseUrl${ApiRoutes.sendOTP}',
+        data: {
+          'email': email,
+        },
+      );
+
+      print('response: ${response.data}');
+
+      final user = OtpModel.fromJson(response.data);
       return Left(user);
     } on DioException catch (e) {
       return Right(ApiFailure.fromDioException(e));

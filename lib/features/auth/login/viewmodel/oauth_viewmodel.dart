@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:zenzen/config/constants.dart';
 
 import '../../../../data/failure.dart';
@@ -37,8 +38,7 @@ class AuthState {
 class AuthNotifier extends StateNotifier<AuthState> {
   final OAuthRepository _repository;
 
-   AuthNotifier(this._repository)
-      : super(AuthState());
+  AuthNotifier(this._repository) : super(AuthState());
 
   Future<void> signInWithGoogle(bool isLogin, BuildContext context) async {
     state = state.copyWith(isLoading: true, failure: null);
@@ -49,13 +49,21 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
     print('result: $result');
 
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.getBool('isVerified');
+
+    final bool x = prefs.getBool('isVerified') ?? false;
+    print('isVerified oAuth login: $x');
+
     result.fold(
       (failure) => state = state.copyWith(isLoading: false, failure: failure),
       (userCredential) {
         final userModel = UserModel.fromUserCredential(userCredential);
         state =
             state.copyWith(isLoading: false, user: userModel, failure: null);
-        context.goNamed(RoutesName.home);
+        x
+            ? context.goNamed(RoutesName.home)
+            : context.goNamed(RoutesName.registerInfo);
       },
     );
   }

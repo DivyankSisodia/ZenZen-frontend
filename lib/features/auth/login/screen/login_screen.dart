@@ -216,7 +216,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 ),
                                 const Gap(20),
                                 authState.isLoading
-                                    ? const CircularProgressIndicator.adaptive()
+                                    ? const Center(child:  CircularProgressIndicator.adaptive())
                                     : Align(
                                         alignment: Alignment.center,
                                         child: ElevatedButton(
@@ -280,7 +280,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                           (authState.error is ApiFailure)
                                               ? (authState.error as ApiFailure)
                                                   .error // Correct way to access the error message
-                                              : "An unexpected error occurred",
+                                              : authState.error.toString(),
                                           style:
                                               AppTheme.smallBodyTheme(context)
                                                   .copyWith(

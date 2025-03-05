@@ -1,5 +1,8 @@
+// ignore_for_file: unnecessary_null_comparison
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:go_router/go_router.dart';
 import 'package:zenzen/config/constants.dart';
 import '../../../../utils/providers/theme_provider.dart';
@@ -15,14 +18,19 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   @override
   void initState() {
     super.initState();
+    _initializeAsync();
+  }
 
+  Future<void> _initializeAsync() async {
+    FlutterSecureStorage storage = const FlutterSecureStorage();
+    final token = await storage.read(key: 'accessToken') ?? "";
     // Schedule navigation after the first frame
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      // Apply a 2-second delay for all platforms
-      Future.delayed(const Duration(seconds: 2), () {
+      Future.delayed(const Duration(seconds: 3), () {
         if (mounted) {
-          // Check if the widget is still mounted
-          context.goNamed(RoutesName.intro);
+          token.isNotEmpty
+              ? context.pushNamed(RoutesName.home)
+              : context.goNamed(RoutesName.intro);
         }
       });
     });

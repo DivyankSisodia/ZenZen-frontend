@@ -22,9 +22,7 @@ class OAuthRepository {
   Future<Either<AuthFailure, UserCredential>> signInWithGoogle(
       bool isLogin) async {
     try {
-      // Web platform specific implementation
       if (kIsWeb) {
-        // Use Firebase Auth directly with Google provider for web
         GoogleAuthProvider googleProvider = GoogleAuthProvider();
 
         // Add scopes if needed
@@ -59,26 +57,22 @@ class OAuthRepository {
           (failure) => left(AuthFailure(failure.error)),
         );
       }
-      // Mobile implementation - keep your existing code
+      
       else {
-        // Trigger the authentication flow
         final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
 
         if (googleUser == null) {
           return left(AuthFailure('Google sign in was aborted by user'));
         }
 
-        // Obtain the auth details from the request
         final GoogleSignInAuthentication googleAuth =
             await googleUser.authentication;
 
-        // Create a new credential
         final credential = GoogleAuthProvider.credential(
           accessToken: googleAuth.accessToken,
           idToken: googleAuth.idToken,
         );
 
-        // Sign in to Firebase with the Google credential
         final userCredential = await _auth.signInWithCredential(credential);
 
         if (userCredential.user == null) {

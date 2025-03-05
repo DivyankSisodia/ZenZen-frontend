@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:zenzen/config/app_theme.dart';
+import '../../../../data/failure.dart';
 import '../../../../utils/common/custom_textfield.dart';
+import '../viewmodel/auth_viewmodel.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
@@ -202,10 +204,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           },
         ),
         const Gap(30),
-        Text(
-          'I agree to the Terms of Service and Privacy Policy',
-          style: AppTheme.smallBodyTheme(context).copyWith(
-            fontSize: 13,
+        Flexible(
+          child: Text(
+            'I agree to the Terms of Service and Privacy Policy',
+            style: AppTheme.smallBodyTheme(context).copyWith(
+              fontSize: 13,
+            ),
           ),
         )
       ],
@@ -213,23 +217,52 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   }
 
   Widget buildSignUpButton() {
-    return SizedBox(
-      width: double.infinity,
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.primary,
-          padding: const EdgeInsets.symmetric(vertical: 15),
-        ),
-        onPressed: () {
-          if (_formKey.currentState!.validate()) {
-            // Perform sign up logic
-          }
-        },
-        child: Text(
-          'Register Info',
-          style: AppTheme.smallBodyTheme(context).copyWith(color: Colors.white),
-        ),
-      ),
-    );
+    final authState = ref.watch(authStateProvider);
+    final authViewModel = ref.watch(authStateProvider.notifier);
+    return authState.isLoading
+        ? const CircularProgressIndicator.adaptive()
+        : SizedBox(
+            width: double.infinity,
+            child: Column(
+              children: [
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 15,
+                      horizontal: 20,
+                    ),
+                  ),
+                  onPressed: () {
+                    if (_formKey.currentState!.validate()) {
+                      // Perform sign up logic
+                      authViewModel.register(
+                        emailController.text.trim(),
+                        '${firstName.text.trim()} ${lastName.text.trim()}',
+                        mobileController.text.trim(),
+                        'avatar',
+                        context,
+                      );
+                    }
+                  },
+                  child: Text(
+                    'Register Info',
+                    style: AppTheme.smallBodyTheme(context)
+                        .copyWith(color: Colors.white),
+                  ),
+                ),
+                const Gap(15),
+                authState.hasError
+                    ? Text(
+                        authState.error is ApiFailure
+                            ? (authState.error as ApiFailure).error
+                            : authState.error.toString(),
+                        style: AppTheme.smallBodyTheme(context)
+                            .copyWith(color: Colors.red),
+                      )
+                    : const SizedBox(),
+              ],
+            ),
+          );
   }
 }

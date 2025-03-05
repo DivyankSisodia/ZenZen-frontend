@@ -6,6 +6,9 @@ class RoutesName {
   static const String profile = "profile";
   static const String signup = "signup";
   static const String registerInfo = "register-info";
+  static const String forgotPassword = "forgot-password";
+  static const String resetPassword = "reset-password";
+  static const String verifyUser = "verify-user";
 }
 
 class ApiRoutes {
