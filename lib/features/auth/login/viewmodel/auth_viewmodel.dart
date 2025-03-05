@@ -44,7 +44,7 @@ class AuthViewModel extends StateNotifier<AsyncValue<UserModel?>> {
           if (isVerifiedUser) {
             context.goNamed(RoutesName.home);
           } else {
-            context.goNamed(RoutesName.registerInfo);
+            context.goNamed(RoutesName.verifyUser, extra: email);
           }
         },
         (error) {
@@ -67,10 +67,12 @@ class AuthViewModel extends StateNotifier<AsyncValue<UserModel?>> {
     result.fold(
       (userModel) async {
         // Save tokens
-        await tokenManager.saveTokens(
-          accessToken: userModel.accessToken!,
-          refreshToken: userModel.refreshToken!,
-        );
+        if(userModel.refreshToken != null && userModel.accessToken != null) {
+          await tokenManager.saveTokens(
+            accessToken: userModel.accessToken!,
+            refreshToken: userModel.refreshToken!,
+          );
+        }
         state = AsyncValue.data(userModel);
 
         // Navigate to login or home
@@ -101,7 +103,7 @@ class AuthViewModel extends StateNotifier<AsyncValue<UserModel?>> {
 
     if (result.isLeft()) {
       // Go to home screen
-      context.goNamed(RoutesName.login);
+      context.goNamed(RoutesName.verifyUser, extra: email);
     }
   }
 }

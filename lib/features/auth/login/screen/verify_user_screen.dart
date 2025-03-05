@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:pinput/pinput.dart';
+import 'package:zenzen/config/app_router.dart';
+import 'package:zenzen/config/constants.dart';
 
 import '../provider/auth_provider.dart';
+import '../viewmodel/auth_viewmodel.dart';
 
 class VerifyUserScreen extends ConsumerStatefulWidget {
   final String email;
@@ -15,6 +20,8 @@ class VerifyUserScreen extends ConsumerStatefulWidget {
 class _VerifyUserScreenState extends ConsumerState<VerifyUserScreen> {
   bool isSendingOtp = false;
   String? errorMessage;
+
+  TextEditingController otpController = TextEditingController();
 
   @override
   void initState() {
@@ -63,77 +70,111 @@ class _VerifyUserScreenState extends ConsumerState<VerifyUserScreen> {
   }
 
   @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+    otpController.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final authState = ref.watch(authStateProvider);
+    final authViewModel = ref.watch(authStateProvider.notifier);
     return Scaffold(
       backgroundColor: Colors.white,
       body: LayoutBuilder(
         builder: (context, constraints) {
           return Center(
-            child: SingleChildScrollView(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 600),
-                child: Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      const Text(
-                        'Verify your account',
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      const Text(
-                        'Please enter the OTP sent to your email',
-                        style: TextStyle(
-                          fontSize: 16,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      if (isSendingOtp) // Show loading indicator
-                        const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 20),
-                          child: CircularProgressIndicator(),
-                        ),
-                      if (errorMessage != null) // Show error message
-                        Padding(
-                          padding: const EdgeInsets.only(top: 10),
-                          child: Text(
-                            errorMessage!,
-                            style: const TextStyle(color: Colors.red),
-                          ),
-                        ),
-                      const SizedBox(height: 20),
-                      Card(
-                        elevation: 10,
-                        color: Colors.white,
-                        child: Padding(
-                          padding: const EdgeInsets.all(20),
-                          child: Column(
-                            children: [
-                              TextFormField(
-                                decoration: const InputDecoration(
-                                    labelText: 'OTP', hintText: 'Enter OTP'),
+            child: authState.isLoading
+                ? const Center(
+                    child: CircularProgressIndicator.adaptive(),
+                  )
+                : SingleChildScrollView(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 600),
+                      child: Padding(
+                        padding: const EdgeInsets.all(20),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            const Text(
+                              'Verify your account',
+                              style: TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
                               ),
-                              const SizedBox(height: 20),
-                              ElevatedButton(
-                                onPressed: () {
-                                  // Verify OTP logic
-                                },
-                                child: const Text('Verify'),
+                            ),
+                            const SizedBox(height: 10),
+                            const Text(
+                              'Please enter the OTP sent to your email',
+                              style: TextStyle(
+                                fontSize: 16,
                               ),
-                            ],
-                          ),
+                              textAlign: TextAlign.center,
+                            ),
+                            if (isSendingOtp) // Show loading indicator
+                              const Padding(
+                                padding: EdgeInsets.symmetric(vertical: 20),
+                                child: CircularProgressIndicator(),
+                              ),
+                            if (errorMessage != null) // Show error message
+                              Padding(
+                                padding: const EdgeInsets.only(top: 10),
+                                child: Text(
+                                  errorMessage!,
+                                  style: const TextStyle(color: Colors.red),
+                                ),
+                              ),
+                            const SizedBox(height: 20),
+                            Pinput(
+                              animationCurve: Curves.linear,
+                              length: 6,
+                              controller: otpController,
+                              onCompleted: (value) {
+                                setState(() {
+                                  isSendingOtp = true; // Show loading indicator
+                                });
+                                ref
+                                    .read(authRepositoryProvider)
+                                    .verifyUser(
+                                      widget.email,
+                                      value,
+                                    )
+                                    .then((_) {
+                                  setState(() {
+                                    isSendingOtp = false;
+                                  });
+                                });
+
+                                context.pushNamed(
+                                  RoutesName.home,
+                                );
+                              },
+                            ),
+                            authState.hasError
+                                ? Padding(
+                                    padding: const EdgeInsets.only(top: 10),
+                                    child: Text(
+                                      authState.error.toString(),
+                                      style: const TextStyle(color: Colors.red),
+                                    ),
+                                  )
+                                : const SizedBox.shrink(),
+                            const SizedBox(height: 20),
+                            ElevatedButton(
+                              onPressed: () {
+                                ref.read(authRepositoryProvider).sendOtp(
+                                      widget.email,
+                                    );
+                              },
+                              child: const Text('Resend OTP'),
+                            ),
+                          ],
                         ),
                       ),
-                    ],
+                    ),
                   ),
-                ),
-              ),
-            ),
           );
         },
       ),
