@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:zenzen/config/constants.dart';
 import '../../../../utils/providers/theme_provider.dart';
 
@@ -19,16 +20,25 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   void initState() {
     super.initState();
     _initializeAsync();
+    printPrefs();
+  }
+
+  void printPrefs() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    print('Theme: ${prefs.getString('theme')}');
   }
 
   Future<void> _initializeAsync() async {
     FlutterSecureStorage storage = const FlutterSecureStorage();
-    final token = await storage.read(key: 'accessToken') ?? "";
+
+    final token = await storage.read(key: 'access_token');
+    print('Access Token: $token');
+
     // Schedule navigation after the first frame
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Future.delayed(const Duration(seconds: 3), () {
         if (mounted) {
-          token.isNotEmpty
+          (token?.isNotEmpty == true)
               ? context.pushNamed(RoutesName.home)
               : context.goNamed(RoutesName.intro);
         }

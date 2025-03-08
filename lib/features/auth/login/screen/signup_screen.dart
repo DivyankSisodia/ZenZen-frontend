@@ -9,10 +9,11 @@ import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
 import 'package:zenzen/features/auth/login/viewmodel/oauth_viewmodel.dart';
 
-import '../../../../config/app_theme.dart';
+import '../../../../config/app_colors.dart';
 import '../../../../data/failure.dart';
 import '../../../../utils/common/custom_textfield.dart';
 import '../../../../utils/common/social_media.dart';
+import '../../../../utils/theme.dart';
 import '../viewmodel/auth_viewmodel.dart';
 
 class SignupScreen extends ConsumerStatefulWidget {
@@ -190,7 +191,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                                               style: AppTheme.smallBodyTheme(
                                                       context)
                                                   .copyWith(
-                                                color: AppColors.onSecondary,
+                                                color: AppColors.black,
                                                 fontWeight: FontWeight.bold,
                                               ),
                                             ),
@@ -206,13 +207,6 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                                     : Align(
                                         alignment: Alignment.center,
                                         child: ElevatedButton(
-                                          onHover: (value) {
-                                            if (value) {
-                                              print('Hovering');
-                                            } else {
-                                              print('Not hovering');
-                                            }
-                                          },
                                           style: ElevatedButton.styleFrom(
                                             backgroundColor: AppColors.primary,
                                             shape: RoundedRectangleBorder(

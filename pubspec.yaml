@@ -28,6 +28,8 @@ environment:
 # the latest version available on pub.dev. To see which dependencies have newer
 # versions available, run `flutter pub outdated`.
 dependencies:
+  auto_size_text: ^3.0.0
+  cached_network_image: ^3.4.1
   cupertino_icons: ^1.0.8
   desktop_drop: ^0.5.0
   device_preview: null
@@ -47,6 +49,7 @@ dependencies:
   go_router: ^14.8.1
   google_fonts: ^6.2.1
   google_sign_in: ^6.2.2
+  hive_ce_flutter: 
   internet_connection_checker_plus: ^2.7.0
   json_annotation: ^4.9.0
   open_file: ^3.5.10
@@ -67,6 +70,7 @@ dev_dependencies:
     sdk: flutter
   freezed: null
   json_serializable: null
+  hive_ce_generator:
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -81,6 +85,7 @@ flutter:
   assets:
     - assets/images/
     - assets/template/
+    - assets/icons/
   #   - images/a_dot_ham.jpeg
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

@@ -24,22 +24,22 @@ class UserModel {
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
-    print('json: $json');
-    return UserModel(
-      userName: json['userName'] ?? '',
-      email: json['email'] ?? '',
-      avatar: json['avatar'] ?? '',
-      token: json['token'],
-      mobile: json['mobile'],
-      isVerified: json['isVerified'] ?? false,
-      userStatus: json['user_status'],
-      accessToken:
-          json['tokens'] != null ? json['tokens']['accessToken'] : null,
-      refreshToken:
-          json['tokens'] != null ? json['tokens']['refreshToken'] : null,
-    );
-  }
-  
+  print('UserModel.fromJson: $json');
+  final userModel = UserModel(
+    userName: json['userName'] ?? '',
+    email: json['email'] ?? '',
+    avatar: json['avatar'] ?? '',
+    token: json['token'],
+    mobile: json['mobile'],
+    isVerified: json['isVerified'] ?? false,
+    userStatus: json['user_status'],
+    accessToken: json['tokens'] != null ? json['tokens']['accessToken'] : null,
+    refreshToken: json['tokens'] != null ? json['tokens']['refreshToken'] : null,
+  );
+  print('Created UserModel: ${userModel.toJson()}');
+  return userModel;
+}
+
   Map<String, dynamic> toJson() {
     print('toJson: $email');
     return {

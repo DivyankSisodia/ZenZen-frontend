@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:zenzen/config/constants.dart';
+import 'package:zenzen/data/local/hive_models/local_user_model.dart';
 import 'package:zenzen/features/auth/login/model/user_model.dart';
 
+import '../../../../data/local/service/user_service.dart';
 import '../../../../data/local_data.dart';
 import '../provider/auth_provider.dart';
 import '../repo/auth_repository.dart';
@@ -14,32 +15,41 @@ final tokenManagerProvider = Provider((ref) => TokenManager());
 class AuthViewModel extends StateNotifier<AsyncValue<UserModel?>> {
   final AuthRepository repository;
   final TokenManager tokenManager;
+  final Ref ref;
 
-  AuthViewModel(this.repository, this.tokenManager)
+  AuthViewModel(this.repository, this.tokenManager, this.ref)
       : super(const AsyncValue.data(null));
 
-  Future<void> login(
-      String email, String password, BuildContext context) async {
+  Future<void> login(String email, String password, BuildContext context) async {
     try {
       state = const AsyncValue.loading();
       final result = await repository.login(email, password);
 
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      final bool isVerified = prefs.getBool('isVerified') ?? false;
-      print('isVerified normal login: $isVerified');
-
       result.fold(
         (userModel) async {
+          state = AsyncValue.data(userModel);
+
           if (userModel.refreshToken != null && userModel.accessToken != null) {
-            // Save tokens
             await tokenManager.saveTokens(
               accessToken: userModel.accessToken!,
               refreshToken: userModel.refreshToken!,
             );
           }
-          state = AsyncValue.data(userModel);
 
-          bool isVerifiedUser = userModel.isVerified!;
+          // Convert UserModel to User (Hive model)
+          final localUser = User(
+            userName: userModel.userName ?? '',
+            avatar: userModel.avatar ?? '',
+            email: email,
+            mobile: userModel.mobile ?? '',
+            isVerified: userModel.isVerified ?? false,
+          );
+
+          // Save the converted user data to Hive
+          final hiveService = ref.read(userDataProvider);
+          await hiveService.userBox.put('currentUser', localUser);
+
+          bool isVerifiedUser = userModel.isVerified ?? false;
 
           if (isVerifiedUser) {
             context.goNamed(RoutesName.home);
@@ -67,7 +77,7 @@ class AuthViewModel extends StateNotifier<AsyncValue<UserModel?>> {
     result.fold(
       (userModel) async {
         // Save tokens
-        if(userModel.refreshToken != null && userModel.accessToken != null) {
+        if (userModel.refreshToken != null && userModel.accessToken != null) {
           await tokenManager.saveTokens(
             accessToken: userModel.accessToken!,
             refreshToken: userModel.refreshToken!,
@@ -111,5 +121,12 @@ class AuthViewModel extends StateNotifier<AsyncValue<UserModel?>> {
 final authStateProvider =
     StateNotifierProvider<AuthViewModel, AsyncValue<UserModel?>>((ref) {
   return AuthViewModel(
-      ref.read(authRepositoryProvider), ref.read(tokenManagerProvider));
+    ref.read(authRepositoryProvider),
+    ref.read(tokenManagerProvider),
+    ref,
+  );
+});
+
+final userDataProvider = Provider<HiveService>((ref) {
+  return HiveService();
 });

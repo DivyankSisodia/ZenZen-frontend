@@ -7,13 +7,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
-import 'package:zenzen/config/app_theme.dart';
+import 'package:zenzen/config/app_colors.dart';
 import 'package:zenzen/features/auth/login/viewmodel/oauth_viewmodel.dart';
 
 import '../../../../config/constants.dart';
 import '../../../../data/failure.dart';
 import '../../../../utils/common/custom_textfield.dart';
 import '../../../../utils/common/social_media.dart';
+import '../../../../utils/theme.dart';
 import '../viewmodel/auth_viewmodel.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -190,7 +191,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                               style: AppTheme.smallBodyTheme(
                                                       context)
                                                   .copyWith(
-                                                color: AppColors.onSecondary,
+                                                color: AppColors.black,
                                                 fontWeight: FontWeight.bold,
                                               ),
                                             ),
@@ -216,17 +217,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 ),
                                 const Gap(20),
                                 authState.isLoading
-                                    ? const Center(child:  CircularProgressIndicator.adaptive())
+                                    ? const Center(
+                                        child: CircularProgressIndicator
+                                            .adaptive())
                                     : Align(
                                         alignment: Alignment.center,
                                         child: ElevatedButton(
-                                          onHover: (value) {
-                                            if (value) {
-                                              print('Hovering');
-                                            } else {
-                                              print('Not hovering');
-                                            }
-                                          },
                                           style: ElevatedButton.styleFrom(
                                             backgroundColor: AppColors.primary,
                                             shape: RoundedRectangleBorder(

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pinput/pinput.dart';
-import 'package:zenzen/config/app_router.dart';
+import 'package:zenzen/config/app_colors.dart';
 import 'package:zenzen/config/constants.dart';
 
 import '../provider/auth_provider.dart';
@@ -71,7 +71,6 @@ class _VerifyUserScreenState extends ConsumerState<VerifyUserScreen> {
 
   @override
   void dispose() {
-    // TODO: implement dispose
     super.dispose();
     otpController.dispose();
   }
@@ -79,9 +78,8 @@ class _VerifyUserScreenState extends ConsumerState<VerifyUserScreen> {
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authStateProvider);
-    final authViewModel = ref.watch(authStateProvider.notifier);
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.getBackgroundColor(context),
       body: LayoutBuilder(
         builder: (context, constraints) {
           return Center(

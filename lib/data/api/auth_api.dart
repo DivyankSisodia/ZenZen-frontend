@@ -77,18 +77,21 @@ class AuthApiService {
         },
       );
 
-      print('response: ${response.data}');
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-
-      // Check if isVerified exists and is a boolean
-      if (response.data != null && response.data.containsKey('isVerified')) {
-        prefs.setBool('isVerified', response.data['isVerified'] == true);
-      } else {
-        prefs.setBool('isVerified', false);
-      }
-
       if (response.statusCode == 200) {
-        final user = UserModel.fromJson(response.data);
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+
+        bool isVerified = response.data['data']['user']['isVerified'] ?? false;
+        String currentUserId = response.data['data']['user']['_id'] ?? '';
+
+        prefs.setBool('isVerified', isVerified);
+        prefs.setString('currentUserId', currentUserId);
+
+        // Create UserModel with both user and token data
+        final user = UserModel.fromJson({
+          ...response.data['data']['user'],
+          'tokens': response.data['data']['tokens']
+        });
+
         return Left(user);
       } else {
         return Right(
@@ -178,7 +181,8 @@ class AuthApiService {
     }
   }
 
-  Future<Either<OtpModel, ApiFailure>> verifyUser(String email, String otp) async {
+  Future<Either<OtpModel, ApiFailure>> verifyUser(
+      String email, String otp) async {
     try {
       final response = await dio.post(
         '$baseUrl${ApiRoutes.verifyUser}',
