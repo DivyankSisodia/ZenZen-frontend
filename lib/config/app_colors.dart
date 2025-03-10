@@ -18,9 +18,25 @@ class AppColors {
 
   static Color getBackgroundColor(BuildContext context) {
     if (Theme.of(context).brightness == Brightness.dark) {
-      return AppColors.black;
+      return AppColors.white;
     } else {
       return AppColors.white;
+    }
+  }
+
+  static Color getDrawerColor(BuildContext context) {
+    if (Theme.of(context).brightness == Brightness.dark) {
+      return AppColors.primary;
+    } else {
+      return AppColors.lightGrey;
+    }
+  }
+
+  static Color getContainerColor(BuildContext context) {
+    if (Theme.of(context).brightness == Brightness.dark) {
+      return AppColors.primary;
+    } else {
+      return AppColors.lightGrey;
     }
   }
 

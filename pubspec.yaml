@@ -31,6 +31,7 @@ dependencies:
   auto_size_text: ^3.0.0
   cached_network_image: ^3.4.1
   cupertino_icons: ^1.0.8
+  delightful_toast: ^1.1.0
   desktop_drop: ^0.5.0
   device_preview: null
   dio: ^5.8.0+1
@@ -49,7 +50,7 @@ dependencies:
   go_router: ^14.8.1
   google_fonts: ^6.2.1
   google_sign_in: ^6.2.2
-  hive_ce_flutter: 
+  hive_ce_flutter: null
   internet_connection_checker_plus: ^2.7.0
   json_annotation: ^4.9.0
   open_file: ^3.5.10
@@ -69,8 +70,8 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   freezed: null
+  hive_ce_generator: null
   json_serializable: null
-  hive_ce_generator:
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

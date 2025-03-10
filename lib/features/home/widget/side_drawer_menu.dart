@@ -1,81 +1,261 @@
-// ignore_for_file: must_be_immutable
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:gap/gap.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:zenzen/config/app_colors.dart';
+import 'package:zenzen/config/app_images.dart';
 import 'package:zenzen/config/responsive.dart';
-import '../../../data/local/provider/user_provider.dart';
+import 'package:zenzen/config/size_config.dart';
 import '../../../utils/theme.dart';
+import '../../auth/login/viewmodel/auth_viewmodel.dart';
 
-class SideDrawerMenu extends ConsumerWidget {
-  SideDrawerMenu({super.key});
+class SideDrawerMenu extends ConsumerStatefulWidget {
+  const SideDrawerMenu({super.key});
 
+  @override
+  ConsumerState<ConsumerStatefulWidget> createState() => _SideDrawerMenuState();
+}
+
+class _SideDrawerMenuState extends ConsumerState<SideDrawerMenu> {
   int _selectedIndex = 0;
+  bool _isProfileExpanded = true;
 
   final List<String> _menuItems = [
     "Home",
-    "Settings",
-    "About",
-    "Help",
-    "Logout"
+    "Documents",
+    "Projects",
+    "Messages",
+    "Contact Us",
   ];
 
   void _onMenuItemTap(int index) {
-    _selectedIndex = index;
+    setState(() {
+      _selectedIndex = index;
+    });
   }
 
+  void _toggleProfileExpansion() {
+    setState(() {
+      _isProfileExpanded = !_isProfileExpanded;
+    });
+  }
+
+  List<String> icons = [
+    AppImages.homeLight,
+    AppImages.docLight,
+    AppImages.folderLight,
+    AppImages.messageLight,
+    AppImages.menuLight
+  ];
+
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
+    SizeConfig().init(context);
     final hiveService = ref.watch(userDataProvider);
     final currentUser = hiveService.userBox.get('currentUser');
+    final isLowHeight = MediaQuery.of(context).size.height < 600;
+
     return Drawer(
-      shadowColor: Colors.grey,
+      backgroundColor: AppColors.getDrawerColor(context),
+      shadowColor: const Color.fromARGB(255, 237, 237, 237),
       elevation: 5,
       child: Container(
         width: double.infinity,
         decoration: BoxDecoration(
           color: AppColors.getBackgroundColor(context),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: ListView(
+          padding: EdgeInsets.zero,
           children: [
-            // Logo Section
-            Container(
-              alignment: Alignment.topCenter,
-              padding: const EdgeInsets.all(20),
-              child: !Responsive.isMobile(context)
-                  ? Image.asset(
-                      color: Colors.white,
-                      "assets/images/logo-no-background.png",
-                      height: 300,
-                      width: 300,
-                      fit: BoxFit.contain,
-                    )
-                  : Image.asset(
-                      color: Colors.white,
-                      "assets/images/logo-no-background.png",
-                      height: 140,
-                      width: 140,
-                      fit: BoxFit.contain,
+            const SizedBox(height: 20),
+            // User Profile Section - Collapsible
+            GestureDetector(
+              onTap: _toggleProfileExpansion,
+              child: Container(
+                margin: const EdgeInsets.symmetric(horizontal: 20),
+                padding: EdgeInsets.all(isLowHeight ? 8 : 10),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10),
+                  color: AppColors.getDrawerColor(context),
+                  boxShadow: [
+                    BoxShadow(
+                      offset: const Offset(-10, 10),
+                      color: AppColors.black.withOpacity(0.4),
+                      blurRadius: 5,
+                      spreadRadius: 3,
                     ),
+                  ],
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Row(
+                            children: [
+                              CircleAvatar(
+                                radius: isLowHeight ? 20 : 30,
+                                backgroundColor:
+                                    AppColors.getIconsColor(context),
+                                child: Text(
+                                  currentUser!.avatar
+                                      .substring(0, 1)
+                                      .toUpperCase(),
+                                  style: isLowHeight
+                                      ? AppTheme.buttonText(context)
+                                          .copyWith(fontSize: 14)
+                                      : AppTheme.buttonText(context),
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Text(
+                                  currentUser.userName,
+                                  style: isLowHeight
+                                      ? AppTheme.textMedium(context)
+                                          .copyWith(fontSize: 14)
+                                      : AppTheme.textMedium(context),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Icon(
+                          _isProfileExpanded
+                              ? Icons.expand_less
+                              : Icons.expand_more,
+                          color: AppColors.getIconsColor(context),
+                        ),
+                      ],
+                    ),
+                    if (_isProfileExpanded) ...[
+                      const SizedBox(height: 5),
+                      Row(
+                        children: [
+                          Expanded(
+                            flex: 2,
+                            child: FaIcon(
+                              FontAwesomeIcons.envelope,
+                              color: AppColors.getIconsColor(context),
+                              size: isLowHeight ? 16 : 20,
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            flex: 6,
+                            child: SizedBox(
+                              width: 120,
+                              child: Text(
+                                overflow: TextOverflow.ellipsis,
+                                currentUser.email,
+                                style: AppTheme.textFieldBodyTheme(context)
+                                    .copyWith(
+                                  fontSize: isLowHeight ? 12 : 14,
+                                ),
+                              ),
+                            ),
+                          ),
+                          Expanded(
+                            flex: 2,
+                            child: IconButton(
+                              onPressed: () {},
+                              icon: Icon(
+                                Icons.copy_all,
+                                size: isLowHeight ? 16 : 20,
+                                color: AppColors.getIconsColor(context),
+                              ),
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(),
+                            ),
+                          )
+                        ],
+                      ),
+                    ],
+                  ],
+                ),
+              ),
             ),
-            const Gap(10),
-            // Menu Items Section
-            Expanded(
-              child: ListView(
-                padding: const EdgeInsets.all(20),
+
+            SizedBox(height: isLowHeight ? 8 : 10),
+
+            // Menu Items
+            Padding(
+              padding: EdgeInsets.all(isLowHeight ? 10 : 20),
+              child: Column(
                 children: [
-                  for (var i = 0; i < _menuItems.length; i++)
+                  for (var i = 0; i < 4; i++)
                     MenuItem(
+                      icon: icons[i],
                       title: _menuItems[i],
                       index: i,
                       selectedIndex: _selectedIndex,
                       onTap: _onMenuItemTap,
+                      isCompact: isLowHeight,
                     ),
                 ],
               ),
             ),
+
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Divider(
+                color: AppColors.getIconsColor(context),
+                thickness: 0.5,
+              ),
+            ),
+
+            SizedBox(
+              height: isLowHeight ? 8 : 20,
+            ),
+
+            // Contact Menu
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+              child: MenuItem(
+                title: _menuItems[4],
+                index: 4,
+                selectedIndex: _selectedIndex,
+                onTap: _onMenuItemTap,
+                icon: icons[4],
+                isCompact: isLowHeight,
+              ),
+            ),
+
+            if (!Responsive.isDesktop(context)) ...[
+              SizedBox(height: isLowHeight ? 8 : 10),
+              OtherItems(
+                color: AppColors.warning,
+                title: 'Open in Browser',
+                icon: FontAwesomeIcons.firefox,
+                style: AppTheme.textLarge(context)
+                    .copyWith(fontSize: isLowHeight ? 14 : 16),
+                isCompact: isLowHeight,
+              ),
+            ],
+
+            SizedBox(height: isLowHeight ? 20 : 40),
+
+            // Support and Logout
+            OtherItems(
+              color: AppColors.primary,
+              title: 'Support',
+              icon: FontAwesomeIcons.question,
+              isCompact: isLowHeight,
+            ),
+
+            SizedBox(height: isLowHeight ? 8 : 10),
+
+            OtherItems(
+              color: AppColors.error,
+              title: 'Logout',
+              icon: FontAwesomeIcons.signOutAlt,
+              isCompact: isLowHeight,
+            ),
+
+            SizedBox(height: isLowHeight ? 20 : 30),
           ],
         ),
       ),
@@ -88,7 +268,8 @@ class MenuItem extends ConsumerWidget {
   final int index;
   final int selectedIndex;
   final Function(int) onTap;
-  // final IconData icon;
+  final String icon;
+  final bool isCompact;
 
   const MenuItem({
     super.key,
@@ -96,7 +277,8 @@ class MenuItem extends ConsumerWidget {
     required this.index,
     required this.selectedIndex,
     required this.onTap,
-    // required this.icon,
+    required this.icon,
+    this.isCompact = false,
   });
 
   @override
@@ -104,36 +286,113 @@ class MenuItem extends ConsumerWidget {
     return InkWell(
       onTap: () => onTap(index),
       child: Container(
+        width: double.infinity,
         decoration: BoxDecoration(
           color:
               index == selectedIndex ? AppColors.lightGrey : AppColors.onAccent,
           borderRadius: const BorderRadius.all(
             Radius.circular(10),
           ),
-          border: Border.all(
-            color:
-                index == selectedIndex ? AppColors.primary : AppColors.onAccent,
-            width: 2,
-          ),
         ),
-        margin: const EdgeInsets.only(bottom: 10),
-        padding: const EdgeInsets.all(10),
+        margin: EdgeInsets.only(bottom: isCompact ? 6 : 10),
+        padding: EdgeInsets.all(isCompact ? 6 : 10),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Icon(
-              Icons.document_scanner,
-              color: index == selectedIndex
-                  ? AppColors.primary
-                  : AppColors.onAccent,
-              size: 20,
+            Expanded(
+              flex: 3,
+              child: Image.asset(
+                icon,
+                color: AppColors.getIconsColor(context),
+                height: isCompact ? 20 : 30,
+                width: isCompact ? 20 : 30,
+                fit: BoxFit.contain,
+              ),
             ),
-            const Gap(20),
-            Text(
-              title,
-              style: AppTheme.textFieldBodyTheme(context),
+            SizedBox(width: isCompact ? 10 : 20),
+            Expanded(
+              flex: 7,
+              child: Text(
+                overflow: TextOverflow.ellipsis,
+                title,
+                style: index != selectedIndex
+                    ? AppTheme.textFieldBodyTheme(context).copyWith(
+                        fontSize: isCompact ? 12 : 14,
+                      )
+                    : AppTheme.textMedium(context).copyWith(
+                        fontSize: isCompact ? 12 : 14,
+                      ),
+              ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class OtherItems extends ConsumerWidget {
+  final String title;
+  final IconData? icon;
+  final Color color;
+  final VoidCallback? onTap;
+  final TextStyle? style;
+  final bool isCompact;
+
+  const OtherItems({
+    super.key,
+    required this.title,
+    required this.icon,
+    required this.color,
+    this.onTap,
+    this.style,
+    this.isCompact = false,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    var width = SizeConfig.blockSizeHorizontal;
+    // print('SizeConfig.blockSizeHorizontal: ${SizeConfig.blockSizeHorizontal}');
+    // print(width);
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        decoration: BoxDecoration(
+          color: color,
+          borderRadius: const BorderRadius.all(
+            Radius.circular(10),
+          ),
+        ),
+        margin: const EdgeInsets.symmetric(horizontal: 20),
+        padding: EdgeInsets.all(isCompact ? 6 : 10),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Expanded(
+              flex: 3,
+              child: FaIcon(
+                icon,
+                color: AppColors.getIconsColor(context),
+                size: isCompact ? 16 : 20,
+              ),
+            ),
+            SizedBox(width: isCompact ? 5 : 20),
+            Expanded(
+              flex: 7,
+              child: SizedBox(
+                width: (isCompact || (width > 6 && width < 9)) ? 90 : 120,
+                child: Text(
+                  title,
+                  style: style ??
+                      AppTheme.buttonText(context).copyWith(
+                        fontSize: isCompact ? 14 : 16,
+                      ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            )
           ],
         ),
       ),

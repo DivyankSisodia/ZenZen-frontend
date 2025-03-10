@@ -18,7 +18,7 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-    // Initialize Hive
+  // Initialize Hive
   final hiveService = HiveService();
   await hiveService.init();
 
@@ -46,13 +46,14 @@ class _MyAppState extends ConsumerState<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
-        debugShowCheckedModeBanner: false,
-        useInheritedMediaQuery: true,
-        locale: DevicePreview.locale(context),
-        builder: DevicePreview.appBuilder,
-        routerConfig: RouteConfig.returnRouter(),
-        title: 'Flutter Demo',
-        theme: AppTheme.lightTheme(context),
-        darkTheme: AppTheme.darkTheme(context));
+      debugShowCheckedModeBanner: false,
+      useInheritedMediaQuery: true,
+      locale: DevicePreview.locale(context),
+      builder: DevicePreview.appBuilder,
+      routerConfig: RouteConfig.returnRouter(),
+      title: 'Flutter Demo',
+      theme: AppTheme.lightTheme(context),
+      // darkTheme: AppTheme.darkTheme(context),
+    );
   }
 }

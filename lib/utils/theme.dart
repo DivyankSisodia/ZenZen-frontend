@@ -24,37 +24,37 @@ class AppTheme {
           fontFamily: 'SpaceGrotesk',
           fontSize: 36,
           fontWeight: FontWeight.w900,
-          color: AppColors.white,
+          color: AppColors.black,
         ),
         bodyLarge: TextStyle(
           fontFamily: 'SpaceGrotesk',
           fontSize: 24,
           fontWeight: FontWeight.w400,
-          color: AppColors.white,
+          color: AppColors.primary,
         ),
         bodyMedium: TextStyle(
           fontFamily: 'SpaceGrotesk',
           fontSize: 18,
           fontWeight: FontWeight.w400,
-          color: AppColors.white,
+          color: AppColors.primary,
         ),
         bodySmall: TextStyle(
           fontFamily: 'SpaceGrotesk',
           fontSize: 15,
           fontWeight: FontWeight.w400,
-          color: AppColors.white,
+          color: AppColors.lightGrey,
         ),
         titleMedium: TextStyle(
           fontFamily: 'SpaceGrotesk',
           fontSize: 16,
           fontWeight: FontWeight.w400,
-          color: AppColors.white,
+          color: AppColors.primary.withOpacity(0.7),
         ),
         titleLarge: TextStyle(
           fontFamily: 'SpaceGrotesk',
           fontSize: 20,
           fontWeight: FontWeight.w700,
-          color: AppColors.black,
+          color: AppColors.black.withOpacity(0.8),
         ),
       ),
     );
@@ -213,14 +213,140 @@ class AppTheme {
         fontFamily: 'SpaceGrotesk',
         fontSize: 15,
         fontWeight: FontWeight.w400,
-        color: AppColors.white,
+        color: AppColors.primary,
       );
     } else {
       return TextStyle(
         fontFamily: 'SpaceGrotesk',
         fontSize: 15,
         fontWeight: FontWeight.w400,
+        color: AppColors.lightGrey,
+      );
+    }
+  }
+
+  static TextStyle textMedium(BuildContext context) {
+    if (Theme.of(context).brightness == Brightness.light) {
+      return TextStyle(
+        fontFamily: 'SpaceGrotesk',
+        fontSize: 18,
+        fontWeight: FontWeight.w700,
         color: AppColors.primary,
+      );
+    } else {
+      return TextStyle(
+        fontFamily: 'SpaceGrotesk',
+        fontSize: 18,
+        fontWeight: FontWeight.w700,
+        color: AppColors.lightGrey,
+      );
+    }
+  }
+
+  static TextStyle textSmall(BuildContext context) {
+    if (Theme.of(context).brightness == Brightness.light) {
+      return TextStyle(
+        fontFamily: 'SpaceGrotesk',
+        fontSize: 15,
+        fontWeight: FontWeight.w700,
+        color: AppColors.primary,
+      );
+    } else {
+      return TextStyle(
+        fontFamily: 'SpaceGrotesk',
+        fontSize: 15,
+        fontWeight: FontWeight.w700,
+        color: AppColors.lightGrey,
+      );
+    }
+  }
+
+  static TextStyle textLarge(BuildContext context) {
+    if (Theme.of(context).brightness == Brightness.light) {
+      return TextStyle(
+        fontFamily: 'SpaceGrotesk',
+        fontSize: 20,
+        fontWeight: FontWeight.w700,
+        color: AppColors.primary,
+      );
+    } else {
+      return TextStyle(
+        fontFamily: 'SpaceGrotesk',
+        fontSize: 20,
+        fontWeight: FontWeight.w700,
+        color: AppColors.lightGrey,
+      );
+    }
+  }
+
+  static TextStyle buttonText(BuildContext context) {
+    if (Theme.of(context).brightness == Brightness.light) {
+      return TextStyle(
+        fontFamily: 'SpaceGrotesk',
+        fontSize: 20,
+        fontWeight: FontWeight.w700,
+        color: AppColors.surface,
+      );
+    } else {
+      return TextStyle(
+        fontFamily: 'SpaceGrotesk',
+        fontSize: 20,
+        fontWeight: FontWeight.w700,
+        color: AppColors.lightGrey,
+      );
+    }
+  }
+
+  static TextStyle textTitle(BuildContext context) {
+    if (Theme.of(context).brightness == Brightness.light) {
+      return TextStyle(
+        fontFamily: 'SpaceGrotesk',
+        fontSize: 16,
+        fontWeight: FontWeight.w700,
+        color: AppColors.primary,
+      );
+    } else {
+      return TextStyle(
+        fontFamily: 'SpaceGrotesk',
+        fontSize: 16,
+        fontWeight: FontWeight.w700,
+        color: AppColors.lightGrey,
+      );
+    }
+  }
+
+  static TextStyle textTitleLarge(BuildContext context) {
+    if (Theme.of(context).brightness == Brightness.light) {
+      return TextStyle(
+        fontFamily: 'SpaceGrotesk',
+        fontSize: 24,
+        fontWeight: FontWeight.w700,
+        color: AppColors.black.withOpacity(0.8),
+      );
+    } else {
+      return TextStyle(
+        fontFamily: 'SpaceGrotesk',
+        fontSize: 24,
+        fontWeight: FontWeight.w700,
+        color: AppColors.surface,
+      );
+    }
+  }
+
+  static TextStyle buttonTheme(BuildContext context) {
+    if (Theme.of(context).brightness == Brightness.light) {
+      return TextStyle(
+        fontFamily: 'SpaceGrotesk',
+        fontSize: 20,
+        fontWeight: FontWeight.w700,
+        color: AppColors.black.withOpacity(0.8),
+      );
+    } else {
+      return TextStyle(
+        fontFamily: 'SpaceGrotesk',
+        fontSize: 20,
+        fontWeight: FontWeight.w700,
+        color: AppColors.surface,
       );
     }
   }
