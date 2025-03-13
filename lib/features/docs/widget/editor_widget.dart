@@ -5,6 +5,7 @@ import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'dart:convert';
 import 'package:flutter_quill/flutter_quill.dart' hide Text;
 import 'package:flutter_quill_extensions/flutter_quill_extensions.dart';
+import 'package:zenzen/features/docs/repository/socket_repo.dart';
 
 class DocumentEditor extends StatefulWidget {
   final String? initialContent;
@@ -27,6 +28,8 @@ class _DocumentEditorState extends State<DocumentEditor> {
   final FocusNode _focusNode = FocusNode();
   bool _isEditing = true;
   Timer? _autoSaveTimer;
+
+  SocketRepository socketRepository = SocketRepository();
 
   @override
   void initState() {
