@@ -1,13 +1,18 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:gap/gap.dart';
+import 'package:go_router/go_router.dart';
 import 'package:zenzen/config/app_colors.dart';
 import 'package:zenzen/config/size_config.dart';
 import 'package:zenzen/utils/theme.dart';
 
+import '../../../config/constants.dart';
 import '../../../config/responsive.dart';
+import '../widget/feature_card.dart';
 import '../widget/header_action_item.dart';
 import '../widget/side_drawer_menu.dart';
 
@@ -130,30 +135,46 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
                   const Gap(20),
 
-                  // Content area - FIXED: Expanded ListView
-                  // In your HomeScreen class, modify the Wrap section:
                   Expanded(
                     flex: Responsive.isMobile(context) ? 4 : 2,
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16.0),
                       child: LayoutBuilder(builder: (context, constraints) {
-                        // Calculate responsive card width based on available space
                         double cardWidth = Responsive.isMobile(context)
-                            ? constraints.maxWidth / 2 -
-                                15 // 2 cards per row on mobile with gap
-                            : constraints.maxWidth / 4 -
-                                20; // 4 cards per row otherwise
+                            ? constraints.maxWidth / 2 - 15
+                            : constraints.maxWidth / 4 - 20;
 
                         return Wrap(
                           alignment: WrapAlignment.start,
-                          spacing: 20, // horizontal space between items
-                          runSpacing: 20, // vertical space between lines
+                          spacing: 20,
+                          runSpacing: 20,
                           children: List.generate(4, (index) {
                             return HomeFeatureCard(
+                              onTap: () {
+                                switch (index) {
+                                  case 0:
+                                    // Navigator.pushNamed(context, AppRouter.newDocument);
+                                    context.pushNamed(RoutesName.doc,
+                                        extra: '123');
+                                    break;
+                                  case 1:
+                                    // Navigator.pushNamed(context, AppRouter.newProject);
+                                    break;
+                                  case 2:
+                                    // Navigator.pushNamed(context, AppRouter.addMembers);
+                                    break;
+                                  case 3:
+                                    // Navigator.pushNamed(context, AppRouter.transferFiles);
+                                    break;
+                                  default:
+                                    // Navigator.pushNamed(context, AppRouter.newDocument);
+                                    break;
+                                }
+                              },
                               icon: iconList[index],
                               text: featureList[index],
                               isMobile: Responsive.isMobile(context),
-                              width: cardWidth, // Pass calculated width
+                              width: cardWidth,
                             );
                           }),
                         );
@@ -189,6 +210,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             ),
                           ),
                           const Gap(10),
+                          Expanded(
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16.0,
+                                vertical: 10,
+                              ),
+                              child: AnimatedTab(),
+                            ),
+                          ),
+                          const Gap(20),
+                          // Container(
+                          //   height: 500,
+                          // ),
+                          // Container(
+                          //   height: 500,
+                          // ),
                         ],
                       ),
                     ),
@@ -203,80 +240,124 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 }
 
-class HomeFeatureCard extends StatefulWidget {
-  final String text;
-  final IconData icon;
-  final Function? onTap;
-  final bool isMobile;
-  final double? width;
-
-  const HomeFeatureCard({
-    super.key,
-    this.text = "Add a new task",
-    this.icon = FontAwesomeIcons.plus,
-    this.onTap,
-    this.isMobile = false,
-    this.width,
-  });
+class AnimatedTab extends ConsumerStatefulWidget {
+  const AnimatedTab({super.key});
 
   @override
-  State<HomeFeatureCard> createState() => _HomeFeatureCardState();
+  ConsumerState<ConsumerStatefulWidget> createState() => _AnimatedTabState();
 }
 
-class _HomeFeatureCardState extends State<HomeFeatureCard> {
-  bool _isHovered = false;
+class _AnimatedTabState extends ConsumerState<AnimatedTab>
+    with TickerProviderStateMixin {
+  int _selectedIndex = 0;
+  final List<String> _tabLabels = [
+    'Recent',
+    'Favorites',
+    'Shared',
+    'External',
+    'Archived'
+  ];
+
+  late AnimationController _animationController;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this, // TickerProviderStateMixin supports multiple tickers
+    );
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  void _onTabSelected(int index) {
+    if (_selectedIndex != index) {
+      _animationController.reset();
+      _animationController.forward();
+
+      setState(() {
+        _selectedIndex = index;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return MouseRegion(
-      onEnter: (event) => setState(() => _isHovered = true),
-      onExit: (event) => setState(() => _isHovered = false),
-      child: InkWell(
-        onTap: () {},
-        splashColor: AppColors.black.withOpacity(0.9),
-        borderRadius: BorderRadius.circular(20),
-        child: Container(
-          height: widget.isMobile ? 120 : 160,
-          width: widget.width,
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: Responsive.isMobile(context)
+              ? SizeConfig.screenWidth
+              : Responsive.isTablet(context)
+                  ? SizeConfig.screenWidth / 1.5
+                  : SizeConfig.screenWidth / 2.5,
+          height: 40,
           decoration: BoxDecoration(
-            color: AppColors.white,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: AppColors.primary.withOpacity(0.1),
+            color: AppColors.surface,
+            borderRadius: const BorderRadius.all(
+              Radius.circular(8),
             ),
-            boxShadow: _isHovered
-                ? [
-                    BoxShadow(
-                      color: AppColors.black.withOpacity(0.2),
-                      blurRadius: 5,
-                      spreadRadius: 2,
-                    ),
-                  ]
-                : [
-                    BoxShadow(
-                      color: AppColors.black.withOpacity(0.1),
-                      blurRadius: 2,
-                      spreadRadius: 1,
-                    ),
-                  ],
           ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 30.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                FaIcon(
-                  widget.icon,
-                  color: AppColors.black.withOpacity(0.6),
-                  size: widget.isMobile ? 25 : 30,
-                ),
-                Gap(widget.isMobile ? 20 : 10),
-                AutoSizeText(
-                  widget.text,
-                  style: AppTheme.textFieldBodyTheme(context),
-                )
-              ],
+          child: Row(
+            children: List.generate(
+              _tabLabels.length,
+              (index) => _buildTabItem(index),
+            ),
+          ),
+        ),
+        const Gap(12),
+        Expanded(
+          child: Container(
+            decoration: BoxDecoration(
+                border: Border.all(
+              color: AppColors.primary.withOpacity(0.3),
+              width: 2,
+            )),
+            padding: const EdgeInsets.all(16.0),
+            child: Center(
+              child: Text('Content for ${_tabLabels[_selectedIndex]}'),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTabItem(int index) {
+    final isSelected = _selectedIndex == index;
+
+    return Expanded(
+      child: GestureDetector(
+        onTap: () => _onTabSelected(index),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeInOut,
+          decoration: BoxDecoration(
+            color: isSelected ? AppColors.white : AppColors.surface,
+            borderRadius: const BorderRadius.all(Radius.circular(8)),
+            border: isSelected
+                ? Border.all(
+                    color: AppColors.primary.withOpacity(0.3), width: 2)
+                : null,
+          ),
+          child: Center(
+            child: AnimatedDefaultTextStyle(
+              duration: const Duration(milliseconds: 250),
+              style: isSelected
+                  ? AppTheme.textSmall(context).copyWith(
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.bold,
+                    )
+                  : AppTheme.textSmall(context),
+              child: Text(_tabLabels[index]),
             ),
           ),
         ),

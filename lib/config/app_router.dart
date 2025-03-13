@@ -6,6 +6,7 @@ import 'package:zenzen/features/auth/login/screen/register_screen.dart';
 import 'package:zenzen/features/auth/login/screen/signup_screen.dart';
 import 'package:zenzen/features/auth/splash/screen/intro_screen.dart';
 import 'package:zenzen/features/auth/splash/screen/splash_screen.dart';
+import 'package:zenzen/features/docs/screen/document_screen.dart';
 import 'package:zenzen/features/home/screen/home_screen.dart';
 
 import '../features/auth/login/screen/login_screen.dart';
@@ -81,6 +82,18 @@ class RouteConfig {
             );
           },
         ),
+        GoRoute(
+          path: '/document',
+          name: RoutesName.doc,
+          pageBuilder: (context, state) {
+            final id = state.extra as String;
+            return customTransitionPage(
+              key: state.pageKey,
+              child: NewDocumentScreen(id: id),
+              transitionType: PageTransitionType.fade,
+            );
+          },
+        )
       ],
     );
   }
