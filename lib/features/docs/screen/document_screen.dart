@@ -9,6 +9,8 @@ import 'package:zenzen/config/size_config.dart';
 import 'package:zenzen/features/docs/widget/editor_widget.dart';
 import 'package:zenzen/utils/theme.dart';
 
+import '../view-model/doc_viewmodel.dart';
+
 class NewDocumentScreen extends ConsumerStatefulWidget {
   final String id;
   const NewDocumentScreen({super.key, required this.id});
@@ -22,14 +24,18 @@ class _NewDocumentScreenState extends ConsumerState<NewDocumentScreen> {
   final TextEditingController _titleController =
       TextEditingController(text: 'Untitled Document');
   bool _isEmpty = false;
+  String _documentContent = '';
 
   @override
   void initState() {
     super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(docViewmodelProvider.notifier).getDocumentInfo(widget.id);
+    });
+
     _titleController.addListener(() {
-      setState(() {
-        _isEmpty = _titleController.text.isEmpty;
-      });
+      setState(() => _isEmpty = _titleController.text.isEmpty);
     });
   }
 
@@ -41,6 +47,8 @@ class _NewDocumentScreenState extends ConsumerState<NewDocumentScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final docState = ref.watch(docViewmodelProvider);
+
     SizeConfig().init(context);
 
     // Calculate content width based on device type
@@ -68,7 +76,7 @@ class _NewDocumentScreenState extends ConsumerState<NewDocumentScreen> {
                   width: SizeConfig.screenWidth,
                   color: AppColors.lightGrey,
                   child: Center(
-                    child: Container(
+                    child: SizedBox(
                       width: contentWidth,
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -141,18 +149,31 @@ class _NewDocumentScreenState extends ConsumerState<NewDocumentScreen> {
                 ),
               ),
               Expanded(
-                child: Center(
-                  child: SizedBox(
-                    width: contentWidth,
-                    child: DocumentEditor(
-                      documentId: '123',
-                      onSave: (value) {},
-                      initialContent: '',
-                      key: Key('123'),
-                    ),
-                  ),
+                child: docState.when(
+                  loading: () =>
+                      const Center(child: CircularProgressIndicator()),
+                  error: (error, _) => Text('Error: ${error.toString()}'),
+                  data: (documents) {
+                    if (documents.isNotEmpty) {
+                      final doc = documents.first;
+                      if (doc.document != null && doc.document.isNotEmpty) {
+                        _documentContent =
+                            doc.document[0] as String; // Ensure it's not null
+                      } else {
+                        _documentContent =
+                            ''; // Default content if document is empty
+                      }
+                      // Update content only once
+                      return DocumentEditor(
+                        documentId: widget.id,
+                        initialContent: _documentContent,
+                        key: ValueKey(_documentContent),
+                      );
+                    }
+                    return const Center(child: Text('No document found'));
+                  },
                 ),
-              )
+              ),
             ],
           ),
         ),

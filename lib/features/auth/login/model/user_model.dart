@@ -38,7 +38,7 @@ class UserModel {
   );
   print('Created UserModel: ${userModel.toJson()}');
   return userModel;
-}
+  }
 
   Map<String, dynamic> toJson() {
     print('toJson: $email');

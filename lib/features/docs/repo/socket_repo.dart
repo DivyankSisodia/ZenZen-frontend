@@ -33,9 +33,9 @@ class SocketRepository {
   }
 
   // Listen for document changes from other users
-  void onDocumentChange(Function(String, String) callback) {
+  void onDocumentChange(Function(Map<String, dynamic>) func) {
     _socketClient.on('document-change', (data) {
-      callback(data['content'], data['timestamp']);
+      func(data);
     });
   }
 

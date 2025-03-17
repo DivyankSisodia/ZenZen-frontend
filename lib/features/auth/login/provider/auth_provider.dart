@@ -3,17 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:zenzen/config/constants.dart';
 import 'package:zenzen/data/api/auth_api.dart';
 
+import '../../../../utils/providers/dio_provider.dart';
 import '../repo/auth_repository.dart';
 import '../viewmodel/auth_viewmodel.dart';
-
-// Dio Provider
-final dioProvider = Provider<Dio>(
-  (ref) => Dio(
-    BaseOptions(
-      baseUrl: ApiRoutes.baseUrl,
-    ),
-  ),
-);
 
 // Data Source Provider
 final authRemoteDataSourceProvider = Provider<AuthApiService>(

@@ -83,17 +83,17 @@ class RouteConfig {
           },
         ),
         GoRoute(
-          path: '/document',
-          name: RoutesName.doc,
+          path: '/docs/:id',
           pageBuilder: (context, state) {
-            final id = state.extra as String;
+            final id = state.pathParameters['id'] as String;
             return customTransitionPage(
               key: state.pageKey,
               child: NewDocumentScreen(id: id),
               transitionType: PageTransitionType.fade,
             );
           },
-        )
+          name: RoutesName.doc,
+        ),
       ],
     );
   }

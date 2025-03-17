@@ -40,8 +40,8 @@ dependencies:
   firebase_core: ^3.12.1
   flutter:
     sdk: flutter
-  flutter_quill: 
-  flutter_quill_extensions: 
+  flutter_quill: null
+  flutter_quill_extensions: null
   flutter_riverpod: ^2.6.1
   flutter_secure_storage: ^9.2.4
   font_awesome_flutter: ^10.8.0
@@ -53,13 +53,16 @@ dependencies:
   google_sign_in: ^6.2.2
   hive_ce_flutter: null
   internet_connection_checker_plus: ^2.7.0
+  intl: 
   json_annotation: ^4.9.0
+  logger: 
   open_file: ^3.5.10
   page_transition: ^2.2.1
   path_provider: ^2.1.5
   pdf: ^3.11.3
   permission_handler: ^11.4.0
   pinput: ^5.0.1
+  pretty_dio_logger: ^1.4.0
   shared_preferences: ^2.5.2
   smooth_page_indicator: ^1.2.1
   socket_io_client: ^3.0.2

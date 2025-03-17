@@ -1,5 +1,7 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:fpdart/fpdart.dart';
+import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:zenzen/config/constants.dart';
 import 'package:zenzen/data/failure.dart';
@@ -16,51 +18,23 @@ class AuthApiService {
   AuthApiService(this.baseUrl, this.dio, this.tokenManager) {
     // Add interceptor for authentication
     dio.interceptors.add(
-      InterceptorsWrapper(
-        onRequest: (options, handler) async {
-          final token = await tokenManager.getAccessToken();
-          if (token != null) {
-            options.headers['Authorization'] = 'Bearer $token';
+      PrettyDioLogger(
+        requestHeader: true,
+        requestBody: true,
+        responseBody: true,
+        responseHeader: false,
+        error: true,
+        compact: true,
+        maxWidth: 90,
+        enabled: kDebugMode,
+        request: true,
+        filter: (options, args) {
+          // don't print requests with uris containing '/posts'
+          if (options.path.contains('/posts')) {
+            return false;
           }
-          return handler.next(options);
-        },
-        onError: (DioException error, handler) async {
-          // Handle 401 errors (token expired)
-          if (error.response?.statusCode == 401) {
-            try {
-              final refreshToken = await tokenManager.getRefreshToken();
-              if (refreshToken != null) {
-                // Refresh token logic here
-                final refreshResponse = await dio.post(
-                  '$baseUrl${ApiRoutes.getAccessToken}',
-                  data: {'refreshToken': refreshToken},
-                );
-
-                if (refreshResponse.statusCode == 200) {
-                  final newAccessToken =
-                      refreshResponse.data['tokens']['access'];
-                  final newRefreshToken =
-                      refreshResponse.data['tokens']['refresh'];
-
-                  await tokenManager.saveTokens(
-                    accessToken: newAccessToken,
-                    refreshToken: newRefreshToken,
-                  );
-
-                  // Retry original request
-                  final opts = error.requestOptions;
-                  opts.headers['Authorization'] = 'Bearer $newAccessToken';
-
-                  final retryResponse = await dio.fetch(opts);
-                  return handler.resolve(retryResponse);
-                }
-              }
-            } catch (e) {
-              // Fallback to default error handling
-              print('Error refreshing token: $e');
-            }
-          }
-          return handler.next(error);
+          // don't print responses with unit8 list data
+          return !args.isResponse || !args.hasUint8ListData;
         },
       ),
     );

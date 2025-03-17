@@ -1,17 +1,22 @@
 // ignore_for_file: deprecated_member_use
 
-import 'package:auto_size_text/auto_size_text.dart';
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 import 'package:zenzen/config/app_colors.dart';
 import 'package:zenzen/config/size_config.dart';
 import 'package:zenzen/utils/theme.dart';
 
 import '../../../config/constants.dart';
 import '../../../config/responsive.dart';
+import '../../../data/failure.dart';
+import '../../docs/model/document_model.dart';
+import '../../docs/view-model/doc_viewmodel.dart';
 import '../widget/feature_card.dart';
 import '../widget/header_action_item.dart';
 import '../widget/side_drawer_menu.dart';
@@ -39,6 +44,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     FontAwesomeIcons.userFriends,
     FontAwesomeIcons.fileExport,
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(docViewmodelProvider.notifier).getAllDocuments();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -315,19 +328,146 @@ class _AnimatedTabState extends ConsumerState<AnimatedTab>
         ),
         const Gap(12),
         Expanded(
-          child: Container(
-            decoration: BoxDecoration(
-                border: Border.all(
-              color: AppColors.primary.withOpacity(0.3),
-              width: 2,
-            )),
-            padding: const EdgeInsets.all(16.0),
-            child: Center(
-              child: Text('Content for ${_tabLabels[_selectedIndex]}'),
+          child: Consumer(
+            builder: (context, ref, child) {
+              final docState = ref.watch(docViewmodelProvider);
+          
+              // Use a separate loading state to prevent premature updates
+              return docState.when(
+                loading: () =>
+                    const Center(child: CircularProgressIndicator.adaptive()),
+                error: (error, stack) => Center(
+                  child: Text(
+                    (error is ApiFailure) ? error.error : 'An error occurred',
+                    style: TextStyle(color: Colors.red),
+                  ),
+                ),
+                data: (documents) => _buildDocumentGrid(documents),
+              );
+            },
+          ),
+        )
+      ],
+    );
+  }
+
+  Widget _buildDocumentGrid(List<DocumentModel> documents) {
+    print('Documents: $documents');
+    if (documents.isEmpty) {
+      return const Center(child: Text('No documents found'));
+    }
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        print('Constraints: $constraints');
+        // Calculate the number of columns based on available width
+        final double itemWidth = 220; // Target width for each item
+        int crossAxisCount;
+
+        if (Responsive.isDesktop(context)) {
+          crossAxisCount = max(2, constraints.maxWidth ~/ itemWidth);
+        } else if (Responsive.isTablet(context)) {
+          crossAxisCount = max(2, constraints.maxWidth ~/ itemWidth);
+        } else {
+          crossAxisCount = max(1, constraints.maxWidth ~/ itemWidth);
+        }
+
+        return GridView.builder(
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: crossAxisCount,
+              childAspectRatio: 1.2,
+              crossAxisSpacing: 16,
+              mainAxisSpacing: 16,
             ),
+            itemCount: documents.length,
+            itemBuilder: (context, index) {
+              final document = documents[index];
+              return _buildDocumentCard(context, document);
+            },);
+      },
+    );
+  }
+
+  Widget _buildDocumentCard(BuildContext context, DocumentModel document) {
+    final formattedDate = DateFormat('MMM d, yyyy').format(document.createdAt);
+
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(
+          color: AppColors.primary.withOpacity(0.2),
+          width: 1,
+        ),
+      ),
+      child: InkWell(
+        onTap: () {
+          // Handle document selection/opening
+          if (document.id != null) {
+            context
+                .goNamed(RoutesName.doc, pathParameters: {'id': document.id!});
+          } else {
+            // Handle the case where document.id is null
+          }
+        },
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(Icons.description, color: AppColors.primary),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      document.title,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+              const Spacer(),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      'Created: $formattedDate',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    '${document.users.length} users',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                  document.isPrivate
+                      ? Icon(Icons.lock, size: 16, color: Colors.grey[600])
+                      : Icon(Icons.public, size: 16, color: Colors.grey[600]),
+                ],
+              ),
+            ],
           ),
         ),
-      ],
+      ),
     );
   }
 

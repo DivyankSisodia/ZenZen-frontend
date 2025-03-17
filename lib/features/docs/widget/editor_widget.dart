@@ -1,3 +1,4 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -5,25 +6,25 @@ import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'dart:convert';
 import 'package:flutter_quill/flutter_quill.dart' hide Text;
 import 'package:flutter_quill_extensions/flutter_quill_extensions.dart';
-import 'package:zenzen/features/docs/repository/socket_repo.dart';
+import 'package:zenzen/features/docs/repo/socket_repo.dart';
 
-class DocumentEditor extends StatefulWidget {
+import '../model/document_model.dart';
+
+class DocumentEditor extends ConsumerStatefulWidget {
+  final String? documentId;
   final String? initialContent;
-  final String documentId;
-  final Function(String) onSave;
 
   const DocumentEditor({
     super.key,
     this.initialContent,
-    required this.documentId,
-    required this.onSave,
+    this.documentId,
   });
 
   @override
-  State<DocumentEditor> createState() => _DocumentEditorState();
+  ConsumerState<DocumentEditor> createState() => _DocumentEditorState();
 }
 
-class _DocumentEditorState extends State<DocumentEditor> {
+class _DocumentEditorState extends ConsumerState<DocumentEditor> {
   late quill.QuillController _controller;
   final FocusNode _focusNode = FocusNode();
   bool _isEditing = true;
@@ -35,21 +36,7 @@ class _DocumentEditorState extends State<DocumentEditor> {
   void initState() {
     super.initState();
 
-    // Initialize with content or empty document
-    if (widget.initialContent != null && widget.initialContent!.isNotEmpty) {
-      try {
-        final json = jsonDecode(widget.initialContent!);
-        _controller = quill.QuillController(
-          document: quill.Document.fromJson(json),
-          selection: const TextSelection.collapsed(offset: 0),
-        );
-      } catch (e) {
-        // Fallback to empty document if parsing fails
-        _controller = quill.QuillController.basic();
-      }
-    } else {
-      _controller = quill.QuillController.basic();
-    }
+     _initializeController();
 
     // Set up auto-save
     _setupAutoSave();
@@ -64,6 +51,30 @@ class _DocumentEditorState extends State<DocumentEditor> {
     });
   }
 
+  void _initializeController() {
+    // Reinitialize controller when content changes
+    try {
+      final content = widget.initialContent ?? '';
+      _controller = content.isNotEmpty
+          ? quill.QuillController(
+              document: quill.Document.fromJson(jsonDecode(content)),
+              selection: const TextSelection.collapsed(offset: 0),
+            )
+          : quill.QuillController.basic();
+    } catch (e) {
+      _controller = quill.QuillController.basic();
+    }
+  }
+
+  @override
+  void didUpdateWidget(DocumentEditor oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Reinitialize controller if content changes
+    if (oldWidget.initialContent != widget.initialContent) {
+      _initializeController();
+    }
+  }
+
   void _setupAutoSave() {
     _autoSaveTimer = Timer.periodic(const Duration(seconds: 30), (_) {
       if (_isEditing) {
@@ -74,7 +85,9 @@ class _DocumentEditorState extends State<DocumentEditor> {
 
   void _saveDocument() {
     final json = jsonEncode(_controller.document.toDelta().toJson());
-    widget.onSave(json);
+    // widget.onSave(json);
+    // print json to console
+    print(json);
   }
 
   final FocusNode _editorFocusNode = FocusNode();
@@ -238,10 +251,10 @@ class DocumentBrowser extends StatelessWidget {
   final Function(String) onDocumentOpen;
 
   const DocumentBrowser({
-    Key? key,
+    super.key,
     required this.documents,
     required this.onDocumentOpen,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -251,8 +264,8 @@ class DocumentBrowser extends StatelessWidget {
         final doc = documents[index];
         return ListTile(
           title: Text(doc.title),
-          subtitle: Text('Last edited: ${doc.lastEdited}'),
-          onTap: () => onDocumentOpen(doc.id),
+          subtitle: Text('Last edited: ${doc.createdAt}'),
+          onTap: () => onDocumentOpen(doc.id ?? ""),
           trailing: const Icon(Icons.chevron_right),
         );
       },
@@ -261,16 +274,16 @@ class DocumentBrowser extends StatelessWidget {
 }
 
 // Document model for your app
-class DocumentModel {
-  final String id;
-  final String title;
-  final String lastEdited;
-  final String content;
+// class DocumentModel {
+//   final String id;
+//   final String title;
+//   final String lastEdited;
+//   final String content;
 
-  DocumentModel({
-    required this.id,
-    required this.title,
-    required this.lastEdited,
-    required this.content,
-  });
-}
+//   DocumentModel({
+//     required this.id,
+//     required this.title,
+//     required this.lastEdited,
+//     required this.content,
+//   });
+// }
