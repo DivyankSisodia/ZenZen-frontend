@@ -13,70 +13,46 @@ import '../../../data/local/hive_models/local_user_model.dart';
 import '../model/document_model.dart';
 
 class DocumentEditor extends ConsumerStatefulWidget {
+  final SocketRepository repository;
   final User? user;
   final String? documentId;
   final String? initialContent;
- 
+
   const DocumentEditor({
     super.key,
     this.user,
     this.initialContent,
     this.documentId,
+    required this.repository,
   });
- 
+
   @override
   ConsumerState<DocumentEditor> createState() => _DocumentEditorState();
 }
- 
+
 class _DocumentEditorState extends ConsumerState<DocumentEditor> {
   late quill.QuillController _controller;
   final FocusNode _focusNode = FocusNode();
   bool _isEditing = true;
   Timer? _autoSaveTimer;
- 
-  SocketRepository socketRepository = SocketRepository();
- 
- 
+  StreamSubscription? _documentChangeSubscription;
+
   @override
   void initState() {
     super.initState();
-    // socketRepository.joinDocument({
-    //   'documentId': widget.documentId,
-    //   'userId': widget.user!.id,
-    // });
- 
+
+    // Initialize controller
     _initializeController();
- 
-    // socket
-    // socketRepository.onDocumentChange((data) {
-    //   _controller.compose(
-    //     Delta.fromJson(data['delta']),
-    //     _controller.selection,
-    //     quill.ChangeSource.remote,
-    //   );
-    // });
- 
+
     // Set up auto-save
     _setupAutoSave();
- 
-    // Listen for changes
-    _controller.document.changes.listen((event) {
-      if (_isEditing) {
-        // Reset timer on each change
-        _autoSaveTimer?.cancel();
-        _autoSaveTimer = Timer(const Duration(seconds: 3), _saveDocument);
-      }
-      // if (event.source == ChangeSource.local) {
-      //   socketRepository.sendDocumentChanges({
-      //     'delta': _controller.document.toDelta().toJson(),
-      //     'documentId': widget.documentId,
-      //   });
-      // }
-    });
   }
- 
+
   void _initializeController() {
-    // Reinitialize controller when content changes
+    // Cancel existing subscription if it exists
+    _documentChangeSubscription?.cancel();
+
+    // Initialize controller
     try {
       final content = widget.initialContent ?? '';
       _controller = content.isNotEmpty
@@ -88,17 +64,41 @@ class _DocumentEditorState extends ConsumerState<DocumentEditor> {
     } catch (e) {
       _controller = quill.QuillController.basic();
     }
+
+    // Setup socket listener
+    widget.repository.onDocumentChange((data) {
+      _controller.compose(
+        Delta.fromJson(data['delta']),
+        _controller.selection,
+        quill.ChangeSource.remote,
+      );
+    });
+
+    // Listen for document changes
+    _documentChangeSubscription = _controller.document.changes.listen((event) {
+      if (event.source == quill.ChangeSource.local) {
+        widget.repository.sendDocumentChanges({
+          'delta': event.change.toJson(),
+          'documentId': widget.documentId,
+        });
+      }
+      if (_isEditing) {
+        _autoSaveTimer?.cancel();
+        _autoSaveTimer = Timer(const Duration(seconds: 10), _saveDocument);
+      }
+    });
   }
- 
+
   @override
   void didUpdateWidget(DocumentEditor oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // Reinitialize controller if content changes
     if (oldWidget.initialContent != widget.initialContent) {
+      // Dispose old controller before reinitializing
+      _controller.dispose();
       _initializeController();
     }
   }
- 
+
   void _setupAutoSave() {
     _autoSaveTimer = Timer.periodic(const Duration(seconds: 30), (_) {
       if (_isEditing) {
@@ -106,33 +106,36 @@ class _DocumentEditorState extends ConsumerState<DocumentEditor> {
       }
     });
   }
- 
+
   void _saveDocument() {
     final json = jsonEncode(_controller.document.toDelta().toJson());
-    // widget.onSave(json);
-    // print json to console
-    // socketRepository.autoSave({
-    //   'documentId': widget.documentId,
-    //   'delta': json,
-    // });
+    widget.repository.autoSave({
+      'documentId': widget.documentId,
+      'delta': json,
+    });
     print(json);
   }
- 
+
   final FocusNode _editorFocusNode = FocusNode();
   final ScrollController _editorScrollController = ScrollController();
- 
+
   @override
   void dispose() {
+    // Cancel document changes subscription
+    _documentChangeSubscription?.cancel();
+
+    // Dispose controller
     _controller.dispose();
+
+    // Dispose other resources
     _focusNode.dispose();
     _autoSaveTimer?.cancel();
     _editorScrollController.dispose();
     _editorFocusNode.dispose();
-    // socketRepository.leaveDocument({
-    //   'documentId': widget.documentId,
-    //   'userId': widget.user!.id,
-    // });
-    // socketRepository.disconnect();
+
+    // Remove socket listener
+    widget.repository.removeDocumentChangeListener();
+
     super.dispose();
   }
 

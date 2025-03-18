@@ -7,6 +7,7 @@ import 'package:zenzen/config/app_images.dart';
 import 'package:zenzen/config/responsive.dart';
 import 'package:zenzen/config/size_config.dart';
 import 'package:zenzen/data/local/hive_models/local_user_model.dart';
+import 'package:zenzen/features/docs/repo/socket_repo.dart';
 import 'package:zenzen/features/docs/widget/editor_widget.dart';
 import 'package:zenzen/utils/theme.dart';
 
@@ -29,6 +30,7 @@ class _NewDocumentScreenState extends ConsumerState<NewDocumentScreen> {
   String _documentContent = '';
   User? currentuser;
 
+  SocketRepository repository = SocketRepository();
 
   @override
   void initState() {
@@ -53,6 +55,12 @@ class _NewDocumentScreenState extends ConsumerState<NewDocumentScreen> {
         });
       }
     });
+
+    // join document room
+    repository.joinDocument({
+      'documentId': widget.id,
+      'userId': currentuser!.id,
+    });
   }
 
   void getCurrentUser() async {
@@ -69,6 +77,11 @@ class _NewDocumentScreenState extends ConsumerState<NewDocumentScreen> {
   void dispose() {
     super.dispose();
     _titleController.dispose();
+    repository.leaveDocument({
+      'documentId': widget.id,
+      'userId': currentuser!.id,
+    });
+    repository.disconnect();
   }
 
   @override
@@ -190,11 +203,10 @@ class _NewDocumentScreenState extends ConsumerState<NewDocumentScreen> {
                       }
                       // Update content only once
                       return DocumentEditor(
-                        user:
-                            currentuser, // Handle this being null in DocumentEditor
-                        documentId: widget.id, // Ensure this is never null
-                        initialContent:
-                            _documentContent.isNotEmpty ? _documentContent : '',
+                        repository: repository,
+                        user: currentuser, 
+                        documentId: widget.id, 
+                        initialContent: _documentContent.isNotEmpty ? _documentContent : '',
                         key: ValueKey(_documentContent),
                       );
                     }
