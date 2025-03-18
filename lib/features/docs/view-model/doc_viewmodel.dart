@@ -1,7 +1,10 @@
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:zenzen/features/docs/model/document_model.dart';
 import 'package:zenzen/features/docs/repo/document_repo.dart';
 
+import '../../../config/constants.dart';
 import '../provider/doc_provider.dart';
 
 class DocViewmodel extends StateNotifier<AsyncValue<List<DocumentModel>>> {
@@ -10,24 +13,22 @@ class DocViewmodel extends StateNotifier<AsyncValue<List<DocumentModel>>> {
 
   DocViewmodel(this.repository, this.ref) : super(const AsyncValue.loading());
 
-
   Future<void> getAllDocuments() async {
-  try {
-    if (!state.isLoading) {
-      state = const AsyncValue.loading();
-    }
-    
-    final result = await repository.getDocuments();
-    
-    result.fold(
-      (listOfDocs) => state = AsyncValue.data(listOfDocs),
-      (error) => state = AsyncValue.error(error, StackTrace.current),
-    );
-  } catch (e, stackTrace) {
-    state = AsyncValue.error(e, stackTrace);
-  }
-}
+    try {
+      if (!state.isLoading) {
+        state = const AsyncValue.loading();
+      }
 
+      final result = await repository.getDocuments();
+
+      result.fold(
+        (listOfDocs) => state = AsyncValue.data(listOfDocs),
+        (error) => state = AsyncValue.error(error, StackTrace.current),
+      );
+    } catch (e, stackTrace) {
+      state = AsyncValue.error(e, stackTrace);
+    }
+  }
 
   Future<void> getDocumentInfo(String id) async {
     try {
@@ -51,22 +52,43 @@ class DocViewmodel extends StateNotifier<AsyncValue<List<DocumentModel>>> {
     }
   }
 
-  Future<void> createDocument(String title, String projectId) async {
+  Future<void> createDocument(
+      String title, String projectId, BuildContext context) async {
     try {
+      // Set loading state
       state = const AsyncValue.loading();
+
+      // Call repository to create a new document
       final result = await repository.createDocument(title, projectId);
 
       result.fold(
         (docModel) async {
+          // Debug log to see what's in the document model
+          print('Document created: id=${docModel.id}, title=${docModel.title}');
+
+          // Update state with the newly created document
           state = AsyncValue.data([docModel]);
+
+          // Check if id is null before navigation
+          if (docModel.id == null) {
+            print('Warning: Document ID is null after creation');
+            return; // Don't navigate if ID is null
+          }
+
+          // Navigate to the document screen with the newly created document's ID and title
+          context.goNamed(
+            RoutesName.doc,
+            pathParameters: {'id': docModel.id!},
+            extra: docModel.title, // title is non-nullable in your model
+          );
         },
         (error) {
-          print('Login error: $error');
+          print('Error creating document: $error');
           state = AsyncValue.error(error, StackTrace.current);
         },
       );
     } catch (e, stackTrace) {
-      print('Unexpected error in login: $e');
+      print('Unexpected error in createDocument: $e');
       print('Stack trace: $stackTrace');
       state = AsyncValue.error(e, stackTrace);
     }

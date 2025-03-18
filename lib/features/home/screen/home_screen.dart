@@ -55,6 +55,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final docViewModel = ref.read(docViewmodelProvider.notifier);
     SizeConfig().init(context);
     return Scaffold(
       backgroundColor: AppColors.white,
@@ -167,8 +168,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 switch (index) {
                                   case 0:
                                     // Navigator.pushNamed(context, AppRouter.newDocument);
-                                    context.pushNamed(RoutesName.doc,
-                                        extra: '123');
+                                    docViewModel.createDocument('Untitled Document', '67be9a1f786d4002efcd7b84', context);
                                     break;
                                   case 1:
                                     // Navigator.pushNamed(context, AppRouter.newProject);

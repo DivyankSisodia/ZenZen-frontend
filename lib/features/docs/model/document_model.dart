@@ -28,24 +28,44 @@ class DocumentModel {
   });
 
   factory DocumentModel.fromJson(Map<String, dynamic> json) {
+    // Debug the incoming JSON
+    print('Parsing JSON: $json');
+
+    // Check for different ID field names
+    String? docId;
+    if (json.containsKey('_id')) {
+      docId = json['_id'];
+    } else if (json.containsKey('id')) {
+      docId = json['id'];
+    } else if (json.containsKey('documentId')) {
+      docId = json['documentId'];
+    }
+
+    print('Found document ID: $docId');
+
     return DocumentModel(
-      id: json['_id'],
-      title: json['title'],
-      document: json['document'],
-      users: List<String>.from(json['users']),
-      isPrivate: json['isPrivate'],
-      createdBy: json['createdBy'],
-      createdAt: DateTime.parse(json['createdAt']),
-      updatedAt: DateTime.parse(json['updatedAt']),
-      isDeleted: json['isDeleted'],
-      invitedUsers: List<String>.from(json['invitedUsers']),
-      sharedUsers: List<String>.from(json['sharedUsers']),
-      sharedUserCount: json['sharedUserCount'],
+      id: docId,
+      title: json['title'] ?? 'Untitled Document',
+      document: json['document'] ?? [],
+      users: List<String>.from(json['users'] ?? []),
+      isPrivate: json['isPrivate'] ?? false,
+      createdBy: json['createdBy'] ?? '',
+      createdAt: json['createdAt'] != null
+          ? DateTime.parse(json['createdAt'])
+          : DateTime.now(),
+      updatedAt: json['updatedAt'] != null
+          ? DateTime.parse(json['updatedAt'])
+          : DateTime.now(),
+      isDeleted: json['isDeleted'] ?? false,
+      invitedUsers: List<String>.from(json['invitedUsers'] ?? []),
+      sharedUsers: List<String>.from(json['sharedUsers'] ?? []),
+      sharedUserCount: json['sharedUserCount'] ?? 0,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
+      'id': id,
       'title': title,
       'document': document,
       'users': users,

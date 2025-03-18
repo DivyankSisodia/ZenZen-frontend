@@ -1,10 +1,8 @@
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
 import 'package:fpdart/fpdart.dart';
-import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import 'package:zenzen/data/failure.dart';
 import 'package:zenzen/data/local_data.dart';
-import 'package:logger/logger.dart'; // Add this import
+// Add this import
 
 import '../../config/constants.dart';
 import '../../features/docs/model/document_model.dart';
@@ -60,7 +58,23 @@ class DocApiService {
       );
 
       if (response.statusCode == 200) {
-        final document = DocumentModel.fromJson(response.data);
+        // Debug the response
+        print('API Response: ${response.data}');
+        
+        // Check if response.data contains 'data' field (common API pattern)
+        final responseData = response.data is Map && response.data.containsKey('data') 
+            ? response.data['data'] 
+            : response.data;
+            
+        final document = DocumentModel.fromJson(responseData);
+        
+        // Debug the parsed document
+        print('Parsed document: id=${document.id}, title=${document.title}');
+        
+        if (document.id == null) {
+          print('Warning: Document ID is null after parsing. Raw response: ${response.data}');
+        }
+        
         return Left(document);
       } else {
         return Right(ApiFailure(response.data['error']));
@@ -69,6 +83,7 @@ class DocApiService {
       return Right(ApiFailure.fromDioException(e));
     }
   }
+
 
   // get all documents
   // get all documents
