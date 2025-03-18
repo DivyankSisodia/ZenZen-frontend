@@ -26,6 +26,7 @@ class ProjectModel {
 
   Map<String,dynamic> toJson(){
     return {
+      'id': id,
       'title': title,
       'description': description,
       'addedUser': addedUser,
@@ -40,7 +41,7 @@ class ProjectModel {
 
   factory ProjectModel.fromJson(Map<String, dynamic> json){
     return ProjectModel(
-      id: json['id'],
+      id: json['_id'],
       title: json['title'],
       description: json['description'],
       addedUser: List<String>.from(json['addedUser']),

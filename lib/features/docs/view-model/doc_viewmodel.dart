@@ -93,6 +93,27 @@ class DocViewmodel extends StateNotifier<AsyncValue<List<DocumentModel>>> {
       state = AsyncValue.error(e, stackTrace);
     }
   }
+
+  // Add a user to a document
+  Future<void> shareDocToUsers(
+      String docId, List<String> users, String projectId) async {
+    try {
+      if (!state.isLoading) {
+        state = const AsyncValue.loading();
+      }
+
+      final result = await repository.addUserToDoc(docId, users, projectId);
+
+      result.fold(
+        (docModel) => state = AsyncValue.data([docModel]),
+        (error) => state = AsyncValue.error(error, StackTrace.current),
+      );
+    } catch (e, stackTrace) {
+      print('Unexpected error in createDocument: $e');
+      print('Stack trace: $stackTrace');
+      state = AsyncValue.error(e, stackTrace);
+    }
+  }
 }
 
 final docViewmodelProvider =

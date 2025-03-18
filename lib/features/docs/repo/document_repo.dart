@@ -20,4 +20,8 @@ class DocRepository{
   Future<Either<DocumentModel, ApiFailure>> createDocument(String title, String projectId) {
     return remoteDataSource.createDocument(title, projectId);
   }
+
+  Future<Either<DocumentModel, ApiFailure>> addUserToDoc(String docId, List<String> sharedUsers, String projectId) {
+    return remoteDataSource.shareDocument(docId, sharedUsers, projectId);
+  }
 }

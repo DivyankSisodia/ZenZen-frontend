@@ -2,6 +2,7 @@
 
 import 'dart:math';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -10,6 +11,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:zenzen/config/app_colors.dart';
 import 'package:zenzen/config/size_config.dart';
+import 'package:zenzen/features/docs/view-model/project_viewmodel.dart';
 import 'package:zenzen/utils/theme.dart';
 
 import '../../../config/constants.dart';
@@ -56,6 +58,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final docViewModel = ref.read(docViewmodelProvider.notifier);
+    final ProjectViewmodel = ref.read(projectViewModelProvider.notifier);
     SizeConfig().init(context);
     return Scaffold(
       backgroundColor: AppColors.white,
@@ -260,8 +263,7 @@ class AnimatedTab extends ConsumerStatefulWidget {
   ConsumerState<ConsumerStatefulWidget> createState() => _AnimatedTabState();
 }
 
-class _AnimatedTabState extends ConsumerState<AnimatedTab>
-    with TickerProviderStateMixin {
+class _AnimatedTabState extends ConsumerState<AnimatedTab> {
   int _selectedIndex = 0;
   final List<String> _tabLabels = [
     'Recent',
@@ -270,34 +272,6 @@ class _AnimatedTabState extends ConsumerState<AnimatedTab>
     'External',
     'Archived'
   ];
-
-  late AnimationController _animationController;
-
-  @override
-  void initState() {
-    super.initState();
-    _animationController = AnimationController(
-      duration: const Duration(milliseconds: 300),
-      vsync: this, // TickerProviderStateMixin supports multiple tickers
-    );
-  }
-
-  @override
-  void dispose() {
-    _animationController.dispose();
-    super.dispose();
-  }
-
-  void _onTabSelected(int index) {
-    if (_selectedIndex != index) {
-      _animationController.reset();
-      _animationController.forward();
-
-      setState(() {
-        _selectedIndex = index;
-      });
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -312,18 +286,31 @@ class _AnimatedTabState extends ConsumerState<AnimatedTab>
               : Responsive.isTablet(context)
                   ? SizeConfig.screenWidth / 1.5
                   : SizeConfig.screenWidth / 2.5,
-          height: 40,
-          decoration: BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: const BorderRadius.all(
-              Radius.circular(8),
-            ),
-          ),
-          child: Row(
-            children: List.generate(
-              _tabLabels.length,
-              (index) => _buildTabItem(index),
-            ),
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: CupertinoSlidingSegmentedControl<int>(
+            groupValue: _selectedIndex,
+            children: {
+              for (int i = 0; i < _tabLabels.length; i++)
+                i: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                  child: Text(
+                    _tabLabels[i],
+                    style: TextStyle(
+                      color: _selectedIndex == i ? AppColors.primary : null,
+                      fontWeight: _selectedIndex == i ? FontWeight.bold : FontWeight.normal,
+                    ),
+                  ),
+                ),
+            },
+            onValueChanged: (int? value) {
+              if (value != null) {
+                setState(() {
+                  _selectedIndex = value;
+                });
+              }
+            },
+            thumbColor: AppColors.white,
+            backgroundColor: AppColors.surface,
           ),
         ),
         const Gap(12),
@@ -467,40 +454,6 @@ class _AnimatedTabState extends ConsumerState<AnimatedTab>
                 ],
               ),
             ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTabItem(int index) {
-    final isSelected = _selectedIndex == index;
-
-    return Expanded(
-      child: GestureDetector(
-        onTap: () => _onTabSelected(index),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 250),
-          curve: Curves.easeInOut,
-          decoration: BoxDecoration(
-            color: isSelected ? AppColors.white : AppColors.surface,
-            borderRadius: const BorderRadius.all(Radius.circular(8)),
-            border: isSelected
-                ? Border.all(
-                    color: AppColors.primary.withOpacity(0.3), width: 2)
-                : null,
-          ),
-          child: Center(
-            child: AnimatedDefaultTextStyle(
-              duration: const Duration(milliseconds: 250),
-              style: isSelected
-                  ? AppTheme.textSmall(context).copyWith(
-                      color: AppColors.primary,
-                      fontWeight: FontWeight.bold,
-                    )
-                  : AppTheme.textSmall(context),
-              child: Text(_tabLabels[index]),
-            ),
           ),
         ),
       ),
