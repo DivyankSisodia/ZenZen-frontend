@@ -6,14 +6,17 @@ import 'package:zenzen/config/app_colors.dart';
 import 'package:zenzen/config/app_images.dart';
 import 'package:zenzen/config/responsive.dart';
 import 'package:zenzen/config/size_config.dart';
+import 'package:zenzen/data/local/hive_models/local_user_model.dart';
 import 'package:zenzen/features/docs/widget/editor_widget.dart';
 import 'package:zenzen/utils/theme.dart';
 
+import '../../auth/login/viewmodel/auth_viewmodel.dart';
 import '../view-model/doc_viewmodel.dart';
 
 class NewDocumentScreen extends ConsumerStatefulWidget {
+  final String? title;
   final String id;
-  const NewDocumentScreen({super.key, required this.id});
+  const NewDocumentScreen({super.key, required this.id, this.title});
 
   @override
   ConsumerState<ConsumerStatefulWidget> createState() =>
@@ -21,22 +24,45 @@ class NewDocumentScreen extends ConsumerStatefulWidget {
 }
 
 class _NewDocumentScreenState extends ConsumerState<NewDocumentScreen> {
-  final TextEditingController _titleController =
-      TextEditingController(text: 'Untitled Document');
+  final TextEditingController _titleController = TextEditingController();
   bool _isEmpty = false;
   String _documentContent = '';
+  User? currentuser;
+
 
   @override
   void initState() {
     super.initState();
 
+    getCurrentUser();
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(docViewmodelProvider.notifier).getDocumentInfo(widget.id);
     });
 
+    widget.title != null ? _titleController.text = widget.title! : null;
+
     _titleController.addListener(() {
-      setState(() => _isEmpty = _titleController.text.isEmpty);
+      if (_titleController.text.isEmpty) {
+        setState(() {
+          _isEmpty = true;
+        });
+      } else {
+        setState(() {
+          _isEmpty = false;
+        });
+      }
     });
+  }
+
+  void getCurrentUser() async {
+    final hiveService = ref.read(userDataProvider);
+    final user = hiveService.userBox.get('currentUser');
+    if (mounted) {
+      setState(() {
+        currentuser = user;
+      });
+    }
   }
 
   @override
@@ -55,7 +81,6 @@ class _NewDocumentScreenState extends ConsumerState<NewDocumentScreen> {
     final contentWidth = Responsive.isDesktop(context)
         ? SizeConfig.screenWidth * 0.7
         : SizeConfig.screenWidth;
-
     return Scaffold(
       backgroundColor: AppColors.white,
       body: Center(
@@ -156,7 +181,7 @@ class _NewDocumentScreenState extends ConsumerState<NewDocumentScreen> {
                   data: (documents) {
                     if (documents.isNotEmpty) {
                       final doc = documents.first;
-                      if (doc.document != null && doc.document.isNotEmpty) {
+                      if (doc.document.isNotEmpty) {
                         _documentContent =
                             doc.document[0] as String; // Ensure it's not null
                       } else {
@@ -165,8 +190,11 @@ class _NewDocumentScreenState extends ConsumerState<NewDocumentScreen> {
                       }
                       // Update content only once
                       return DocumentEditor(
-                        documentId: widget.id,
-                        initialContent: _documentContent,
+                        user:
+                            currentuser, // Handle this being null in DocumentEditor
+                        documentId: widget.id, // Ensure this is never null
+                        initialContent:
+                            _documentContent.isNotEmpty ? _documentContent : '',
                         key: ValueKey(_documentContent),
                       );
                     }

@@ -85,10 +85,11 @@ class RouteConfig {
         GoRoute(
           path: '/docs/:id',
           pageBuilder: (context, state) {
+            final title = state.extra as String;
             final id = state.pathParameters['id'] as String;
             return customTransitionPage(
               key: state.pageKey,
-              child: NewDocumentScreen(id: id),
+              child: NewDocumentScreen(id: id, title: title),
               transitionType: PageTransitionType.fade,
             );
           },

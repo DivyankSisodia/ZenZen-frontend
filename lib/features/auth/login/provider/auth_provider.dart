@@ -1,4 +1,3 @@
-import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:zenzen/config/constants.dart';
 import 'package:zenzen/data/api/auth_api.dart';

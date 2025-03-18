@@ -16,27 +16,27 @@ class DocApiService {
 
   DocApiService(this.baseUrl, this.dio, this.tokenManager) {
     // Add interceptor for authentication
-    dio.interceptors.add(
-      PrettyDioLogger(
-        requestHeader: true,
-        requestBody: true,
-        responseBody: true,
-        responseHeader: false,
-        error: true,
-        compact: true,
-        maxWidth: 90,
-        enabled: kDebugMode,
-        request: true,
-        filter: (options, args) {
-          // don't print requests with uris containing '/posts'
-          if (options.path.contains('/posts')) {
-            return false;
-          }
-          // don't print responses with unit8 list data
-          return !args.isResponse || !args.hasUint8ListData;
-        },
-      ),
-    );
+    // dio.interceptors.add(
+    //   PrettyDioLogger(
+    //     requestHeader: true,
+    //     requestBody: true,
+    //     responseBody: true,
+    //     responseHeader: false,
+    //     error: true,
+    //     compact: true,
+    //     maxWidth: 90,
+    //     enabled: kDebugMode,
+    //     request: true,
+    //     filter: (options, args) {
+    //       // don't print requests with uris containing '/posts'
+    //       if (options.path.contains('/posts')) {
+    //         return false;
+    //       }
+    //       // don't print responses with unit8 list data
+    //       return !args.isResponse || !args.hasUint8ListData;
+    //     },
+    //   ),
+    // );
   }
 
   // create a document

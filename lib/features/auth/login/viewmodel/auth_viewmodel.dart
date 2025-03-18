@@ -37,13 +37,17 @@ class AuthViewModel extends StateNotifier<AsyncValue<UserModel?>> {
           }
 
           // Convert UserModel to User (Hive model)
+          print('UserModel in viewmodel: ${userModel.toJson()}');
           final localUser = User(
+            id: userModel.id ?? '',
             userName: userModel.userName ?? '',
             avatar: userModel.avatar ?? '',
             email: email,
             mobile: userModel.mobile ?? '',
             isVerified: userModel.isVerified ?? false,
           );
+
+          print('LocalUser in vm: ${localUser.id}');
 
           // Save the converted user data to Hive
           final hiveService = ref.read(userDataProvider);

@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 
 class UserModel {
+  final String? id;
   final String? userName;
   final String email;
   final String? avatar;
@@ -12,6 +13,7 @@ class UserModel {
   final String? refreshToken;
 
   UserModel({
+    this.id,
     this.userName,
     required this.email,
     this.avatar,
@@ -24,20 +26,23 @@ class UserModel {
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
-  print('UserModel.fromJson: $json');
-  final userModel = UserModel(
-    userName: json['userName'] ?? '',
-    email: json['email'] ?? '',
-    avatar: json['avatar'] ?? '',
-    token: json['token'],
-    mobile: json['mobile'],
-    isVerified: json['isVerified'] ?? false,
-    userStatus: json['user_status'],
-    accessToken: json['tokens'] != null ? json['tokens']['accessToken'] : null,
-    refreshToken: json['tokens'] != null ? json['tokens']['refreshToken'] : null,
-  );
-  print('Created UserModel: ${userModel.toJson()}');
-  return userModel;
+    print('UserModel.fromJson: $json');
+    final userModel = UserModel(
+      id: json['_id'],
+      userName: json['userName'] ?? '',
+      email: json['email'] ?? '',
+      avatar: json['avatar'] ?? '',
+      token: json['token'],
+      mobile: json['mobile'],
+      isVerified: json['isVerified'] ?? false,
+      userStatus: json['user_status'],
+      accessToken:
+          json['tokens'] != null ? json['tokens']['accessToken'] : null,
+      refreshToken:
+          json['tokens'] != null ? json['tokens']['refreshToken'] : null,
+    );
+    print('Created UserModel: ${userModel.toJson()}');
+    return userModel;
   }
 
   Map<String, dynamic> toJson() {
@@ -58,6 +63,7 @@ class UserModel {
   }
 
   UserModel copyWith({
+    String? id,
     String? userName,
     String? email,
     String? avatar,
@@ -69,6 +75,7 @@ class UserModel {
     String? refreshToken,
   }) {
     return UserModel(
+      id: id ?? this.id,
       userName: userName ?? this.userName,
       email: email ?? this.email,
       avatar: avatar ?? this.avatar,

@@ -1,4 +1,3 @@
-
 import 'package:hive_ce_flutter/hive_flutter.dart';
 
 part 'local_user_model.g.dart';
@@ -20,11 +19,15 @@ class User {
   @HiveField(4)
   final bool isVerified;
 
+  @HiveField(5)
+  final String? id;
+
   User({
     required this.userName,
     required this.avatar,
     required this.email,
     required this.mobile,
     required this.isVerified,
+    this.id,
   });
 }

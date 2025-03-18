@@ -7,23 +7,19 @@ class SocketRepository {
   Socket get socketClient => _socketClient;
 
   // Join a document room
-  void joinDocument(String documentId, String userId) {
-    _socketClient.emit('join-document', {
-      'documentId': documentId,
-      'userId': userId,
-    });
+  void joinDocument(Map<String, dynamic> data) {
+    _socketClient.emit('join-document', data);
   }
 
   // Leave a document room
-  void leaveDocument(String documentId, String userId) {
-    _socketClient.emit('leave-document', {
-      'documentId': documentId,
-      'userId': userId,
-    });
+  void leaveDocument(Map<String, dynamic> data) {
+    _socketClient.emit('leave-document', data);
   }
 
   // Send document changes to other users
-  void sendDocumentChanges(Map<String, dynamic> content,) {
+  void sendDocumentChanges(
+    Map<String, dynamic> content,
+  ) {
     _socketClient.emit('docs', content);
   }
 
@@ -36,13 +32,6 @@ class SocketRepository {
   void onDocumentChange(Function(Map<String, dynamic>) func) {
     _socketClient.on('document-change', (data) {
       func(data);
-    });
-  }
-
-  // Listen for initial document load
-  void onLoadDocument(Function(dynamic) callback) {
-    _socketClient.on('load-document', (data) {
-      callback(data);
     });
   }
 

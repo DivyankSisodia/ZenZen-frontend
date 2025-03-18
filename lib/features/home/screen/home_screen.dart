@@ -229,7 +229,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 horizontal: 16.0,
                                 vertical: 10,
                               ),
-                              child: AnimatedTab(),
+                              child: const AnimatedTab(),
                             ),
                           ),
                           const Gap(20),
@@ -331,7 +331,7 @@ class _AnimatedTabState extends ConsumerState<AnimatedTab>
           child: Consumer(
             builder: (context, ref, child) {
               final docState = ref.watch(docViewmodelProvider);
-          
+
               // Use a separate loading state to prevent premature updates
               return docState.when(
                 loading: () =>
@@ -339,7 +339,7 @@ class _AnimatedTabState extends ConsumerState<AnimatedTab>
                 error: (error, stack) => Center(
                   child: Text(
                     (error is ApiFailure) ? error.error : 'An error occurred',
-                    style: TextStyle(color: Colors.red),
+                    style: const TextStyle(color: Colors.red),
                   ),
                 ),
                 data: (documents) => _buildDocumentGrid(documents),
@@ -352,16 +352,14 @@ class _AnimatedTabState extends ConsumerState<AnimatedTab>
   }
 
   Widget _buildDocumentGrid(List<DocumentModel> documents) {
-    print('Documents: $documents');
     if (documents.isEmpty) {
       return const Center(child: Text('No documents found'));
     }
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        print('Constraints: $constraints');
         // Calculate the number of columns based on available width
-        final double itemWidth = 220; // Target width for each item
+        const double itemWidth = 220; // Target width for each item
         int crossAxisCount;
 
         if (Responsive.isDesktop(context)) {
@@ -373,17 +371,18 @@ class _AnimatedTabState extends ConsumerState<AnimatedTab>
         }
 
         return GridView.builder(
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: crossAxisCount,
-              childAspectRatio: 1.2,
-              crossAxisSpacing: 16,
-              mainAxisSpacing: 16,
-            ),
-            itemCount: documents.length,
-            itemBuilder: (context, index) {
-              final document = documents[index];
-              return _buildDocumentCard(context, document);
-            },);
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: crossAxisCount,
+            childAspectRatio: 1.2,
+            crossAxisSpacing: 16,
+            mainAxisSpacing: 16,
+          ),
+          itemCount: documents.length,
+          itemBuilder: (context, index) {
+            final document = documents[index];
+            return _buildDocumentCard(context, document);
+          },
+        );
       },
     );
   }
@@ -404,8 +403,11 @@ class _AnimatedTabState extends ConsumerState<AnimatedTab>
         onTap: () {
           // Handle document selection/opening
           if (document.id != null) {
-            context
-                .goNamed(RoutesName.doc, pathParameters: {'id': document.id!});
+            context.goNamed(
+              RoutesName.doc,
+              pathParameters: {'id': document.id!},
+              extra: document.title,
+            );
           } else {
             // Handle the case where document.id is null
           }
