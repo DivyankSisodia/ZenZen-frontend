@@ -1,10 +1,10 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:zenzen/features/docs/model/document_model.dart';
-import 'package:zenzen/features/docs/repo/document_repo.dart';
+import 'package:zenzen/features/dashboard/docs/model/document_model.dart';
+import 'package:zenzen/features/dashboard/docs/repo/document_repo.dart';
 
-import '../../../config/constants.dart';
+import '../../../../config/constants.dart';
 import '../provider/doc_provider.dart';
 
 class DocViewmodel extends StateNotifier<AsyncValue<List<DocumentModel>>> {

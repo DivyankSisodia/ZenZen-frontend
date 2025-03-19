@@ -1,9 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:zenzen/data/api/doc_api.dart';
 
-import '../../../config/constants.dart';
-import '../../../utils/providers/dio_provider.dart';
-import '../../auth/login/viewmodel/auth_viewmodel.dart';
+import '../../../../config/constants.dart';
+import '../../../../utils/providers/dio_provider.dart';
+import '../../../auth/login/viewmodel/auth_viewmodel.dart';
 import '../repo/document_repo.dart';
 
 final docRemoteDataSourceProvider = Provider<DocApiService>(

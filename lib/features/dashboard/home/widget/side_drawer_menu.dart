@@ -5,8 +5,8 @@ import 'package:zenzen/config/app_colors.dart';
 import 'package:zenzen/config/app_images.dart';
 import 'package:zenzen/config/responsive.dart';
 import 'package:zenzen/config/size_config.dart';
-import '../../../utils/theme.dart';
-import '../../auth/login/viewmodel/auth_viewmodel.dart';
+import '../../../../utils/theme.dart';
+import '../../../auth/login/viewmodel/auth_viewmodel.dart';
 
 class SideDrawerMenu extends ConsumerStatefulWidget {
   const SideDrawerMenu({super.key});
@@ -31,6 +31,37 @@ class _SideDrawerMenuState extends ConsumerState<SideDrawerMenu> {
     setState(() {
       _selectedIndex = index;
     });
+
+    // Perform actions based on the selected menu item
+    switch (index) {
+      case 0:
+        // Navigate to Home
+        // Navigator.pushNamed(context, '/home');
+        print('Home');
+        break;
+      case 1:
+        // Navigate to Documents
+        // Navigator.pushNamed(context, '/documents');
+        print('Documents');
+        break;
+      case 2:
+        // Navigate to Projects
+        // Navigator.pushNamed(context, '/projects');
+        print('Projects');
+        break;
+      case 3:
+        // Navigate to Messages
+        // Navigator.pushNamed(context, '/messages');
+        print('Messages');
+        break;
+      case 4:
+        // Open Contact Us page
+        // Navigator.pushNamed(context, '/contact');
+        print('Contact Us');
+        break;
+      default:
+        break;
+    }
   }
 
   void _toggleProfileExpansion() {

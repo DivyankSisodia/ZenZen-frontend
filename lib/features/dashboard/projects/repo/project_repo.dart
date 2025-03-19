@@ -1,7 +1,7 @@
 import 'package:fpdart/fpdart.dart';
 import 'package:zenzen/data/api/project_api.dart';
 
-import '../../../data/failure.dart';
+import '../../../../data/failure.dart';
 import '../model/project_model.dart';
 
 class ProjectRepository{

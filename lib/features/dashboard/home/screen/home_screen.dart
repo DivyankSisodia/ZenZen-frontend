@@ -10,7 +10,7 @@ import 'package:zenzen/config/size_config.dart';
 import 'package:zenzen/utils/common/custom_dialogs.dart';
 import 'package:zenzen/utils/theme.dart';
 
-import '../../../config/responsive.dart';
+import '../../../../config/responsive.dart';
 import '../widget/animated_tab.dart';
 import '../widget/feature_card.dart';
 import '../widget/header_action_item.dart';

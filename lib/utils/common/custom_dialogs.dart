@@ -10,10 +10,10 @@ import 'package:zenzen/utils/theme.dart';
 
 import '../../config/responsive.dart';
 import '../../config/size_config.dart';
-import '../../features/docs/model/project_model.dart';
-import '../../features/docs/view-model/doc_viewmodel.dart';
-import '../../features/docs/view-model/project_viewmodel.dart';
-import '../../features/home/provider/select_project_provider.dart';
+import '../../features/dashboard/projects/model/project_model.dart';
+import '../../features/dashboard/docs/view-model/doc_viewmodel.dart';
+import '../../features/dashboard/projects/view-model/project_viewmodel.dart';
+import '../../features/dashboard/home/provider/select_project_provider.dart';
 
 class CustomDialogs {
   void createDocCustomDialog(

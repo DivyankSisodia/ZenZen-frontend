@@ -6,8 +6,8 @@ import 'package:zenzen/features/auth/login/screen/register_screen.dart';
 import 'package:zenzen/features/auth/login/screen/signup_screen.dart';
 import 'package:zenzen/features/auth/splash/screen/intro_screen.dart';
 import 'package:zenzen/features/auth/splash/screen/splash_screen.dart';
-import 'package:zenzen/features/docs/screen/document_screen.dart';
-import 'package:zenzen/features/home/screen/home_screen.dart';
+import 'package:zenzen/features/dashboard/docs/screen/document_screen.dart';
+import 'package:zenzen/features/dashboard/home/screen/home_screen.dart';
 
 import '../features/auth/login/screen/login_screen.dart';
 import '../features/auth/login/screen/verify_user_screen.dart';

@@ -7,11 +7,11 @@ import 'package:zenzen/config/app_images.dart';
 import 'package:zenzen/config/responsive.dart';
 import 'package:zenzen/config/size_config.dart';
 import 'package:zenzen/data/local/hive_models/local_user_model.dart';
-import 'package:zenzen/features/docs/repo/socket_repo.dart';
-import 'package:zenzen/features/docs/widget/editor_widget.dart';
+import 'package:zenzen/features/dashboard/docs/repo/socket_repo.dart';
+import 'package:zenzen/features/dashboard/docs/widget/editor_widget.dart';
 import 'package:zenzen/utils/theme.dart';
 
-import '../../auth/login/viewmodel/auth_viewmodel.dart';
+import '../../../auth/login/viewmodel/auth_viewmodel.dart';
 import '../view-model/doc_viewmodel.dart';
 
 class NewDocumentScreen extends ConsumerStatefulWidget {

@@ -7,11 +7,11 @@ import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
-import '../../../config/app_colors.dart';
-import '../../../config/constants.dart';
-import '../../../config/responsive.dart';
-import '../../../config/size_config.dart';
-import '../../../data/failure.dart';
+import '../../../../config/app_colors.dart';
+import '../../../../config/constants.dart';
+import '../../../../config/responsive.dart';
+import '../../../../config/size_config.dart';
+import '../../../../data/failure.dart';
 import '../../docs/model/document_model.dart';
 import '../../docs/view-model/doc_viewmodel.dart';
 

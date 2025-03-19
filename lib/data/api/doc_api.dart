@@ -7,7 +7,7 @@ import 'package:zenzen/data/local_data.dart';
 // Add this import
 
 import '../../config/constants.dart';
-import '../../features/docs/model/document_model.dart';
+import '../../features/dashboard/docs/model/document_model.dart';
 
 class DocApiService {
   final String baseUrl;

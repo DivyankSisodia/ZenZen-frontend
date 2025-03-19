@@ -7,9 +7,9 @@ import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'dart:convert';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_quill_extensions/flutter_quill_extensions.dart';
-import 'package:zenzen/features/docs/repo/socket_repo.dart';
+import 'package:zenzen/features/dashboard/docs/repo/socket_repo.dart';
 
-import '../../../data/local/hive_models/local_user_model.dart';
+import '../../../../data/local/hive_models/local_user_model.dart';
 import '../model/document_model.dart';
 
 class DocumentEditor extends ConsumerStatefulWidget {

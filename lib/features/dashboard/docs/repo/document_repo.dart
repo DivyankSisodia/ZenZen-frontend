@@ -1,7 +1,7 @@
 import 'package:fpdart/fpdart.dart';
 
-import '../../../data/api/doc_api.dart';
-import '../../../data/failure.dart';
+import '../../../../data/api/doc_api.dart';
+import '../../../../data/failure.dart';
 import '../model/document_model.dart';
 
 class DocRepository{

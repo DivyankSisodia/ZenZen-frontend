@@ -1,5 +1,5 @@
 import 'package:socket_io_client/socket_io_client.dart';
-import 'package:zenzen/features/docs/provider/socket_provider.dart';
+import 'package:zenzen/features/dashboard/docs/provider/socket_provider.dart';
 
 class SocketRepository {
   final _socketClient = SocketClient.instance.socket!;
