@@ -25,6 +25,7 @@ class ApiRoutes {
   static const String resetPassword = "/auth/reset-password";
   static const String getAccessToken = "/auth/get-access-token";
   static const String user = "/auth/user";
+  static const String getUsers = "/auth/all-users";
   static const String createDocument = "/docs/create-doc";
   static const String createProject = "/docs/create-project";
   static const String addUserToProject = "docs//add-users-to-project";

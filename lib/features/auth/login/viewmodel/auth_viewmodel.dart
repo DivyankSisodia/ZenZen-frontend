@@ -12,13 +12,13 @@ import '../repo/auth_repository.dart';
 
 final tokenManagerProvider = Provider((ref) => TokenManager());
 
-class AuthViewModel extends StateNotifier<AsyncValue<UserModel?>> {
+class AuthViewModel extends StateNotifier<AsyncValue<List<UserModel>>> {
   final AuthRepository repository;
   final TokenManager tokenManager;
   final Ref ref;
 
   AuthViewModel(this.repository, this.tokenManager, this.ref)
-      : super(const AsyncValue.data(null));
+      : super(const AsyncValue.data([]));
 
   Future<void> login(String email, String password, BuildContext context) async {
     try {
@@ -27,7 +27,7 @@ class AuthViewModel extends StateNotifier<AsyncValue<UserModel?>> {
 
       result.fold(
         (userModel) async {
-          state = AsyncValue.data(userModel);
+          state = AsyncValue.data([userModel]);
 
           if (userModel.refreshToken != null && userModel.accessToken != null) {
             await tokenManager.saveTokens(
@@ -36,8 +36,6 @@ class AuthViewModel extends StateNotifier<AsyncValue<UserModel?>> {
             );
           }
 
-          // Convert UserModel to User (Hive model)
-          print('UserModel in viewmodel: ${userModel.toJson()}');
           final localUser = User(
             id: userModel.id ?? '',
             userName: userModel.userName ?? '',
@@ -87,7 +85,7 @@ class AuthViewModel extends StateNotifier<AsyncValue<UserModel?>> {
             refreshToken: userModel.refreshToken!,
           );
         }
-        state = AsyncValue.data(userModel);
+        state = AsyncValue.data([userModel]);
 
         // Navigate to login or home
         context.goNamed(RoutesName.registerInfo);
@@ -100,7 +98,7 @@ class AuthViewModel extends StateNotifier<AsyncValue<UserModel?>> {
 
   Future<void> logout(BuildContext context) async {
     await tokenManager.clearTokens();
-    state = const AsyncValue.data(null);
+    state = const AsyncValue.data([]);
     context.goNamed(RoutesName.login);
   }
 
@@ -111,7 +109,7 @@ class AuthViewModel extends StateNotifier<AsyncValue<UserModel?>> {
         await repository.registerInfo(email, userName, mobile, avatar);
 
     state = result.fold(
-      (authmodel) => AsyncValue.data(authmodel),
+      (authmodel) => AsyncValue.data([authmodel]),
       (error) => AsyncValue.error(error, StackTrace.current),
     );
 
@@ -120,10 +118,21 @@ class AuthViewModel extends StateNotifier<AsyncValue<UserModel?>> {
       context.goNamed(RoutesName.verifyUser, extra: email);
     }
   }
+
+  // get all users
+  Future<void> getAllUsers() async {
+    state = const AsyncValue.loading();
+    final result = await repository.getAllUsers();
+
+    state = result.fold(
+      (users) => AsyncValue.data(users),
+      (error) => AsyncValue.error(error, StackTrace.current),
+    );
+  }
 }
 
 final authStateProvider =
-    StateNotifierProvider<AuthViewModel, AsyncValue<UserModel?>>((ref) {
+    StateNotifierProvider<AuthViewModel, AsyncValue<List<UserModel>>>((ref) {
   return AuthViewModel(
     ref.read(authRepositoryProvider),
     ref.read(tokenManagerProvider),

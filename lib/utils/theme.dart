@@ -177,7 +177,7 @@ class AppTheme {
         fontFamily: 'SpaceGrotesk',
         fontSize: 18,
         fontWeight: FontWeight.w400,
-        color: AppColors.white,
+        color: AppColors.primary,
       );
     } else {
       return TextStyle(
@@ -212,14 +212,14 @@ class AppTheme {
       return TextStyle(
         fontFamily: 'SpaceGrotesk',
         fontSize: 15,
-        fontWeight: FontWeight.w400,
+        fontWeight: FontWeight.w500,
         color: AppColors.primary,
       );
     } else {
       return TextStyle(
         fontFamily: 'SpaceGrotesk',
         fontSize: 15,
-        fontWeight: FontWeight.w400,
+        fontWeight: FontWeight.w500,
         color: AppColors.lightGrey,
       );
     }

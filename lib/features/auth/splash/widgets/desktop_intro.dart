@@ -238,7 +238,7 @@ class _DesktopIntroState extends ConsumerState<DesktopIntro> {
                                         textAlign: TextAlign.start,
                                       ),
                                       const Gap(5),
-                                      CustomTextField(
+                                      CustomAuthTextField(
                                         autofillHints: const [
                                           AutofillHints.email
                                         ],
@@ -266,7 +266,7 @@ class _DesktopIntroState extends ConsumerState<DesktopIntro> {
                                         textAlign: TextAlign.start,
                                       ),
                                       const Gap(5),
-                                      CustomTextField(
+                                      CustomAuthTextField(
                                         obscureText: true,
                                         autofillHints: const [
                                           AutofillHints.password

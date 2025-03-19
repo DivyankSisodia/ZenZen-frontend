@@ -28,6 +28,7 @@ environment:
 # the latest version available on pub.dev. To see which dependencies have newer
 # versions available, run `flutter pub outdated`.
 dependencies:
+  animated_custom_dropdown: ^3.1.1
   auto_size_text: ^3.0.0
   cached_network_image: ^3.4.1
   cupertino_icons: ^1.0.8
@@ -53,9 +54,9 @@ dependencies:
   google_sign_in: ^6.2.2
   hive_ce_flutter: null
   internet_connection_checker_plus: ^2.7.0
-  intl: 
+  intl: null
   json_annotation: ^4.9.0
-  logger: 
+  logger: null
   open_file: ^3.5.10
   page_transition: ^2.2.1
   path_provider: ^2.1.5

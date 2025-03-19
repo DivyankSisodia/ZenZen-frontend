@@ -1,27 +1,27 @@
 
 class ProjectModel {
   final String? id;
-  final String title;
+  final String? title;
   final String? description;
-  final List<String> addedUser;
-  final List<String> admin;
+  final List<String>? addedUser;
+  final List<String>? admin;
   final bool? isDeleted;
-  final String createdBy;
-  final DateTime createdAt;
-  final DateTime updatedAt;
-  final List<String> documents;
+  final String? createdBy;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
+  final List<String>? documents;
 
   ProjectModel({
     this.id,
-    required this.title,
+    this.title,
     this.description,
-    required this.addedUser,
-    required this.admin,
+    this.addedUser,
+    this.admin,
     this.isDeleted,
-    required this.createdBy,
-    required this.createdAt,
-    required this.updatedAt,
-    required this.documents,
+    this.createdBy,
+    this.createdAt,
+    this.updatedAt,
+    this.documents,
   });
 
   Map<String,dynamic> toJson(){

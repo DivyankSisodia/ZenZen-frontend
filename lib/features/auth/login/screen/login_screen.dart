@@ -120,7 +120,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                   textAlign: TextAlign.start,
                                 ),
                                 const Gap(5),
-                                CustomTextField(
+                                CustomAuthTextField(
                                   autofillHints: const [AutofillHints.email],
                                   onFieldSubmitted: (value) {
                                     TextInput.finishAutofillContext();
@@ -146,7 +146,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                   textAlign: TextAlign.start,
                                 ),
                                 const Gap(5),
-                                CustomTextField(
+                                CustomAuthTextField(
                                   obscureText: true,
                                   autofillHints: const [AutofillHints.password],
                                   onFieldSubmitted: (value) {

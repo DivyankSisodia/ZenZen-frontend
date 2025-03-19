@@ -26,7 +26,7 @@ class DocApiService {
         compact: true,
         maxWidth: 90,
         enabled: kDebugMode,
-        request: true,
+        // request: true,
         filter: (options, args) {
           // don't print requests with uris containing '/posts'
           if (options.path.contains('/posts')) {

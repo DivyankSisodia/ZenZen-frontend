@@ -26,7 +26,6 @@ class UserModel {
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
-    print('UserModel.fromJson: $json');
     final userModel = UserModel(
       id: json['_id'],
       userName: json['userName'] ?? '',
@@ -41,7 +40,6 @@ class UserModel {
       refreshToken:
           json['tokens'] != null ? json['tokens']['refreshToken'] : null,
     );
-    print('Created UserModel: ${userModel.toJson()}');
     return userModel;
   }
 

@@ -32,4 +32,8 @@ class AuthRepository {
   Future<Either<OtpModel, ApiFailure>> sendOtp(String email) {
     return remoteDataSource.sendOTP(email);
   }
+
+  Future<Either<List<UserModel>, ApiFailure>> getAllUsers() {
+    return remoteDataSource.getUsers();
+  }
 }

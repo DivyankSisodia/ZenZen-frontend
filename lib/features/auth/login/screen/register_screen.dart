@@ -141,7 +141,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               Row(
                 children: [
                   Expanded(
-                    child: CustomTextField(
+                    child: CustomAuthTextField(
                       focusNode: firstNameFocus,
                       obscureText: false,
                       hint: 'First name',
@@ -150,7 +150,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   ),
                   const Gap(10),
                   Expanded(
-                    child: CustomTextField(
+                    child: CustomAuthTextField(
                       focusNode: lastNameFocus,
                       obscureText: false,
                       hint: 'Last name',
@@ -182,7 +182,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           style: AppTheme.smallBodyTheme(context),
         ),
         const Gap(5),
-        CustomTextField(
+        CustomAuthTextField(
           keyboardType: inputType,
           controller: controller,
           hint: hint!,

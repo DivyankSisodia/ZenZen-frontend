@@ -1,3 +1,4 @@
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../model/project_model.dart';
@@ -10,7 +11,7 @@ class ProjectViewmodel extends StateNotifier<AsyncValue<List<ProjectModel>>> {
 
   ProjectViewmodel(this.repository, this.ref) : super(const AsyncValue.loading());
 
-  Future<void> createProject(String title, String? description) async {
+  Future<void> createProject(String title, String? description, BuildContext context) async {
     try {
       if (!state.isLoading) {
         state = const AsyncValue.loading();
@@ -22,6 +23,8 @@ class ProjectViewmodel extends StateNotifier<AsyncValue<List<ProjectModel>>> {
         (project) => state = AsyncValue.data([project]),
         (error) => state = AsyncValue.error(error, StackTrace.current),
       );
+
+      // if success, naviagte to the project screen
     } catch (e, stackTrace) {
       state = AsyncValue.error(e, stackTrace);
     }

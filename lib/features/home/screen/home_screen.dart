@@ -1,24 +1,17 @@
 // ignore_for_file: deprecated_member_use
 
-import 'dart:math';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:gap/gap.dart';
-import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
 import 'package:zenzen/config/app_colors.dart';
 import 'package:zenzen/config/size_config.dart';
-import 'package:zenzen/features/docs/view-model/project_viewmodel.dart';
+import 'package:zenzen/utils/common/custom_dialogs.dart';
 import 'package:zenzen/utils/theme.dart';
 
-import '../../../config/constants.dart';
 import '../../../config/responsive.dart';
-import '../../../data/failure.dart';
-import '../../docs/model/document_model.dart';
-import '../../docs/view-model/doc_viewmodel.dart';
+import '../widget/animated_tab.dart';
 import '../widget/feature_card.dart';
 import '../widget/header_action_item.dart';
 import '../widget/side_drawer_menu.dart';
@@ -32,6 +25,13 @@ class HomeScreen extends ConsumerStatefulWidget {
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   final GlobalKey<ScaffoldState> drawerKey = GlobalKey();
+
+  CustomDialogs customDialogs = CustomDialogs();
+
+  FocusNode focusNode = FocusNode();
+  FocusNode focusNode2 = FocusNode();
+  TextEditingController controller = TextEditingController();
+  TextEditingController controller2 = TextEditingController();
 
   List<String> featureList = [
     "New Document",
@@ -50,15 +50,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(docViewmodelProvider.notifier).getAllDocuments();
-    });
+  }
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+    focusNode.dispose();
+    focusNode2.dispose();
+    controller.dispose();
+    controller2.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final docViewModel = ref.read(docViewmodelProvider.notifier);
-    final ProjectViewmodel = ref.read(projectViewModelProvider.notifier);
     SizeConfig().init(context);
     return Scaffold(
       backgroundColor: AppColors.white,
@@ -171,10 +176,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 switch (index) {
                                   case 0:
                                     // Navigator.pushNamed(context, AppRouter.newDocument);
-                                    docViewModel.createDocument('Untitled Document', '67be9a1f786d4002efcd7b84', context);
+                                    customDialogs.createDocCustomDialog(context, ref, 'Select Project for which you want to create a document');
+
                                     break;
                                   case 1:
                                     // Navigator.pushNamed(context, AppRouter.newProject);
+                                    customDialogs.createProjectCustomDialog('Create a New Project', context, ref, controller, focusNode, 'Enter title',controller2, focusNode2, 'Enter description');
                                     break;
                                   case 2:
                                     // Navigator.pushNamed(context, AppRouter.addMembers);
@@ -236,12 +243,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             ),
                           ),
                           const Gap(20),
-                          // Container(
-                          //   height: 500,
-                          // ),
-                          // Container(
-                          //   height: 500,
-                          // ),
                         ],
                       ),
                     ),
@@ -256,207 +257,3 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 }
 
-class AnimatedTab extends ConsumerStatefulWidget {
-  const AnimatedTab({super.key});
-
-  @override
-  ConsumerState<ConsumerStatefulWidget> createState() => _AnimatedTabState();
-}
-
-class _AnimatedTabState extends ConsumerState<AnimatedTab> {
-  int _selectedIndex = 0;
-  final List<String> _tabLabels = [
-    'Recent',
-    'Favorites',
-    'Shared',
-    'External',
-    'Archived'
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.start,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: Responsive.isMobile(context)
-              ? SizeConfig.screenWidth
-              : Responsive.isTablet(context)
-                  ? SizeConfig.screenWidth / 1.5
-                  : SizeConfig.screenWidth / 2.5,
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          child: CupertinoSlidingSegmentedControl<int>(
-            groupValue: _selectedIndex,
-            children: {
-              for (int i = 0; i < _tabLabels.length; i++)
-                i: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                  child: Text(
-                    _tabLabels[i],
-                    style: TextStyle(
-                      color: _selectedIndex == i ? AppColors.primary : null,
-                      fontWeight: _selectedIndex == i ? FontWeight.bold : FontWeight.normal,
-                    ),
-                  ),
-                ),
-            },
-            onValueChanged: (int? value) {
-              if (value != null) {
-                setState(() {
-                  _selectedIndex = value;
-                });
-              }
-            },
-            thumbColor: AppColors.white,
-            backgroundColor: AppColors.surface,
-          ),
-        ),
-        const Gap(12),
-        Expanded(
-          child: Consumer(
-            builder: (context, ref, child) {
-              final docState = ref.watch(docViewmodelProvider);
-
-              // Use a separate loading state to prevent premature updates
-              return docState.when(
-                loading: () =>
-                    const Center(child: CircularProgressIndicator.adaptive()),
-                error: (error, stack) => Center(
-                  child: Text(
-                    (error is ApiFailure) ? error.error : 'An error occurred',
-                    style: const TextStyle(color: Colors.red),
-                  ),
-                ),
-                data: (documents) => _buildDocumentGrid(documents),
-              );
-            },
-          ),
-        )
-      ],
-    );
-  }
-
-  Widget _buildDocumentGrid(List<DocumentModel> documents) {
-    if (documents.isEmpty) {
-      return const Center(child: Text('No documents found'));
-    }
-
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        // Calculate the number of columns based on available width
-        const double itemWidth = 220; // Target width for each item
-        int crossAxisCount;
-
-        if (Responsive.isDesktop(context)) {
-          crossAxisCount = max(2, constraints.maxWidth ~/ itemWidth);
-        } else if (Responsive.isTablet(context)) {
-          crossAxisCount = max(2, constraints.maxWidth ~/ itemWidth);
-        } else {
-          crossAxisCount = max(1, constraints.maxWidth ~/ itemWidth);
-        }
-
-        return GridView.builder(
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: crossAxisCount,
-            childAspectRatio: 1.2,
-            crossAxisSpacing: 16,
-            mainAxisSpacing: 16,
-          ),
-          itemCount: documents.length,
-          itemBuilder: (context, index) {
-            final document = documents[index];
-            return _buildDocumentCard(context, document);
-          },
-        );
-      },
-    );
-  }
-
-  Widget _buildDocumentCard(BuildContext context, DocumentModel document) {
-    final formattedDate = DateFormat('MMM d, yyyy').format(document.createdAt);
-
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(
-          color: AppColors.primary.withOpacity(0.2),
-          width: 1,
-        ),
-      ),
-      child: InkWell(
-        onTap: () {
-          // Handle document selection/opening
-          if (document.id != null) {
-            context.goNamed(
-              RoutesName.doc,
-              pathParameters: {'id': document.id!},
-              extra: document.title,
-            );
-          } else {
-            // Handle the case where document.id is null
-          }
-        },
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Icon(Icons.description, color: AppColors.primary),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      document.title,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
-              ),
-              const Spacer(),
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      'Created: $formattedDate',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey[600],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    '${document.users.length} users',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                  document.isPrivate
-                      ? Icon(Icons.lock, size: 16, color: Colors.grey[600])
-                      : Icon(Icons.public, size: 16, color: Colors.grey[600]),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}

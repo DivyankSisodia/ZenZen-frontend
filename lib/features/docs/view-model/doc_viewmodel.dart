@@ -13,20 +13,29 @@ class DocViewmodel extends StateNotifier<AsyncValue<List<DocumentModel>>> {
 
   DocViewmodel(this.repository, this.ref) : super(const AsyncValue.loading());
 
+   bool _isLoading = false;
+
   Future<void> getAllDocuments() async {
+    // Skip if already loading
+    if (_isLoading) return;
+    
+    _isLoading = true;
+    state = const AsyncValue.loading();
+    
     try {
-      if (!state.isLoading) {
-        state = const AsyncValue.loading();
-      }
-
       final result = await repository.getDocuments();
-
-      result.fold(
-        (listOfDocs) => state = AsyncValue.data(listOfDocs),
-        (error) => state = AsyncValue.error(error, StackTrace.current),
-      );
+      if (mounted) {
+        result.fold(
+          (documents) => state = AsyncValue.data(documents),
+          (error) => state = AsyncValue.error(error, StackTrace.current),
+        );
+      }
     } catch (e, stackTrace) {
-      state = AsyncValue.error(e, stackTrace);
+      if (mounted) {
+        state = AsyncValue.error(e, stackTrace);
+      }
+    } finally {
+      _isLoading = false;
     }
   }
 
