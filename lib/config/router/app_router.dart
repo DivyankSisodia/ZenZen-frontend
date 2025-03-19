@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:page_transition/page_transition.dart';
-import 'package:zenzen/config/constants.dart';
+import 'package:zenzen/config/constants/constants.dart';
 import 'package:zenzen/features/auth/login/screen/register_screen.dart';
 import 'package:zenzen/features/auth/login/screen/signup_screen.dart';
 import 'package:zenzen/features/auth/splash/screen/intro_screen.dart';
@@ -9,9 +9,10 @@ import 'package:zenzen/features/auth/splash/screen/splash_screen.dart';
 import 'package:zenzen/features/dashboard/docs/screen/document_screen.dart';
 import 'package:zenzen/features/dashboard/home/screen/home_screen.dart';
 
-import '../features/auth/login/screen/login_screen.dart';
-import '../features/auth/login/screen/verify_user_screen.dart';
-import '../utils/custom_transition.dart';
+import '../../features/auth/login/screen/login_screen.dart';
+import '../../features/auth/login/screen/verify_user_screen.dart';
+import '../../features/dashboard/docs/screen/document_list_screen.dart';
+import '../../utils/custom_transition.dart';
 
 class RouteConfig {
   static GoRouter returnRouter() {
@@ -94,6 +95,17 @@ class RouteConfig {
             );
           },
           name: RoutesName.doc,
+        ),
+        GoRoute(
+          path: '/all-documents',
+          name: RoutesName.allDocs,
+          pageBuilder: (context, state) {
+            return customTransitionPage(
+              key: state.pageKey,
+              child: const DocumentScreen(),
+              transitionType: PageTransitionType.fade,
+            );
+          },
         ),
       ],
     );

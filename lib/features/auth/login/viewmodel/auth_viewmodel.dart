@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:zenzen/config/constants.dart';
+import 'package:zenzen/config/constants/constants.dart';
 import 'package:zenzen/data/local/hive_models/local_user_model.dart';
 import 'package:zenzen/features/auth/login/model/user_model.dart';
 

@@ -6,7 +6,7 @@ import 'package:zenzen/data/failure.dart';
 import 'package:zenzen/data/local_data.dart';
 // Add this import
 
-import '../../config/constants.dart';
+import '../../config/constants/constants.dart';
 import '../../features/dashboard/docs/model/document_model.dart';
 
 class DocApiService {

@@ -3,9 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
-import 'package:zenzen/config/app_colors.dart';
+import 'package:zenzen/config/constants/app_colors.dart';
 
-import '../../../../config/constants.dart';
+import '../../../../config/constants/constants.dart';
 import '../../../../utils/theme.dart';
 
 class MobileIntro extends ConsumerStatefulWidget {

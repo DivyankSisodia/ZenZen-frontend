@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:zenzen/config/app_colors.dart';
-import 'package:zenzen/config/app_images.dart';
-import 'package:zenzen/config/responsive.dart';
-import 'package:zenzen/config/size_config.dart';
+import 'package:go_router/go_router.dart';
+import 'package:zenzen/config/constants/app_colors.dart';
+import 'package:zenzen/config/constants/app_images.dart';
+import 'package:zenzen/config/constants/constants.dart';
+import 'package:zenzen/config/constants/responsive.dart';
+import 'package:zenzen/config/constants/size_config.dart';
+import 'package:zenzen/utils/providers/selected_screen_provider.dart';
 import '../../../../utils/theme.dart';
 import '../../../auth/login/viewmodel/auth_viewmodel.dart';
 
@@ -16,7 +19,6 @@ class SideDrawerMenu extends ConsumerStatefulWidget {
 }
 
 class _SideDrawerMenuState extends ConsumerState<SideDrawerMenu> {
-  int _selectedIndex = 0;
   bool _isProfileExpanded = true;
 
   final List<String> _menuItems = [
@@ -28,20 +30,22 @@ class _SideDrawerMenuState extends ConsumerState<SideDrawerMenu> {
   ];
 
   void _onMenuItemTap(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
+    // setState(() {
+    //   _selectedIndex = index;
+    // });
+
+    ref.watch(selectedScreenProvider.notifier).state = index;
 
     // Perform actions based on the selected menu item
     switch (index) {
       case 0:
         // Navigate to Home
-        // Navigator.pushNamed(context, '/home');
+        context.goNamed(RoutesName.home);
         print('Home');
         break;
       case 1:
         // Navigate to Documents
-        // Navigator.pushNamed(context, '/documents');
+        context.pushNamed(RoutesName.allDocs);
         print('Documents');
         break;
       case 2:
@@ -213,21 +217,26 @@ class _SideDrawerMenuState extends ConsumerState<SideDrawerMenu> {
             SizedBox(height: isLowHeight ? 8 : 10),
 
             // Menu Items
-            Padding(
-              padding: EdgeInsets.all(isLowHeight ? 10 : 20),
-              child: Column(
-                children: [
-                  for (var i = 0; i < 4; i++)
-                    MenuItem(
-                      icon: icons[i],
-                      title: _menuItems[i],
-                      index: i,
-                      selectedIndex: _selectedIndex,
-                      onTap: _onMenuItemTap,
-                      isCompact: isLowHeight,
-                    ),
-                ],
-              ),
+            Consumer(
+              builder: (context, ref, child) {
+                final selectedIndex = ref.watch(selectedScreenProvider);
+                return Padding(
+                  padding: EdgeInsets.all(isLowHeight ? 10 : 20),
+                  child: Column(
+                    children: [
+                      for (var i = 0; i < 4; i++)
+                        MenuItem(
+                          icon: icons[i],
+                          title: _menuItems[i],
+                          index: i,
+                          selectedIndex: selectedIndex,
+                          onTap: _onMenuItemTap,
+                          isCompact: isLowHeight,
+                        ),
+                    ],
+                  ),
+                );
+              },
             ),
 
             Padding(
@@ -243,16 +252,21 @@ class _SideDrawerMenuState extends ConsumerState<SideDrawerMenu> {
             ),
 
             // Contact Menu
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0),
-              child: MenuItem(
-                title: _menuItems[4],
-                index: 4,
-                selectedIndex: _selectedIndex,
-                onTap: _onMenuItemTap,
-                icon: icons[4],
-                isCompact: isLowHeight,
-              ),
+            Consumer(
+              builder: (context, ref, child) {
+                final selectedIndex0 = ref.watch(selectedScreenProvider);
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                  child: MenuItem(
+                    title: _menuItems[4],
+                    index: 4,
+                    selectedIndex: selectedIndex0,
+                    onTap: _onMenuItemTap,
+                    icon: icons[4],
+                    isCompact: isLowHeight,
+                  ),
+                );
+              },
             ),
 
             if (!Responsive.isDesktop(context)) ...[

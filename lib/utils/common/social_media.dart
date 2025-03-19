@@ -4,7 +4,7 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
-import '../../config/app_colors.dart';
+import '../../config/constants/app_colors.dart';
 
 class SocialMediaIcon extends StatelessWidget {
   const SocialMediaIcon({

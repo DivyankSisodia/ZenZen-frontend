@@ -2,7 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
-import 'package:zenzen/config/app_colors.dart';
+import 'package:zenzen/config/constants/app_colors.dart';
 import '../../../../data/failure.dart';
 import '../../../../utils/common/custom_textfield.dart';
 import '../../../../utils/theme.dart';

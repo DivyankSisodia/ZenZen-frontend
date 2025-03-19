@@ -6,8 +6,8 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
-import 'package:zenzen/config/app_colors.dart';
-import 'package:zenzen/config/constants.dart';
+import 'package:zenzen/config/constants/app_colors.dart';
+import 'package:zenzen/config/constants/constants.dart';
 
 import '../../../../data/failure.dart';
 import '../../../../utils/common/custom_textfield.dart';

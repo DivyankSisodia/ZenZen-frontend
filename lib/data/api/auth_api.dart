@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:zenzen/config/constants.dart';
+import 'package:zenzen/config/constants/constants.dart';
 import 'package:zenzen/data/failure.dart';
 import 'package:zenzen/features/auth/login/model/otp_model.dart';
 import 'package:zenzen/features/auth/login/model/user_model.dart';

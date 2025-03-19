@@ -7,10 +7,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
-import 'package:zenzen/config/app_colors.dart';
+import 'package:zenzen/config/constants/app_colors.dart';
 import 'package:zenzen/features/auth/login/viewmodel/oauth_viewmodel.dart';
 
-import '../../../../config/constants.dart';
+import '../../../../config/constants/constants.dart';
 import '../../../../data/failure.dart';
 import '../../../../utils/common/custom_textfield.dart';
 import '../../../../utils/common/social_media.dart';
@@ -184,7 +184,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                             TextSpan(
                                               recognizer: TapGestureRecognizer()
                                                 ..onTap = () {
-                                                  context.pushNamed(
+                                                  context.goNamed(
                                                       RoutesName.signup);
                                                 },
                                               text: 'Sign Up',

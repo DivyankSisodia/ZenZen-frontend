@@ -10,6 +10,8 @@ class RoutesName {
   static const String resetPassword = "reset-password";
   static const String verifyUser = "verify-user";
   static const String doc = "document";
+  static const String project = "project";
+  static const String allDocs = "all-documents";
 }
 
 class ApiRoutes {

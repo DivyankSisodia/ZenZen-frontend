@@ -6,9 +6,9 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_quill/flutter_quill.dart';
-import 'package:zenzen/config/app_router.dart';
+import 'package:zenzen/config/router/app_router.dart';
 // ignore: unused_import
-import 'package:zenzen/config/app_colors.dart';
+import 'package:zenzen/config/constants/app_colors.dart';
 import 'package:zenzen/firebase_options.dart';
 import 'data/local/service/user_service.dart';
 import 'utils/theme.dart';

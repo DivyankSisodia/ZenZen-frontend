@@ -8,8 +8,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:zenzen/utils/common/custom_textfield.dart';
 import 'package:zenzen/utils/theme.dart';
 
-import '../../config/responsive.dart';
-import '../../config/size_config.dart';
+import '../../config/constants/responsive.dart';
+import '../../config/constants/size_config.dart';
 import '../../features/dashboard/projects/model/project_model.dart';
 import '../../features/dashboard/docs/view-model/doc_viewmodel.dart';
 import '../../features/dashboard/projects/view-model/project_viewmodel.dart';
@@ -127,216 +127,98 @@ class CustomDialogs {
     FocusNode descriptionFocusNode,
     String descriptionHint,
   ) {
-    // final authViewModel = ref.watch(authStateProvider.notifier);
     final outerContext = context;
-    // authViewModel.getAllUsers();
 
-    // Declare a local list to track selected usernames
-    // final List<String> localSelectedUsernames = [];
-
-    showDialog(
-      traversalEdgeBehavior: TraversalEdgeBehavior.values[0],
-      barrierDismissible: true,
+    showCupertinoDialog(
       context: context,
       builder: (BuildContext dialogContext) {
-        return Dialog(
-          insetPadding: EdgeInsets.symmetric(horizontal: 24.0, vertical: 24.0),
-          child: StatefulBuilder(
-            builder: (context, setStateDialog) {
-              return ConstrainedBox(
-                constraints: BoxConstraints(
-                  maxWidth: Responsive.isDesktop(context)
-                      ? SizeConfig.screenWidth / 3.5
-                      : SizeConfig.screenWidth / 1.5, // Adjust this value
-                  minWidth: SizeConfig.screenWidth / 4.5,
+        return CupertinoAlertDialog(
+          title: Text(
+            title,
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              fontFamily: 'SpaceGrotesk',
+            ),
+          ),
+          content: Padding(
+            padding: const EdgeInsets.only(top: 16.0),
+            child: Column(
+              children: [
+                CupertinoTextField(
+                  controller: controller,
+                  focusNode: focusNode,
+                  placeholder: hint,
+                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
                 ),
-                child: Container(
-                  padding: EdgeInsets.all(16),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        title,
+                const SizedBox(height: 15),
+                CupertinoTextField(
+                  controller: descriptionController,
+                  focusNode: descriptionFocusNode,
+                  placeholder: descriptionHint,
+                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            CupertinoDialogAction(
+              child: const Text('Cancel'),
+              onPressed: () {
+                Navigator.pop(dialogContext);
+              },
+            ),
+            CupertinoDialogAction(
+              isDefaultAction: true,
+              child: const Text('OK'),
+              onPressed: () {
+                if (controller.text.isEmpty || descriptionController.text.isEmpty) {
+                  DelightToastBar(
+                    builder: (context) => const ToastCard(
+                      leading: Icon(
+                        Icons.flutter_dash,
+                        size: 28,
+                      ),
+                      title: Text(
+                        "Please fill all the fields",
                         style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          fontFamily: 'SpaceGrotesk',
+                          fontWeight: FontWeight.w700,
+                          fontSize: 14,
                         ),
                       ),
-                      SizedBox(height: 15),
-                      AutoSizeText(
-                        'Project title',
-                        style: AppTheme.smallBodyTheme(context),
-                        maxLines: 1,
-                      ),
-                      SizedBox(height: 8),
-                      CustomTextField(
-                        controller: controller,
-                        focusNode: focusNode,
-                        hint: hint,
-                      ),
-                      SizedBox(height: 15),
-                      AutoSizeText(
-                        'Project Description',
-                        style: AppTheme.smallBodyTheme(context),
-                        maxLines: 1,
-                      ),
-                      SizedBox(height: 8),
-                      CustomTextField(
-                          controller: descriptionController,
-                          focusNode: descriptionFocusNode,
-                          hint: descriptionHint,
-                          ),
-                      SizedBox(height: 16),
-                      // AutoSizeText(
-                      //   'Want to add Users? 🤔',
-                      //   style: AppTheme.smallBodyTheme(context),
-                      //   maxLines: 1,
-                      // ),
-                      SizedBox(height: 8),
-                      // Consumer(
-                      //   builder: (context, ref, child) {
-                      //     final authState = ref.watch(authStateProvider);
-                      //     return authState.when(
-                      //       loading: () => const Center(
-                      //           child: CupertinoActivityIndicator()),
-                      //       error: (err, stack) =>
-                      //           Text('Error loading users: ${err.toString()}'),
-                      //       data: (users) => CustomDropdown.multiSelectSearch(
-                      //         searchHintText: 'Search Users',
-                      //         hintBuilder: (context, hint, enabled) {
-                      //           return Text(
-                      //             hint,
-                      //             style: TextStyle(
-                      //               color: CupertinoColors.systemGrey,
-                      //               fontSize: 16,
-                      //               fontFamily: 'SpaceGrotesk',
-                      //             ),
-                      //           );
-                      //         },
-                      //         hintText: 'Select Users',
-                      //         items: users
-                      //             .map((user) => user.userName)
-                      //             .whereType<String>()
-                      //             .toList(),
-                      //         decoration: CustomDropdownDecoration(
-                      //           overlayScrollbarDecoration: ScrollbarThemeData(
-                      //             mainAxisMargin: 300,
-                      //             crossAxisMargin: 300,
-                      //           ),
-                      //           searchFieldDecoration: SearchFieldDecoration(
-                      //             contentPadding:
-                      //                 EdgeInsets.only(left: 16, bottom: 8),
-                      //             hintStyle: TextStyle(
-                      //                 color: CupertinoColors.systemGrey,
-                      //                 fontFamily: 'SpaceGrotesk',
-                      //                 fontSize: 16),
-                      //           ),
-                      //           hintStyle: TextStyle(
-                      //               color: CupertinoColors.systemGrey),
-                      //           listItemStyle:
-                      //               TextStyle(color: CupertinoColors.black),
-                      //         ),
-                      //         onListChanged: (List<String> s) {
-                      //           setStateDialog(() {
-                      //             localSelectedUsernames.clear();
-                      //             localSelectedUsernames.addAll(s);
-                      //           });
-                      //           final selectedUsers = users
-                      //               .where((user) => s.contains(user.userName))
-                      //               .toList();
-                      //           final selectedUserIds = selectedUsers
-                      //               .map((user) => user.id!)
-                      //               .toList();
-                      //           ref.read(userListProvider.notifier).state =
-                      //               selectedUsers;
-                      //           final dataInProvider =
-                      //               ref.read(userListProvider);
-                      //           print(
-                      //               'Selected Users: ${dataInProvider[0].id}');
-                      //           print('Selected User IDs: $selectedUserIds');
-                      //         },
-                      //       ),
-                      //     );
-                      //   },
-                      // ),
-                      // Display selected usernames as chips
-                      SizedBox(height: 16),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          CupertinoButton(
-                            child: Text('Cancel'),
-                            onPressed: () {
-                              Navigator.pop(dialogContext);
-                            },
-                          ),
-                          CupertinoButton.filled(
-                            child: Text('OK'),
-                            onPressed: () {
-                              // Check if fields are empty
-                              if (controller.text.isEmpty ||
-                                  descriptionController.text.isEmpty) {
-                                DelightToastBar(
-                                  builder: (context) => const ToastCard(
-                                    leading: Icon(
-                                      Icons.flutter_dash,
-                                      size: 28,
-                                    ),
-                                    title: Text(
-                                      "Please fill all the fields",
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.w700,
-                                        fontSize: 14,
-                                      ),
-                                    ),
-                                  ),
-                                ).show(context);
-                                return; // Return early without closing dialog
-                              }
+                    ),
+                  ).show(context);
+                  return;
+                }
 
-                              // Fields are not empty, create the project
-                              final projectViewModel =
-                                  ref.read(projectViewModelProvider.notifier);
+                final projectViewModel = ref.read(projectViewModelProvider.notifier);
+                projectViewModel.createProject(
+                  controller.text,
+                  descriptionController.text,
+                  outerContext,
+                );
 
-                              projectViewModel.createProject(
-                                controller.text,
-                                descriptionController.text,
-                                outerContext,
-                              );
+                Navigator.pop(dialogContext);
 
-                              // Close the dialog
-                              Navigator.pop(dialogContext);
-
-                              // Show success toast
-                              DelightToastBar(
-                                builder: (context) => const ToastCard(
-                                  leading: Icon(
-                                    Icons.check_circle,
-                                    size: 28,
-                                    color: Colors.green,
-                                  ),
-                                  title: Text(
-                                    "Project created successfully",
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.w700,
-                                      fontSize: 14,
-                                    ),
-                                  ),
-                                ),
-                              ).show(outerContext);
-                            },
-                          ),
-                        ],
+                DelightToastBar(
+                  builder: (context) => const ToastCard(
+                    leading: Icon(
+                      Icons.check_circle,
+                      size: 28,
+                      color: Colors.green,
+                    ),
+                    title: Text(
+                      "Project created successfully",
+                      style: TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 14,
                       ),
-                    ],
+                    ),
                   ),
-                ),
-              );
-            },
-          ),
+                ).show(outerContext);
+              },
+            ),
+          ],
         );
       },
     );

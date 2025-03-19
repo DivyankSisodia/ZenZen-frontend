@@ -4,8 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
-import 'package:zenzen/config/app_colors.dart';
-import 'package:zenzen/config/responsive.dart';
+import 'package:zenzen/config/constants/app_colors.dart';
+import 'package:zenzen/config/constants/responsive.dart';
 import 'package:zenzen/utils/theme.dart';
 
 import '../../../auth/login/viewmodel/auth_viewmodel.dart';

@@ -9,7 +9,7 @@ import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
 import 'package:zenzen/features/auth/login/viewmodel/oauth_viewmodel.dart';
 
-import '../../../../config/app_colors.dart';
+import '../../../../config/constants/app_colors.dart';
 import '../../../../data/failure.dart';
 import '../../../../utils/common/custom_textfield.dart';
 import '../../../../utils/common/social_media.dart';

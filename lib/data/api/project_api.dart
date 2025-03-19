@@ -6,7 +6,7 @@ import 'package:zenzen/data/failure.dart';
 import 'package:zenzen/data/local_data.dart';
 import 'package:zenzen/features/dashboard/projects/model/project_model.dart';
 
-import '../../config/constants.dart';
+import '../../config/constants/constants.dart';
 
 class ProjectApi {
   final String baseUrl;

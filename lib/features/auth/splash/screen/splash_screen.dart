@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:zenzen/config/constants.dart';
+import 'package:zenzen/config/constants/constants.dart';
 import '../../../../utils/providers/theme_provider.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
@@ -39,7 +39,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
       Future.delayed(const Duration(seconds: 3), () {
         if (mounted) {
           (token?.isNotEmpty == true)
-              ? context.pushNamed(RoutesName.home)
+              ? context.goNamed(RoutesName.home)
               : context.goNamed(RoutesName.intro);
         }
       });
