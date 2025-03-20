@@ -8,7 +8,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../config/constants/app_colors.dart';
-import '../../../../config/constants/constants.dart';
+import '../../../../config/router/constants.dart';
 import '../../../../config/constants/responsive.dart';
 import '../../../../config/constants/size_config.dart';
 import '../../../../data/failure.dart';
@@ -40,26 +40,30 @@ class _AnimatedTabState extends ConsumerState<AnimatedTab> {
       _fetchDocumentsForTab(_selectedIndex);
     });
   }
-  
+
   // Method to fetch documents based on tab index
   void _fetchDocumentsForTab(int tabIndex) {
     final docViewModel = ref.read(docViewmodelProvider.notifier);
-    
+
     switch (tabIndex) {
       case 0: // Recent
         docViewModel.getAllDocuments();
         break;
       case 1: // Favorites
-        docViewModel.getAllDocuments(); // Replace with getFavoriteDocuments() when available
+        docViewModel
+            .getAllDocuments(); // Replace with getFavoriteDocuments() when available
         break;
       case 2: // Shared
-        docViewModel.getAllDocuments(); // Replace with getSharedDocuments() when available
+        docViewModel
+            .getAllDocuments(); // Replace with getSharedDocuments() when available
         break;
       case 3: // External
-        docViewModel.getAllDocuments(); // Replace with getExternalDocuments() when available
+        docViewModel
+            .getAllDocuments(); // Replace with getExternalDocuments() when available
         break;
       case 4: // Archived
-        docViewModel.getAllDocuments(); // Replace with getArchivedDocuments() when available
+        docViewModel
+            .getAllDocuments(); // Replace with getArchivedDocuments() when available
         break;
     }
   }
@@ -101,7 +105,7 @@ class _AnimatedTabState extends ConsumerState<AnimatedTab> {
                 setState(() {
                   _selectedIndex = value;
                 });
-                
+
                 // Fetch data when tab changes
                 _fetchDocumentsForTab(value);
               }
@@ -115,17 +119,25 @@ class _AnimatedTabState extends ConsumerState<AnimatedTab> {
           child: Consumer(
             builder: (context, ref, child) {
               final docState = ref.watch(docViewmodelProvider);
-              
+
               // Use the state without triggering API calls in the build method
               return docState.when(
                 loading: () =>
                     const Center(child: CircularProgressIndicator.adaptive()),
-                error: (error, stack) => Center(
-                  child: Text(
-                    (error is ApiFailure) ? error.error : 'An error occurred',
-                    style: const TextStyle(color: Colors.red),
-                  ),
-                ),
+                error: (error, stack) {
+                  if (error is ApiFailure) {
+                    print('ApiFailure details: ${error.error}');
+                    // You can also print other properties if ApiFailure has them
+                    // print('Status code: ${error.statusCode}');
+                  }
+
+                  return Center(
+                    child: Text(
+                      (error is ApiFailure) ? error.error : 'An error occurred',
+                      style: const TextStyle(color: Colors.red),
+                    ),
+                  );
+                },
                 data: (documents) => _buildDocumentGrid(documents),
               );
             },

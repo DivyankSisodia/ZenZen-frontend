@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:page_transition/page_transition.dart';
-import 'package:zenzen/config/constants/constants.dart';
+import 'package:zenzen/config/router/constants.dart';
 import 'package:zenzen/features/auth/login/screen/register_screen.dart';
 import 'package:zenzen/features/auth/login/screen/signup_screen.dart';
 import 'package:zenzen/features/auth/splash/screen/intro_screen.dart';

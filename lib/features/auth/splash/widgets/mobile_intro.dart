@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:zenzen/config/constants/app_colors.dart';
 
-import '../../../../config/constants/constants.dart';
+import '../../../../config/router/constants.dart';
 import '../../../../utils/theme.dart';
 
 class MobileIntro extends ConsumerStatefulWidget {

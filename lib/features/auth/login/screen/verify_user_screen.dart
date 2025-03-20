@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pinput/pinput.dart';
 import 'package:zenzen/config/constants/app_colors.dart';
-import 'package:zenzen/config/constants/constants.dart';
+import 'package:zenzen/config/router/constants.dart';
 
 import '../provider/auth_provider.dart';
 import '../viewmodel/auth_viewmodel.dart';

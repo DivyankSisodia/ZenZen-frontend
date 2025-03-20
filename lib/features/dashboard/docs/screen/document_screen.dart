@@ -20,8 +20,7 @@ class NewDocumentScreen extends ConsumerStatefulWidget {
   const NewDocumentScreen({super.key, required this.id, this.title});
 
   @override
-  ConsumerState<ConsumerStatefulWidget> createState() =>
-      _NewDocumentScreenState();
+  ConsumerState<ConsumerStatefulWidget> createState() => _NewDocumentScreenState();
 }
 
 class _NewDocumentScreenState extends ConsumerState<NewDocumentScreen> {
@@ -57,10 +56,31 @@ class _NewDocumentScreenState extends ConsumerState<NewDocumentScreen> {
     });
 
     // join document room
-    repository.joinDocument({
-      'documentId': widget.id,
-      'userId': currentuser!.id,
-    });
+
+    joinDocument();
+    // ignore: unused_element
+  }
+
+  void joinDocument() {
+    if (currentuser != null && repository.socketClient.connected) {
+      repository.joinDocument({
+        'documentId': widget.id,
+        'userId': currentuser!.id,
+      });
+    } else {
+      // Reconnect socket if needed
+      if (!repository.socketClient.connected) {
+        repository.socketClient.connect();
+
+        // Wait for connection before joining
+        repository.socketClient.once('connect', (_) {
+          repository.joinDocument({
+            'documentId': widget.id,
+            'userId': currentuser!.id,
+          });
+        });
+      }
+    }
   }
 
   void getCurrentUser() async {
@@ -91,9 +111,7 @@ class _NewDocumentScreenState extends ConsumerState<NewDocumentScreen> {
     SizeConfig().init(context);
 
     // Calculate content width based on device type
-    final contentWidth = Responsive.isDesktop(context)
-        ? SizeConfig.screenWidth * 0.7
-        : SizeConfig.screenWidth;
+    final contentWidth = Responsive.isDesktop(context) ? SizeConfig.screenWidth * 0.7 : SizeConfig.screenWidth;
     return Scaffold(
       backgroundColor: AppColors.white,
       body: Center(
@@ -147,8 +165,7 @@ class _NewDocumentScreenState extends ConsumerState<NewDocumentScreen> {
                                             ),
                                           )
                                         : InputBorder.none,
-                                    contentPadding:
-                                        const EdgeInsets.only(left: 10),
+                                    contentPadding: const EdgeInsets.only(left: 10),
                                   ),
                                 ),
                               ),
@@ -188,24 +205,24 @@ class _NewDocumentScreenState extends ConsumerState<NewDocumentScreen> {
               ),
               Expanded(
                 child: docState.when(
-                  loading: () =>
-                      const Center(child: CircularProgressIndicator()),
-                  error: (error, _) => Text('Error: ${error.toString()}'),
+                  loading: () => const Center(child: CircularProgressIndicator()),
+                  error: (error, _) {
+                    print(error);
+                    return Text('Error: ${error.toString()}');
+                  },
                   data: (documents) {
                     if (documents.isNotEmpty) {
                       final doc = documents.first;
                       if (doc.document.isNotEmpty) {
-                        _documentContent =
-                            doc.document[0] as String; // Ensure it's not null
+                        _documentContent = doc.document[0] as String; // Ensure it's not null
                       } else {
-                        _documentContent =
-                            ''; // Default content if document is empty
+                        _documentContent = ''; // Default content if document is empty
                       }
                       // Update content only once
                       return DocumentEditor(
                         repository: repository,
-                        user: currentuser, 
-                        documentId: widget.id, 
+                        user: currentuser,
+                        documentId: widget.id,
                         initialContent: _documentContent.isNotEmpty ? _documentContent : '',
                         key: ValueKey(_documentContent),
                       );

@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:zenzen/features/auth/login/viewmodel/auth_viewmodel.dart';
 
-import '../../../../config/constants/constants.dart';
+import '../../../../config/router/constants.dart';
 import '../../../../data/api/auth_api.dart';
 import '../repo/oauth_repository.dart';
 

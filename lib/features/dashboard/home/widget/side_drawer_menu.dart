@@ -4,7 +4,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
 import 'package:zenzen/config/constants/app_colors.dart';
 import 'package:zenzen/config/constants/app_images.dart';
-import 'package:zenzen/config/constants/constants.dart';
+import 'package:zenzen/config/router/constants.dart';
 import 'package:zenzen/config/constants/responsive.dart';
 import 'package:zenzen/config/constants/size_config.dart';
 import 'package:zenzen/utils/providers/selected_screen_provider.dart';
@@ -45,7 +45,7 @@ class _SideDrawerMenuState extends ConsumerState<SideDrawerMenu> {
         break;
       case 1:
         // Navigate to Documents
-        context.pushNamed(RoutesName.allDocs);
+        context.goNamed(RoutesName.allDocs);
         print('Documents');
         break;
       case 2:

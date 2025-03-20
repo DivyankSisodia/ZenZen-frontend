@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:zenzen/config/constants/constants.dart';
+import 'package:zenzen/config/router/constants.dart';
 import '../../../../utils/providers/theme_provider.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {

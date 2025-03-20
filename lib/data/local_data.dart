@@ -1,3 +1,4 @@
+import 'package:flutter/rendering.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
@@ -51,6 +52,10 @@ class TokenManager {
       await _storage.write(key: _accessTokenKey, value: accessToken);
       await _storage.write(key: _refreshTokenKey, value: refreshToken);
 
+      print('✅ Tokens Saved');
+      print('Access Token: $accessToken');
+      print('Refresh Token: $refreshToken');
+
     } catch (e) {
       print('❌ Token Save Error: $e');
     }
@@ -84,7 +89,8 @@ class TokenManager {
 
   // Clear tokens on logout
   Future<void> clearTokens() async {
+    debugPrint('🔐 Clearing Tokens');
     await _storage.delete(key: _accessTokenKey);
-    await _storage.delete(key: _refreshTokenKey);
+    // await _storage.delete(key: _refreshTokenKey);
   }
 }

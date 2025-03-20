@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:zenzen/config/constants/constants.dart';
+import 'package:zenzen/config/router/constants.dart';
 import 'package:zenzen/data/api/auth_api.dart';
 
 import '../../../../utils/providers/dio_provider.dart';

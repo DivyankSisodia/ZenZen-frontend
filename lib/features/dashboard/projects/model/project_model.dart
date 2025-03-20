@@ -1,15 +1,17 @@
 
+import '../../../auth/login/model/user_model.dart';
+
 class ProjectModel {
   final String? id;
   final String? title;
   final String? description;
-  final List<String>? addedUser;
-  final List<String>? admin;
+  final List<UserModel>? addedUser;
+  final List<UserModel>? admin;
   final bool? isDeleted;
   final String? createdBy;
   final DateTime? createdAt;
   final DateTime? updatedAt;
-  final List<String>? documents;
+  final List<UserModel>? documents;
 
   ProjectModel({
     this.id,
@@ -44,13 +46,13 @@ class ProjectModel {
       id: json['_id'],
       title: json['title'],
       description: json['description'],
-      addedUser: List<String>.from(json['addedUser']),
-      admin: List<String>.from(json['admin']),
+      addedUser: List<UserModel>.from(json['addedUser']),
+      admin: List<UserModel>.from(json['admin']),
       isDeleted: json['isDeleted'],
       createdBy: json['createdBy'],
       createdAt: DateTime.parse(json['createdAt']),
       updatedAt: DateTime.parse(json['updatedAt']),
-      documents: List<String>.from(json['documents']),
+      documents: List<UserModel>.from(json['documents']),
     );
   }
 
@@ -59,13 +61,13 @@ class ProjectModel {
     String?id,
     String? title,
     String? description,
-    List<String>? addedUser,
-    List<String>? admin,
+    List<UserModel>? addedUser,
+    List<UserModel>? admin,
     bool? isDeleted,
     String? createdBy,
     DateTime? createdAt,
     DateTime? updatedAt,
-    List<String>? documents,
+    List<UserModel>? documents,
   }) {
     return ProjectModel(
       id:id ?? this.id,

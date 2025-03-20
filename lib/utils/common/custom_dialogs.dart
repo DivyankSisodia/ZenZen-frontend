@@ -1,12 +1,9 @@
 import 'package:animated_custom_dropdown/custom_dropdown.dart';
-import 'package:auto_size_text/auto_size_text.dart';
 import 'package:delightful_toast/delight_toast.dart';
 import 'package:delightful_toast/toast/components/toast_card.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:zenzen/utils/common/custom_textfield.dart';
-import 'package:zenzen/utils/theme.dart';
 
 import '../../config/constants/responsive.dart';
 import '../../config/constants/size_config.dart';

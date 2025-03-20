@@ -6,8 +6,9 @@ import 'package:zenzen/data/failure.dart';
 import 'package:zenzen/data/local_data.dart';
 // Add this import
 
-import '../../config/constants/constants.dart';
+import '../../config/router/constants.dart';
 import '../../features/dashboard/docs/model/document_model.dart';
+import '../retry.dart';
 
 class DocApiService {
   final String baseUrl;
@@ -16,32 +17,93 @@ class DocApiService {
 
   DocApiService(this.baseUrl, this.dio, this.tokenManager) {
     // Add interceptor for authentication
-    dio.interceptors.add(
-      PrettyDioLogger(
-        requestHeader: true,
-        requestBody: true,
-        responseBody: true,
-        responseHeader: false,
-        error: true,
-        compact: true,
-        maxWidth: 90,
-        enabled: kDebugMode,
-        // request: true,
-        filter: (options, args) {
-          // don't print requests with uris containing '/posts'
-          if (options.path.contains('/posts')) {
-            return false;
+    // dio.interceptors.add(
+    //   PrettyDioLogger(
+    //     requestHeader: true,
+    //     requestBody: true,
+    //     responseBody: true,
+    //     responseHeader: false,
+    //     error: true,
+    //     compact: true,
+    //     maxWidth: 90,
+    //     enabled: kDebugMode,
+    //     // request: true,
+    //     filter: (options, args) {
+    //       // don't print requests with uris containing '/posts'
+    //       if (options.path.contains('/docs/')) {
+    //         return false;
+    //       }
+    //       // don't print responses with unit8 list data
+    //       return !args.isResponse || !args.hasUint8ListData;
+    //     },
+    //   ),
+    // );
+
+    dio.interceptors.add(QueuedInterceptorsWrapper(
+      onError: (DioException error, ErrorInterceptorHandler handler) async {
+        // Only handle 401 Unauthorized errors
+        if (error.response?.statusCode != 401) {
+          handler.next(error);
+          return;
+        }
+
+        final tokenRefreshManager = TokenRefreshManager(
+          dio: dio,
+          tokenManager: tokenManager,
+          baseUrl: baseUrl,
+        );
+
+        // Check if the error is token-related
+        final errorMsg = error.response?.data?['error'] ?? '';
+        final isTokenExpired = tokenRefreshManager.isTokenExpiredError(errorMsg);
+
+        if (!isTokenExpired) {
+          handler.next(error);
+          return;
+        }
+
+        // Get refresh token
+        final refreshToken = await tokenManager.getRefreshToken();
+        if (refreshToken == null || refreshToken.isEmpty) {
+          _logoutUser();
+          handler.reject(error);
+          return;
+        }
+
+        try {
+          // Attempt to refresh the token
+          final newTokens = await tokenRefreshManager.refreshAccessToken(refreshToken);
+          if (newTokens == null) {
+            _logoutUser();
+            handler.reject(error);
+            return;
           }
-          // don't print responses with unit8 list data
-          return !args.isResponse || !args.hasUint8ListData;
-        },
-      ),
-    );
+
+          // Retry the original request with the new token
+          final response = await tokenRefreshManager.retryRequestWithNewToken(
+            error.requestOptions,
+            newTokens.accessToken,
+          );
+
+          handler.resolve(response);
+        } catch (e) {
+          debugPrint('Error during token refresh flow: $e');
+          _logoutUser();
+          handler.reject(error);
+        }
+      },
+    ));
+  }
+
+  void _logoutUser() {
+    // Add logout logic here
+    tokenManager.clearTokens();
+
+    debugPrint('Logging out user...');
   }
 
   // create a document
-  Future<Either<DocumentModel, ApiFailure>> createDocument(
-      String title, String projectId) async {
+  Future<Either<DocumentModel, ApiFailure>> createDocument(String title, String projectId) async {
     try {
       final accessToken = await tokenManager.getAccessToken();
       final Map<String, dynamic> headers = {};
@@ -62,21 +124,19 @@ class DocApiService {
       if (response.statusCode == 200) {
         // Debug the response
         print('API Response: ${response.data}');
-        
+
         // Check if response.data contains 'data' field (common API pattern)
-        final responseData = response.data is Map && response.data.containsKey('data') 
-            ? response.data['data'] 
-            : response.data;
-            
+        final responseData = response.data is Map && response.data.containsKey('data') ? response.data['data'] : response.data;
+
         final document = DocumentModel.fromJson(responseData);
-        
+
         // Debug the parsed document
         print('Parsed document: id=${document.id}, title=${document.title}');
-        
+
         if (document.id == null) {
           print('Warning: Document ID is null after parsing. Raw response: ${response.data}');
         }
-        
+
         return Left(document);
       } else {
         return Right(ApiFailure(response.data['error']));
@@ -85,7 +145,6 @@ class DocApiService {
       return Right(ApiFailure.fromDioException(e));
     }
   }
-
 
   // get all documents
   // get all documents
@@ -104,25 +163,17 @@ class DocApiService {
 
       if (response.statusCode == 200) {
         // Access the 'data' array from the response
-        if (response.data is Map<String, dynamic> &&
-            response.data.containsKey('data')) {
-          final List<dynamic> documentsData =
-              response.data['data'] as List<dynamic>;
+        if (response.data is Map<String, dynamic> && response.data.containsKey('data')) {
+          final List<dynamic> documentsData = response.data['data'] as List<dynamic>;
 
-          final documents = documentsData
-              .map((doc) => DocumentModel.fromJson(doc as Map<String, dynamic>))
-              .toList();
+          final documents = documentsData.map((doc) => DocumentModel.fromJson(doc as Map<String, dynamic>)).toList();
 
           return Left(documents);
         } else {
-          return Right(ApiFailure(
-              'Response missing "data" field or has incorrect format'));
+          return Right(ApiFailure('Response missing "data" field or has incorrect format'));
         }
       } else {
-        final errorMsg = response.data is Map<String, dynamic> &&
-                response.data.containsKey('message')
-            ? response.data['message']
-            : 'Unknown error';
+        final errorMsg = response.data is Map<String, dynamic> && response.data.containsKey('message') ? response.data['message'] : 'Unknown error';
 
         return Right(ApiFailure(errorMsg));
       }
@@ -138,6 +189,7 @@ class DocApiService {
   // get a document by id
   // get a document by id
   Future<Either<DocumentModel, ApiFailure>> getDocInfo(String id) async {
+    print('Getting document info for id: $id');
     try {
       final accessToken = await tokenManager.getAccessToken();
       final Map<String, dynamic> headers = {};
@@ -152,16 +204,16 @@ class DocApiService {
       );
 
       if (response.statusCode == 200) {
-        // If the response is wrapped in a data field, extract it
-        Map<String, dynamic> documentData;
-        if (response.data is Map<String, dynamic> &&
-            response.data.containsKey('data')) {
-          documentData = response.data['data'];
-        } else {
-          documentData = response.data;
-        }
+        // Debug the response
+        print('API Response: ${response.data}');
 
-        final document = DocumentModel.fromJson(documentData);
+        // Check if response.data contains 'data' field (common API pattern)
+        final responseData = response.data is Map && response.data.containsKey('data') ? response.data['data'] : response.data;
+
+        final document = DocumentModel.fromJson(responseData);
+
+        // Debug the parsed document
+        print(document);
 
         return Left(document);
       } else {
@@ -194,8 +246,7 @@ class DocApiService {
       if (response.statusCode == 200) {
         // If the response is wrapped in a data field, extract it
         Map<String, dynamic> documentData;
-        if (response.data is Map<String, dynamic> &&
-            response.data.containsKey('data')) {
+        if (response.data is Map<String, dynamic> && response.data.containsKey('data')) {
           documentData = response.data['data'];
         } else {
           documentData = response.data;
@@ -206,10 +257,8 @@ class DocApiService {
       } else {
         return Right(ApiFailure('Failed to add user to document'));
       }
-
     } on DioError catch (e) {
       return Right(ApiFailure.fromDioException(e));
     }
   }
-
 }
