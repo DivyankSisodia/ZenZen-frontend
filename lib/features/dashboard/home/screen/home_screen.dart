@@ -11,6 +11,7 @@ import 'package:zenzen/utils/common/custom_dialogs.dart';
 import 'package:zenzen/utils/theme.dart';
 
 import '../../../../config/constants/responsive.dart';
+import '../../docs/repo/socket_repo.dart';
 import '../widget/animated_tab.dart';
 import '../widget/feature_card.dart';
 import '../widget/side_drawer_menu.dart';
@@ -45,6 +46,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     FontAwesomeIcons.userFriends,
     FontAwesomeIcons.fileExport,
   ];
+
+  SocketRepository repository = SocketRepository();
 
   @override
   void initState() {
