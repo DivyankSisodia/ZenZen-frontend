@@ -1,7 +1,6 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import 'package:zenzen/config/constants/app_colors.dart';
 import 'package:zenzen/features/dashboard/docs/view-model/doc_viewmodel.dart';
 import 'package:zenzen/utils/common/custom_appbar.dart';
@@ -10,8 +9,10 @@ import '../../../../config/constants/responsive.dart';
 import '../../../../config/constants/size_config.dart';
 import '../../../../utils/common/custom_divider.dart';
 import '../../../../utils/common/custom_menu.dart';
+import '../../../../utils/common/custom_searchbar.dart';
+import '../../../../utils/theme.dart';
+import '../../home/widget/document_card.dart';
 import '../../home/widget/side_drawer_menu.dart';
-import 'package:speech_to_text/speech_to_text.dart' as stt;
 
 import '../widget/document_list_widget.dart';
 
@@ -29,83 +30,16 @@ class _DocumentScreenState extends ConsumerState<DocumentScreen> {
   // is grid view or list view
   bool isGridView = false;
 
-  // Speech to text instance
-  late stt.SpeechToText _speech;
-  bool _isListening = false;
-  String _lastWords = '';
-
   @override
   void initState() {
     super.initState();
-    _speech = stt.SpeechToText();
-    _initSpeech();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       ref.read(docViewmodelProvider.notifier).getAllDocuments();
     });
   }
 
-  // Initialize speech recognition
-  void _initSpeech() async {
-    bool available = await _speech.initialize(
-      onStatus: _onSpeechStatus,
-      onError: _onSpeechError,
-    );
-    if (!mounted) return;
-
-    if (!available) {
-      debugPrint("Speech recognition not available");
-    }
-  }
-
-  // Listen for speech input
-  void _startListening() async {
-    if (!_isListening) {
-      bool available = await _speech.initialize(
-        onStatus: _onSpeechStatus,
-        onError: _onSpeechError,
-      );
-
-      if (available) {
-        setState(() => _isListening = true);
-        _speech.listen(
-          onResult: _onSpeechResult,
-          listenFor: const Duration(seconds: 30),
-          localeId: "en_US",
-          cancelOnError: true,
-          partialResults: true,
-        );
-      }
-    } else {
-      setState(() => _isListening = false);
-      _speech.stop();
-    }
-  }
-
-  // Handle speech recognition status changes
-  void _onSpeechStatus(String status) {
-    debugPrint("Speech recognition status: $status");
-    if (status == 'notListening') {
-      setState(() => _isListening = false);
-    }
-  }
-
-  // Handle speech recognition errors
-  void _onSpeechError(dynamic error) {
-    debugPrint("Speech recognition error: $error");
-    setState(() => _isListening = false);
-  }
-
-  // Handle speech recognition results
-  void _onSpeechResult(dynamic result) {
-    setState(() {
-      _lastWords = result.recognizedWords;
-      searchController.text = _lastWords;
-    });
-  }
-
   @override
   void dispose() {
-    _speech.stop();
     searchController.dispose();
     super.dispose();
   }
@@ -113,6 +47,7 @@ class _DocumentScreenState extends ConsumerState<DocumentScreen> {
   @override
   Widget build(BuildContext context) {
     SizeConfig().init(context);
+    final documentsAsync = ref.watch(docViewmodelProvider);
     return Scaffold(
       key: drawerKey,
       drawer: SizedBox(
@@ -123,54 +58,16 @@ class _DocumentScreenState extends ConsumerState<DocumentScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: CupertinoSearchTextField(
-                style: TextStyle(
-                  color: AppColors.primary,
-                  fontSize: 16,
-                  fontFamily: 'SpaceGrotesk',
-                ),
-                placeholderStyle: TextStyle(
-                  color: AppColors.primary,
-                  fontSize: 16,
-                  fontFamily: 'SpaceGrotesk',
-                ),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                onTap: () {
-                  debugPrint('Search field tapped');
-                },
-                onSubmitted: (value) {
-                  debugPrint('Search submitted: $value');
-                },
-                decoration: BoxDecoration(
-                  color: AppColors.lightGrey,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                autofocus: false,
-                autocorrect: true,
-                controller: searchController,
-                suffixMode: OverlayVisibilityMode.always,
-                suffixIcon: Icon(
-                  _isListening ? FontAwesomeIcons.stop : FontAwesomeIcons.microphone,
-                  color: _isListening ? Colors.red : null,
-                ),
-                onSuffixTap: _startListening,
-                suffixInsets: const EdgeInsets.only(right: 20),
-                placeholder: 'Search',
-              ),
+            VoiceSearchBar(
+              controller: searchController,
+              onSearch: (value) {
+                debugPrint('Search submitted: $value');
+                // Implement your search functionality here
+              },
+              onTap: () {
+                debugPrint('Search field tapped');
+              },
             ),
-            if (_isListening)
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16.0),
-                child: Text(
-                  "Listening...",
-                  style: TextStyle(
-                    fontStyle: FontStyle.italic,
-                    color: Colors.grey,
-                  ),
-                ),
-              ),
             const SizedBox(height: 20),
             Expanded(
               child: SingleChildScrollView(
@@ -196,11 +93,52 @@ class _DocumentScreenState extends ConsumerState<DocumentScreen> {
 
                       // show all the documents for the user
 
-                      isGridView
-                          ? Center(
-                              child: Text('GridView'),
-                            )
-                          : DocumentListWidget()
+                       documentsAsync.when(
+                        data: (documents) {
+                          return isGridView
+                            ? GridView.builder(
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: 2,
+                                  crossAxisSpacing: 10,
+                                  mainAxisSpacing: 10,
+                                ),
+                                itemCount: documents.length,
+                                itemBuilder: (context, index) {
+                                  return DocumentCardWidget(
+                                    context: context,
+                                    document: documents[index],
+                                  );
+                                },
+                              )
+                            : DocumentListWidget(documents: documents);
+                        },
+                        loading: () => SizedBox(
+                          height: 500,
+                          child: Skeletonizer(
+                            enabled: true,
+                            enableSwitchAnimation: true,
+                            child: ListView.builder(
+                              itemCount: 6,
+                              padding: const EdgeInsets.all(16),
+                              itemBuilder: (context, index) => Card(
+                                child: ListTile(
+                                  title: Text('Item number $index as title'),
+                                  subtitle: const Text('Subtitle here'),
+                                  trailing: const Icon(
+                                    Icons.ac_unit,
+                                    size: 32,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        error: (error, stack) => Center(
+                          child: Text('Error: $error', style: AppTheme.textMedium(context)),
+                        ),
+                      ),
                     ],
                   ),
                 ),

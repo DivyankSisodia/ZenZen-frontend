@@ -79,6 +79,9 @@ class _CircularMenuState extends State<CircularMenu> with SingleTickerProviderSt
             margin: const EdgeInsets.all(10.0),
             message: 'Accessibility Menu',
             child: InkWell(
+              highlightColor: Colors.transparent,
+              splashColor: Colors.transparent,
+              focusColor: Colors.transparent,
               hoverColor: Colors.transparent  ,
               onTap: _toggleMenu,
               child: AnimatedBuilder(

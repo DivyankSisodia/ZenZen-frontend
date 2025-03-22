@@ -8,6 +8,7 @@ import 'package:zenzen/features/auth/splash/screen/intro_screen.dart';
 import 'package:zenzen/features/auth/splash/screen/splash_screen.dart';
 import 'package:zenzen/features/dashboard/docs/screen/document_screen.dart';
 import 'package:zenzen/features/dashboard/home/screen/home_screen.dart';
+import 'package:zenzen/features/dashboard/projects/screen/project_list_screen.dart';
 
 import '../../features/auth/login/screen/login_screen.dart';
 import '../../features/auth/login/screen/verify_user_screen.dart';
@@ -107,6 +108,17 @@ class RouteConfig {
             );
           },
         ),
+        GoRoute(
+          path: '/all-projects',
+          name: RoutesName.allProjects,
+          pageBuilder: (context, state) {
+            return customTransitionPage(
+              key: state.pageKey,
+              child: const ProjectListScreen(),
+              transitionType: PageTransitionType.fade,
+            );
+          },
+        )
       ],
     );
   }

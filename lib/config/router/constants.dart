@@ -12,6 +12,7 @@ class RoutesName {
   static const String doc = "document";
   static const String project = "project";
   static const String allDocs = "all-documents";
+  static const String allProjects = "all-projects";
 }
 
 class ApiRoutes {

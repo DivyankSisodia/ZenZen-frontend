@@ -1,17 +1,22 @@
+import 'dart:async';
+
 import 'package:animated_custom_dropdown/custom_dropdown.dart';
 import 'package:delightful_toast/delight_toast.dart';
 import 'package:delightful_toast/toast/components/toast_card.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 import 'package:zenzen/data/failure.dart';
 
+import '../../config/constants/app_colors.dart';
 import '../../config/constants/responsive.dart';
 import '../../config/constants/size_config.dart';
 import '../../features/dashboard/projects/model/project_model.dart';
 import '../../features/dashboard/docs/view-model/doc_viewmodel.dart';
 import '../../features/dashboard/projects/view-model/project_viewmodel.dart';
 import '../../features/dashboard/home/provider/select_project_provider.dart';
+import '../theme.dart';
 
 class CustomDialogs {
   void createDocCustomDialog(BuildContext context, WidgetRef ref, String title) {
@@ -216,5 +221,169 @@ class CustomDialogs {
         );
       },
     );
+  }
+
+  // timer dialogs
+  static Timer? _hoverTimer;
+  static bool _isHovered = false;
+
+  // Cancel any active hover timer
+  static void cancelHover() {
+    _hoverTimer?.cancel();
+    _isHovered = false;
+  }
+
+  static void showProjectDetailsDialog({
+    required BuildContext context,
+    required String? title,
+    required DateTime? creationDate,
+    required List? users,
+    required List? admins,
+    required String? description,
+    required String? id,
+    VoidCallback? onOpenProject,
+  }) {
+    if (!_isHovered) return;
+
+    // Extract usernames and avatars from UserModel objects
+    List<Map<String, String>> userDetails = [];
+    if (users != null) {
+      for (var user in users) {
+        userDetails.add({
+          'name': user.userName ?? "Unknown User",
+          'avatar': user.avatar ?? "", 
+        });
+      }
+    }
+
+    // Extract admin details
+    List<Map<String, String>> adminDetails = [];
+    if (admins != null) {
+      for (var admin in admins) {
+        adminDetails.add({
+          'name': admin.userName ?? "Unknown Admin",
+          'avatar': admin.avatar ?? "", 
+        });
+      }
+    }
+
+    showDialog(
+      context: context,
+      builder: (context) => CupertinoAlertDialog(
+        title: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Text('Project Details', style: AppTheme.textLarge(context)),
+        ),
+        content: SizedBox(
+          width: 400,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Project title: $title',
+                style: AppTheme.textMedium(context),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                'Description: $description',
+                style: AppTheme.textMedium(context),
+              ),
+              const SizedBox(height: 10),
+              Text('Created: ${DateFormat.yMMMd().format(creationDate ?? DateTime.now())}', 
+                  style: AppTheme.textMedium(context).copyWith(fontSize: 16)),
+
+              // Display collaborators
+              if (userDetails.isNotEmpty) ...[
+                const SizedBox(height: 10),
+                Text('Collaborators:', style: AppTheme.mediumBodyTheme(context)),
+                const SizedBox(height: 5),
+                ...userDetails.map<Widget>(
+                  (user) => _buildUserRow(context, user),
+                ),
+              ],
+
+              // Display admins
+              if (adminDetails.isNotEmpty) ...[
+                const SizedBox(height: 10),
+                Text('Admins:', style: AppTheme.mediumBodyTheme(context)),
+                const SizedBox(height: 5),
+                ...adminDetails.map<Widget>(
+                  (admin) => _buildUserRow(context, admin),
+                ),
+              ],
+            ],
+          ),
+        ),
+        actions: [
+          CupertinoDialogAction(
+            textStyle: AppTheme.textMedium(context),
+            isDefaultAction: true,
+            isDestructiveAction: true,
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Close'),
+          ),
+          CupertinoDialogAction(
+            onPressed: () {
+              Navigator.of(context).pop();
+              if (onOpenProject != null) {
+                onOpenProject();
+              }
+            },
+            child: const Text('Open Project'),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  // Helper method to build user/admin row
+  static Widget _buildUserRow(BuildContext context, Map<String, String> user) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 15, bottom: 5),
+      child: Row(
+        children: [
+          CircleAvatar(
+            radius: 15,
+            backgroundImage: user['avatar']!.isNotEmpty ? NetworkImage(user['avatar']!) : null,
+            child: user['avatar']!.isEmpty
+                ? Text(
+                    user['name']!.substring(0, 1).toUpperCase(),
+                    style: AppTheme.textMedium(context).copyWith(
+                      color: AppColors.lightGrey,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  )
+                : null,
+          ),
+          const SizedBox(width: 10),
+          Text(user['name']!, style: AppTheme.textMedium(context).copyWith(fontSize: 16)),
+        ],
+      ),
+    );
+  }static void startHoverTimer({
+    required BuildContext context,
+    required String? title,
+    required DateTime? creationDate,
+    required List? users,
+    List? admins,
+    required String? description,
+    required String? id,
+    VoidCallback? onOpenProject,
+  }) {
+    _hoverTimer?.cancel();
+    _hoverTimer = Timer(const Duration(seconds: 2), () {
+      _isHovered = true;
+      showProjectDetailsDialog(
+        context: context,
+        title: title,
+        creationDate: creationDate,
+        users: users,
+        admins: admins ?? [],
+        description: description,
+        id: id,
+        onOpenProject: onOpenProject,
+      );
+    });
   }
 }

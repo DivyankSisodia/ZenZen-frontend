@@ -50,7 +50,7 @@ class _SideDrawerMenuState extends ConsumerState<SideDrawerMenu> {
         break;
       case 2:
         // Navigate to Projects
-        // Navigator.pushNamed(context, '/projects');
+        context.goNamed(RoutesName.allProjects);
         print('Projects');
         break;
       case 3:
