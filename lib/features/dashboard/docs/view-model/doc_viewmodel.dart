@@ -1,10 +1,13 @@
-import 'package:flutter/widgets.dart';
+// ignore_for_file: unnecessary_cast, unused_catch_stack, unnecessary_type_check
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:zenzen/features/dashboard/docs/model/document_model.dart';
 import 'package:zenzen/features/dashboard/docs/repo/document_repo.dart';
+import 'package:zenzen/utils/common/custom_toast.dart';
 
 import '../../../../config/router/constants.dart';
+import '../../../../data/failure.dart';
 import '../provider/doc_provider.dart';
 
 class DocViewmodel extends StateNotifier<AsyncValue<List<DocumentModel>>> {
@@ -13,15 +16,17 @@ class DocViewmodel extends StateNotifier<AsyncValue<List<DocumentModel>>> {
 
   DocViewmodel(this.repository, this.ref) : super(const AsyncValue.loading());
 
-   bool _isLoading = false;
+  bool _isLoading = false;
+
+  CustomToast customToast = CustomToast();
 
   Future<void> getAllDocuments() async {
     // Skip if already loading
     if (_isLoading) return;
-    
+
     _isLoading = true;
     state = const AsyncValue.loading();
-    
+
     try {
       final result = await repository.getDocuments();
       if (mounted) {
@@ -61,8 +66,7 @@ class DocViewmodel extends StateNotifier<AsyncValue<List<DocumentModel>>> {
     }
   }
 
-  Future<void> createDocument(
-      String title, String projectId, BuildContext context) async {
+  Future<void> createDocument(String title, String projectId, BuildContext context) async {
     try {
       // Set loading state
       state = const AsyncValue.loading();
@@ -104,8 +108,7 @@ class DocViewmodel extends StateNotifier<AsyncValue<List<DocumentModel>>> {
   }
 
   // Add a user to a document
-  Future<void> shareDocToUsers(
-      String docId, List<String> users, String projectId) async {
+  Future<void> shareDocToUsers(String docId, List<String> users, String projectId) async {
     try {
       if (!state.isLoading) {
         state = const AsyncValue.loading();
@@ -123,10 +126,34 @@ class DocViewmodel extends StateNotifier<AsyncValue<List<DocumentModel>>> {
       state = AsyncValue.error(e, stackTrace);
     }
   }
+
+  Future<void> deleteDocument(String documentId, BuildContext context) async {
+    // Keep track of the current documents
+    final currentDocuments = state.valueOrNull ?? [];
+
+    try {
+      // Call repository to delete
+      final result = await repository.deleteDocument(documentId);
+
+      result.fold((doc) {
+        // Success case - update the documents list
+        final updatedDocuments = currentDocuments.where((doc) => doc.id != documentId).toList();
+        state = AsyncData(updatedDocuments);
+
+        // Show success toast
+        customToast.showToast('Document deleted successfully ☑️', context);
+      }, (error) {
+        // Error case - DON'T change state to AsyncError
+        // Just show the toast while keeping the current documents in state
+        customToast.showToast(error is ApiFailure ? error.error : error.toString(), context);
+      });
+    } catch (e, stackTrace) {
+      customToast.showToast( e is ApiFailure ? e.error : e.toString(), context);
+    }
+  }
 }
 
-final docViewmodelProvider =
-    StateNotifierProvider<DocViewmodel, AsyncValue<List<DocumentModel>>>((ref) {
+final docViewmodelProvider = StateNotifierProvider<DocViewmodel, AsyncValue<List<DocumentModel>>>((ref) {
   final repository = ref.watch(docRepositoryProvider);
   return DocViewmodel(repository, ref);
 });

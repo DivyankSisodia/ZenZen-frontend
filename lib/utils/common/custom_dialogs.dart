@@ -4,6 +4,7 @@ import 'package:delightful_toast/toast/components/toast_card.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:zenzen/data/failure.dart';
 
 import '../../config/constants/responsive.dart';
 import '../../config/constants/size_config.dart';
@@ -13,8 +14,7 @@ import '../../features/dashboard/projects/view-model/project_viewmodel.dart';
 import '../../features/dashboard/home/provider/select_project_provider.dart';
 
 class CustomDialogs {
-  void createDocCustomDialog(
-      BuildContext context, WidgetRef ref, String title) {
+  void createDocCustomDialog(BuildContext context, WidgetRef ref, String title) {
     // Use the outer context for navigation, not the dialog's context
     final outerContext = context;
     final projectViewmodel = ref.read(projectViewModelProvider.notifier);
@@ -31,9 +31,7 @@ class CustomDialogs {
           content: Padding(
             padding: const EdgeInsets.only(top: 16.0),
             child: SizedBox(
-              width: Responsive.isMobile(dialogContext)
-                  ? SizeConfig.screenWidth / 2.5
-                  : SizeConfig.screenWidth / 4.5,
+              width: Responsive.isMobile(dialogContext) ? SizeConfig.screenWidth / 2.5 : SizeConfig.screenWidth / 4.5,
               height: 100,
               // Watch for changes in the projects state
               child: Consumer(
@@ -41,28 +39,26 @@ class CustomDialogs {
                   final projectsState = ref.watch(projectViewModelProvider);
 
                   return projectsState.when(
-                    loading: () =>
-                        const Center(child: CupertinoActivityIndicator()),
-                    error: (err, stack) =>
-                        Text('Error loading projects: ${err.toString()}'),
+                    loading: () => const Center(child: CupertinoActivityIndicator()),
+                    error: (err, stack) {
+                      if(err is ApiFailure){
+                        print('Error loading projects: ${err.error}');
+                        return Text('Error loading projects: ${err.error}');
+                      }
+                      return Text('Error loading projects: ${err.toString()}');
+                    },
                     data: (projects) => CustomDropdown<String>(
                       hintBuilder: (context, hint, enabled) {
                         return Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 8.0),
                           child: Text(
                             hint,
-                            style: TextStyle(
-                                color: CupertinoColors.systemGrey,
-                                fontSize: 16,
-                                fontFamily: 'SpaceGrotesk'),
+                            style: TextStyle(color: CupertinoColors.systemGrey, fontSize: 16, fontFamily: 'SpaceGrotesk'),
                           ),
                         );
                       },
                       hintText: 'Select Project',
-                      items: projects
-                          .map((project) => project.title)
-                          .whereType<String>()
-                          .toList(),
+                      items: projects.map((project) => project.title).whereType<String>().toList(),
                       decoration: CustomDropdownDecoration(
                         hintStyle: TextStyle(color: CupertinoColors.systemGrey),
                         listItemStyle: TextStyle(color: CupertinoColors.black),
@@ -71,12 +67,10 @@ class CustomDialogs {
                         // Find the selected project's ID
                         final selectedProject = projects.firstWhere(
                           (project) => project.title == value,
-                          orElse: () =>
-                              ProjectModel(id: '', title: '', description: ''),
+                          orElse: () => ProjectModel(id: '', title: '', description: ''),
                         );
 
-                        ref.read(selectedProjectIdProvider.notifier).state =
-                            selectedProject.id!;
+                        ref.read(selectedProjectIdProvider.notifier).state = selectedProject.id!;
 
                         print('Selected Project: $value');
                         print('Selected Project ID: ${selectedProject.id}');
@@ -87,11 +81,9 @@ class CustomDialogs {
                         // Then use the outer context for document creation and navigation
                         // Use a slight delay to ensure the dialog is fully closed
                         Future.microtask(() {
-                          final docViewModel =
-                              ref.read(docViewmodelProvider.notifier);
+                          final docViewModel = ref.read(docViewmodelProvider.notifier);
                           final projectId = ref.read(selectedProjectIdProvider);
-                          docViewModel.createDocument(
-                              'bhele', projectId, outerContext);
+                          docViewModel.createDocument('bhele', projectId, outerContext);
                         });
                       },
                     ),
@@ -189,6 +181,7 @@ class CustomDialogs {
                 }
 
                 final projectViewModel = ref.read(projectViewModelProvider.notifier);
+
                 projectViewModel.createProject(
                   controller.text,
                   descriptionController.text,
@@ -198,6 +191,10 @@ class CustomDialogs {
                 Navigator.pop(dialogContext);
 
                 DelightToastBar(
+                  animationCurve: Curves.easeInOut,
+                  animationDuration: const Duration(milliseconds: 500),
+                  autoDismiss: true,
+                  snackbarDuration: const Duration(seconds: 3),
                   builder: (context) => const ToastCard(
                     leading: Icon(
                       Icons.check_circle,

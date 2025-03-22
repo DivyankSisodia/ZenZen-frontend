@@ -29,7 +29,7 @@ class _DocumentListWidgetState extends ConsumerState<DocumentListWidget> {
     AppColors.error,
   ];
 
-  bool isHovered = false;
+  int? hoveredIndex;
 
   @override
   Widget build(BuildContext context) {
@@ -45,13 +45,13 @@ class _DocumentListWidgetState extends ConsumerState<DocumentListWidget> {
               itemBuilder: (context, index) {
                 return MouseRegion(
                   cursor: SystemMouseCursors.click,
-                  onEnter: (event) => setState(() => isHovered = true),
-                  onExit: (event) => setState(() => isHovered = false),
+                  onEnter: (event) => setState(() => hoveredIndex = index),
+                  onExit: (event) => setState(() => hoveredIndex = null),
                   child: Container(
-                    margin: const EdgeInsets.only(bottom: 10),
+                    margin: const EdgeInsets.only(bottom: 15),
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      boxShadow: isHovered
+                      boxShadow: hoveredIndex == index
                           ? [
                               BoxShadow(
                                 color: AppColors.black.withOpacity(0.2),
@@ -110,7 +110,6 @@ class _DocumentListWidgetState extends ConsumerState<DocumentListWidget> {
                                       ),
                                     ),
                                     const Gap(5),
-                                    // if private then show an icon of lock
                                     if (data[index].isPrivate)
                                       Icon(
                                         Icons.lock,
@@ -132,7 +131,7 @@ class _DocumentListWidgetState extends ConsumerState<DocumentListWidget> {
                               children: [
                                 SizedBox(
                                   width: MediaQuery.of(context).size.width * 0.3,
-                                  height: 30, // Add fixed height
+                                  height: 30,
                                   child: Stack(
                                     alignment: Alignment.center,
                                     children: [
@@ -197,7 +196,7 @@ class _DocumentListWidgetState extends ConsumerState<DocumentListWidget> {
                           position: PullDownMenuPosition.automatic,
                           buttonBuilder: (context, showMenu) => IconButton(
                             onPressed: showMenu,
-                            icon: Icon(Icons.menu),
+                            icon: Icon(CupertinoIcons.ellipsis),
                           ),
                         ),
                       ],

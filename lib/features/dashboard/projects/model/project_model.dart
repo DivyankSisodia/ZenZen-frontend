@@ -1,4 +1,3 @@
-
 import '../../../auth/login/model/user_model.dart';
 
 class ProjectModel {
@@ -11,7 +10,7 @@ class ProjectModel {
   final String? createdBy;
   final DateTime? createdAt;
   final DateTime? updatedAt;
-  final List<UserModel>? documents;
+  final List<String>? documents;
 
   ProjectModel({
     this.id,
@@ -26,7 +25,7 @@ class ProjectModel {
     this.documents,
   });
 
-  Map<String,dynamic> toJson(){
+  Map<String, dynamic> toJson() {
     return {
       'id': id,
       'title': title,
@@ -41,24 +40,24 @@ class ProjectModel {
     };
   }
 
-  factory ProjectModel.fromJson(Map<String, dynamic> json){
+  factory ProjectModel.fromJson(Map<String, dynamic> json) {
     return ProjectModel(
       id: json['_id'],
       title: json['title'],
       description: json['description'],
-      addedUser: List<UserModel>.from(json['addedUser']),
-      admin: List<UserModel>.from(json['admin']),
+      addedUser: json['addedUser'] != null ? List<UserModel>.from(json['addedUser'].map((user) => UserModel.fromJson(user))) : null,
+      admin: json['admin'] != null ? List<UserModel>.from(json['admin'].map((user) => UserModel.fromJson(user))) : null,
       isDeleted: json['isDeleted'],
       createdBy: json['createdBy'],
-      createdAt: DateTime.parse(json['createdAt']),
-      updatedAt: DateTime.parse(json['updatedAt']),
-      documents: List<UserModel>.from(json['documents']),
+      createdAt: json['createdAt'] != null ? DateTime.parse(json['createdAt']) : null,
+      updatedAt: json['updatedAt'] != null ? DateTime.parse(json['updatedAt']) : null,
+      documents: json['documents'] != null ? List<String>.from(json['documents']) : null,
     );
   }
 
   // copyWith method
   ProjectModel copyWith({
-    String?id,
+    String? id,
     String? title,
     String? description,
     List<UserModel>? addedUser,
@@ -67,10 +66,10 @@ class ProjectModel {
     String? createdBy,
     DateTime? createdAt,
     DateTime? updatedAt,
-    List<UserModel>? documents,
+    List<String>? documents,
   }) {
     return ProjectModel(
-      id:id ?? this.id,
+      id: id ?? this.id,
       title: title ?? this.title,
       description: description ?? this.description,
       addedUser: addedUser ?? this.addedUser,

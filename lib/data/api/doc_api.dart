@@ -261,4 +261,49 @@ class DocApiService {
       return Right(ApiFailure.fromDioException(e));
     }
   }
+
+  // delete a document
+
+  Future<Either<bool, ApiFailure>> deleteDocument(String docId) async {
+    print('Deleting document with id: $docId');
+    try {
+      final accessToken = await tokenManager.getAccessToken();
+      final Map<String, dynamic> headers = {};
+      if (accessToken != null && accessToken.isNotEmpty) {
+        headers['Authorization'] = 'Bearer $accessToken';
+      }
+
+      print('response se pehle');
+
+      print('url: $baseUrl${ApiRoutes.deleteDocument}');
+      print('headers: $headers');
+      print('docId: $docId');
+
+      final response = await dio.post(
+        '$baseUrl${ApiRoutes.deleteDocument}',
+        data: {'docId': docId},
+        options: Options(headers: headers),
+      );
+
+      try {
+        print('response: ${response.data}');
+      } catch (e) {
+        print('Error in deleteDocument: $e');
+      }
+
+      if (response.statusCode == 200) {
+        // Check for success message in response
+        if (response.data is Map<String, dynamic> && response.data.containsKey('message') && response.data['message'] != null) {
+          print('Document deleted: ${response.data['message']}');
+          return Left(true);
+        }
+        return Left(true); // For backward compatibility
+      } else {
+        final errorMsg = response.data is Map<String, dynamic> && response.data.containsKey('message') ? response.data['message'] : 'Failed to delete document';
+        return Right(ApiFailure(errorMsg));
+      }
+    } on DioException catch (e) {
+      return Right(ApiFailure.fromDioException(e));
+    }
+  }
 }

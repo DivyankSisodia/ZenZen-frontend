@@ -1,11 +1,13 @@
 import 'dart:math';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:pull_down_button/pull_down_button.dart';
 
 import '../../../../config/constants/app_colors.dart';
 import '../../../../config/router/constants.dart';
@@ -24,13 +26,7 @@ class AnimatedTab extends ConsumerStatefulWidget {
 
 class _AnimatedTabState extends ConsumerState<AnimatedTab> {
   int _selectedIndex = 0;
-  final List<String> _tabLabels = [
-    'Recent',
-    'Favorites',
-    'Shared',
-    'External',
-    'Archived'
-  ];
+  final List<String> _tabLabels = ['Recent', 'Favorites', 'Shared', 'External', 'Archived'];
 
   @override
   void initState() {
@@ -50,20 +46,16 @@ class _AnimatedTabState extends ConsumerState<AnimatedTab> {
         docViewModel.getAllDocuments();
         break;
       case 1: // Favorites
-        docViewModel
-            .getAllDocuments(); // Replace with getFavoriteDocuments() when available
+        docViewModel.getAllDocuments(); // Replace with getFavoriteDocuments() when available
         break;
       case 2: // Shared
-        docViewModel
-            .getAllDocuments(); // Replace with getSharedDocuments() when available
+        docViewModel.getAllDocuments(); // Replace with getSharedDocuments() when available
         break;
       case 3: // External
-        docViewModel
-            .getAllDocuments(); // Replace with getExternalDocuments() when available
+        docViewModel.getAllDocuments(); // Replace with getExternalDocuments() when available
         break;
       case 4: // Archived
-        docViewModel
-            .getAllDocuments(); // Replace with getArchivedDocuments() when available
+        docViewModel.getAllDocuments(); // Replace with getArchivedDocuments() when available
         break;
     }
   }
@@ -87,15 +79,12 @@ class _AnimatedTabState extends ConsumerState<AnimatedTab> {
             children: {
               for (int i = 0; i < _tabLabels.length; i++)
                 i: Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                   child: Text(
                     _tabLabels[i],
                     style: TextStyle(
                       color: _selectedIndex == i ? AppColors.primary : null,
-                      fontWeight: _selectedIndex == i
-                          ? FontWeight.bold
-                          : FontWeight.normal,
+                      fontWeight: _selectedIndex == i ? FontWeight.bold : FontWeight.normal,
                     ),
                   ),
                 ),
@@ -122,8 +111,7 @@ class _AnimatedTabState extends ConsumerState<AnimatedTab> {
 
               // Use the state without triggering API calls in the build method
               return docState.when(
-                loading: () =>
-                    const Center(child: CircularProgressIndicator.adaptive()),
+                loading: () => const Center(child: CircularProgressIndicator.adaptive()),
                 error: (error, stack) {
                   if (error is ApiFailure) {
                     print('ApiFailure details: ${error.error}');
@@ -230,6 +218,7 @@ class _AnimatedTabState extends ConsumerState<AnimatedTab> {
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
+                  document.isPrivate ? Tooltip(message: 'Private Document', child: Icon(Icons.lock, size: 16, color: Colors.grey[600])) : Tooltip(message: 'Public Document', child: Icon(Icons.public, size: 16, color: Colors.grey[600])),
                 ],
               ),
               const Spacer(),
@@ -257,9 +246,68 @@ class _AnimatedTabState extends ConsumerState<AnimatedTab> {
                       color: Colors.grey[600],
                     ),
                   ),
-                  document.isPrivate
-                      ? Icon(Icons.lock, size: 16, color: Colors.grey[600])
-                      : Icon(Icons.public, size: 16, color: Colors.grey[600]),
+                  Row(
+                    children: [
+                      Consumer(
+                        builder: (context, ref, child) {
+                          final docViewModel = ref.read(docViewmodelProvider.notifier);
+                          return PullDownButton(
+                            itemBuilder: (context) => [
+                              PullDownMenuHeader(
+                                itemTheme: PullDownMenuItemTheme.maybeOf(context),
+                                leading: CachedNetworkImage(imageUrl: document.admin!.avatar ?? 'https://www.startpage.com/av/proxy-image?piurl=https%3A%2F%2Fimg.freepik.com%2Ffree-psd%2Fcontact-icon-illustration-isolated_23-2151903337.jpg&sp=1742530336Tccbf5d432c4bd56601aeefdb4b204fbaec7c563cddfe4e416727623caea3ec1b', width: 40, height: 40),
+                                title: document.admin!.userName ?? 'Profile',
+                                subtitle: document.admin!.email ?? 'Tap to open',
+                                onTap: () {},
+                                icon: CupertinoIcons.profile_circled,
+                              ),
+                              PullDownMenuActionsRow.medium(
+                                items: [
+                                  PullDownMenuItem(
+                                    onTap: () {},
+                                    title: 'Add users',
+                                    icon: CupertinoIcons.person_add,
+                                  ),
+                                  PullDownMenuItem(
+                                    onTap: () {},
+                                    title: 'Duplicate',
+                                    icon: CupertinoIcons.doc_on_doc,
+                                  ),
+                                  PullDownMenuItem(
+                                    onTap: () {},
+                                    title: 'Favorite',
+                                    icon: CupertinoIcons.bookmark,
+                                  ),
+                                ],
+                              ),
+                              PullDownMenuDivider.large(),
+                              PullDownMenuItem(
+                                title: 'Share',
+                                onTap: () {
+                                  print('Share');
+                                },
+                                icon: CupertinoIcons.share,
+                              ),
+                              PullDownMenuItem(
+                                iconColor: Colors.red,
+                                onTap: () {
+                                  // print('Delete document ${document.id}');
+                                  docViewModel.deleteDocument(document.id!, context);
+                                },
+                                title: 'Delete',
+                                icon: CupertinoIcons.delete,
+                              ),
+                            ],
+                            position: PullDownMenuPosition.automatic,
+                            buttonBuilder: (context, showMenu) => IconButton(
+                              onPressed: showMenu,
+                              icon: Icon(CupertinoIcons.ellipsis),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  )
                 ],
               ),
             ],

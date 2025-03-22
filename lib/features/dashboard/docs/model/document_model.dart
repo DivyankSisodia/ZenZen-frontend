@@ -10,10 +10,10 @@ class DocumentModel {
   final DateTime createdAt;
   final DateTime updatedAt;
   final bool isDeleted;
-  final List<UserModel> invitedUsers;
   final List<UserModel> sharedUsers;
   final int sharedUserCount;
   final UserModel? admin; // Add this field
+  final String? projectId;
 
   DocumentModel({
     this.id,
@@ -25,10 +25,10 @@ class DocumentModel {
     required this.createdAt,
     required this.updatedAt,
     required this.isDeleted,
-    required this.invitedUsers,
     required this.sharedUsers,
     required this.sharedUserCount,
     this.admin,
+    this.projectId,
   });
 
   factory DocumentModel.fromJson(Map<String, dynamic> json) {
@@ -77,10 +77,10 @@ class DocumentModel {
         ? DateTime.parse(json['updatedAt'])
         : DateTime.now(),
     isDeleted: json['isDeleted'] ?? false,
-    invitedUsers: mapUsers(json['invitedUsers']),
     sharedUsers: mapUsers(json['sharedUsers']),
     sharedUserCount: json['sharedUserCount'] ?? 0,
     admin: admin ,
+    projectId: json['projectId'] ?? '',
   );
 }
 
@@ -94,10 +94,10 @@ class DocumentModel {
     DateTime? createdAt,
     DateTime? updatedAt,
     bool? isDeleted,
-    List<UserModel>? invitedUsers,
     List<UserModel>? sharedUsers,
     int? sharedUserCount,
     UserModel? admin,
+    String? projectId,
   }) {
     return DocumentModel(
       id: id ?? this.id,
@@ -109,10 +109,10 @@ class DocumentModel {
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       isDeleted: isDeleted ?? this.isDeleted,
-      invitedUsers: invitedUsers ?? this.invitedUsers,
       sharedUsers: sharedUsers ?? this.sharedUsers,
       sharedUserCount: sharedUserCount ?? this.sharedUserCount,
       admin: admin ?? this.admin,
+      projectId: projectId ?? this.projectId,
     );
   }
   
@@ -128,10 +128,10 @@ class DocumentModel {
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
       'isDeleted': isDeleted,
-      'invitedUsers': invitedUsers.map((user) => user.toJson()).toList(),
       'sharedUsers': sharedUsers.map((user) => user.toJson()).toList(),
       'sharedUserCount': sharedUserCount,
       'admin': admin?.toJson(),
+      'projectId': projectId,
     };
   }
 }

@@ -24,4 +24,8 @@ class DocRepository{
   Future<Either<DocumentModel, ApiFailure>> addUserToDoc(String docId, List<String> sharedUsers, String projectId) {
     return remoteDataSource.shareDocument(docId, sharedUsers, projectId);
   }
+
+  Future<Either<bool, ApiFailure>> deleteDocument(String docId) {
+    return remoteDataSource.deleteDocument(docId);
+  }
 }

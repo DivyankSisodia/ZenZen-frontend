@@ -28,7 +28,7 @@ class ProjectApi {
         // request: true,
         filter: (options, args) {
           // don't print requests with uris containing '/posts'
-          if (options.path.contains('/posts')) {
+          if (options.path.contains('/docs/')) {
             return false;
           }
           // don't print responses with unit8 list data

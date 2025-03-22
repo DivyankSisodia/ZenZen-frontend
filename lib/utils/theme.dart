@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:pull_down_button/pull_down_button.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 
 import '../config/constants/app_colors.dart';
 
 class AppTheme {
   static ThemeData lightTheme(BuildContext context) {
-    return ThemeData(
+    // Create your base theme
+    final baseTheme = ThemeData(
       brightness: Brightness.light,
       colorScheme: ColorScheme.fromSeed(
         seedColor: AppColors.primary,
@@ -26,6 +29,7 @@ class AppTheme {
           fontWeight: FontWeight.w900,
           color: AppColors.black,
         ),
+        // Other text styles...
         bodyLarge: TextStyle(
           fontFamily: 'SpaceGrotesk',
           fontSize: 24,
@@ -58,10 +62,60 @@ class AppTheme {
         ),
       ),
     );
+
+    // Add the PullDownButton extension to the light theme
+    return baseTheme.copyWith(
+      extensions: <ThemeExtension<dynamic>>[
+        // PullDownButton theme extension for light mode
+        PullDownButtonTheme(
+          // dividerTheme: PullDownMenuDividerTheme(
+          //   dividerColor: Colors.black,
+          // ),
+          itemTheme: PullDownMenuItemTheme(
+            textStyle: TextStyle(
+              color: AppColors.primary,
+              fontFamily: 'SpaceGrotesk',
+              fontSize: 16,
+              fontStyle: FontStyle.normal,
+              fontWeight: FontWeight.w400,
+            ),
+            iconActionTextStyle: TextStyle(
+              color: AppColors.primary,
+              fontFamily: 'SpaceGrotesk',
+              fontSize: 12,
+              fontStyle: FontStyle.normal,
+              fontWeight: FontWeight.w400,
+            ),
+            subtitleStyle: TextStyle(
+              color: AppColors.primary,
+              fontFamily: 'SpaceGrotesk',
+              fontSize: 12,
+              fontStyle: FontStyle.normal,
+              fontWeight: FontWeight.w400,
+            ),
+            destructiveColor: Colors.red,
+          ),
+          routeTheme: PullDownMenuRouteTheme(
+            backgroundColor: Colors.white,
+          ),
+          titleTheme: PullDownMenuTitleTheme(
+            style: TextStyle(
+              color: AppColors.lightGrey,
+              fontFamily: 'SpaceGrotesk',
+              fontSize: 14,
+              fontStyle: FontStyle.normal,
+              fontWeight: FontWeight.w400,
+            ),
+          ),
+        ),
+        // Add other package extensions as needed
+        SkeletonizerConfigData(),
+      ],
+    );
   }
 
   static ThemeData darkTheme(BuildContext context) {
-    return ThemeData(
+    final baseTheme = ThemeData(
       brightness: Brightness.dark,
       colorScheme: ColorScheme.fromSeed(
         seedColor: AppColors.black,
@@ -114,6 +168,56 @@ class AppTheme {
           color: AppColors.surface,
         ),
       ),
+    );
+
+    // extensions for dark mode
+    return baseTheme.copyWith(
+      extensions: <ThemeExtension<dynamic>>[
+        // PullDownButton theme extension for light mode
+        PullDownButtonTheme(
+          // dividerTheme: PullDownMenuDividerTheme(
+          //   dividerColor: Colors.black,
+          // ),
+          itemTheme: PullDownMenuItemTheme(
+            textStyle: TextStyle(
+              color: AppColors.lightGrey,
+              fontFamily: 'SpaceGrotesk',
+              fontSize: 16,
+              fontStyle: FontStyle.normal,
+              fontWeight: FontWeight.w400,
+            ),
+            iconActionTextStyle: TextStyle(
+              color: AppColors.lightGrey,
+              fontFamily: 'SpaceGrotesk',
+              fontSize: 12,
+              fontStyle: FontStyle.normal,
+              fontWeight: FontWeight.w400,
+            ),
+            subtitleStyle: TextStyle(
+              color: AppColors.lightGrey,
+              fontFamily: 'SpaceGrotesk',
+              fontSize: 12,
+              fontStyle: FontStyle.normal,
+              fontWeight: FontWeight.w400,
+            ),
+            destructiveColor: Colors.red,
+          ),
+          routeTheme: PullDownMenuRouteTheme(
+            backgroundColor: Colors.black,
+          ),
+          titleTheme: PullDownMenuTitleTheme(
+            style: TextStyle(
+              color: AppColors.lightGrey,
+              fontFamily: 'SpaceGrotesk',
+              fontSize: 14,
+              fontStyle: FontStyle.normal,
+              fontWeight: FontWeight.w400,
+            ),
+          ),
+        ),
+        // Add other package extensions as needed
+        SkeletonizerConfigData.dark(),
+      ],
     );
   }
 

@@ -2,16 +2,14 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:gap/gap.dart';
-import 'package:skeletonizer/skeletonizer.dart';
 import 'package:zenzen/config/constants/app_colors.dart';
 import 'package:zenzen/features/dashboard/docs/view-model/doc_viewmodel.dart';
 import 'package:zenzen/utils/common/custom_appbar.dart';
-import 'package:zenzen/utils/theme.dart';
-import 'package:intl/intl.dart';
 
 import '../../../../config/constants/responsive.dart';
 import '../../../../config/constants/size_config.dart';
+import '../../../../utils/common/custom_divider.dart';
+import '../../../../utils/common/custom_menu.dart';
 import '../../home/widget/side_drawer_menu.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 
@@ -180,48 +178,8 @@ class _DocumentScreenState extends ConsumerState<DocumentScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: Column(
                     children: [
-                      Row(
-                        children: [
-                          Expanded(
-                              child: Container(
-                            width: double.infinity,
-                            height: 4,
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [
-                                  AppColors.lightGrey,
-                                  Colors.grey[500]!,
-                                  AppColors.primary,
-                                ],
-                              ),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          )),
-                          // Document list
-                          // Add document list here
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                            child: Text(
-                              'Document list',
-                              style: AppTheme.textMedium(context),
-                            ),
-                          ),
-                          Expanded(
-                              child: Container(
-                            width: double.infinity,
-                            height: 4,
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [
-                                  AppColors.primary,
-                                  Colors.grey[500]!,
-                                  AppColors.lightGrey,
-                                ],
-                              ),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          )),
-                        ],
+                      CustomDividerWithText(
+                        title: 'Document',
                       ),
                       //
                       Align(
@@ -238,7 +196,11 @@ class _DocumentScreenState extends ConsumerState<DocumentScreen> {
 
                       // show all the documents for the user
 
-                      isGridView? Center(child: Text('GridView'),): DocumentListWidget()
+                      isGridView
+                          ? Center(
+                              child: Text('GridView'),
+                            )
+                          : DocumentListWidget()
                     ],
                   ),
                 ),
@@ -247,7 +209,18 @@ class _DocumentScreenState extends ConsumerState<DocumentScreen> {
           ],
         ),
       ),
+      floatingActionButton: CircularMenu(
+        menuItems: const [
+          Icons.home,
+          Icons.search,
+          Icons.settings,
+          Icons.favorite,
+          Icons.person,
+        ],
+        mainButtonColor: AppColors.primary,
+        itemButtonColor: Colors.white,
+        iconColor: AppColors.primary.withOpacity(0.7),
+      ),
     );
   }
 }
-
