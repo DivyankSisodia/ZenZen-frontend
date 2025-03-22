@@ -39,4 +39,5 @@ class ApiRoutes {
   static const String getDocumentInfo = "/docs/get-doc-info";
   static const String deleteProject = "/docs/delete-project";
   static const String deleteDocument = "/docs/delete-doc";
+  static const String getDocsForProject = "/docs/get-docs-for-project";
 }

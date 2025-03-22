@@ -1,4 +1,6 @@
 import '../../../auth/login/model/user_model.dart';
+import '../../docs/model/document_model.dart';
+// Import DocumentModel if needed.
 
 class ProjectModel {
   final String? id;
@@ -10,7 +12,8 @@ class ProjectModel {
   final String? createdBy;
   final DateTime? createdAt;
   final DateTime? updatedAt;
-  final List<String>? documents;
+  // documents can be List<String> or List<DocumentModel>
+  final List<dynamic>? documents;
 
   ProjectModel({
     this.id,
@@ -36,7 +39,9 @@ class ProjectModel {
       'createdBy': createdBy,
       'createdAt': createdAt,
       'updatedAt': updatedAt,
-      'documents': documents,
+      'documents': documents?.map((doc) {
+        return doc is String ? doc : (doc as DocumentModel).toJson();
+      }).toList(),
     };
   }
 
@@ -45,13 +50,32 @@ class ProjectModel {
       id: json['_id'],
       title: json['title'],
       description: json['description'],
-      addedUser: json['addedUser'] != null ? List<UserModel>.from(json['addedUser'].map((user) => UserModel.fromJson(user))) : null,
-      admin: json['admin'] != null ? List<UserModel>.from(json['admin'].map((user) => UserModel.fromJson(user))) : null,
+      addedUser: json['addedUser'] != null
+          ? List<UserModel>.from(
+              (json['addedUser'] as List)
+                  .map((user) => UserModel.fromJson(user)))
+          : null,
+      admin: json['admin'] != null
+          ? List<UserModel>.from(
+              (json['admin'] as List).map((user) => UserModel.fromJson(user)))
+          : null,
       isDeleted: json['isDeleted'],
       createdBy: json['createdBy'],
-      createdAt: json['createdAt'] != null ? DateTime.parse(json['createdAt']) : null,
-      updatedAt: json['updatedAt'] != null ? DateTime.parse(json['updatedAt']) : null,
-      documents: json['documents'] != null ? List<String>.from(json['documents']) : null,
+      createdAt: json['createdAt'] != null
+          ? DateTime.parse(json['createdAt'])
+          : null,
+      updatedAt: json['updatedAt'] != null
+          ? DateTime.parse(json['updatedAt'])
+          : null,
+      documents: json['documents'] != null
+          ? (json['documents'] as List).map((doc) {
+              if (doc is String) {
+                return doc;
+              } else {
+                return DocumentModel.fromJson(doc as Map<String, dynamic>);
+              }
+            }).toList()
+          : null,
     );
   }
 
@@ -66,7 +90,7 @@ class ProjectModel {
     String? createdBy,
     DateTime? createdAt,
     DateTime? updatedAt,
-    List<String>? documents,
+    List<dynamic>? documents,
   }) {
     return ProjectModel(
       id: id ?? this.id,

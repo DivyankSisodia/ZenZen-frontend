@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:zenzen/data/failure.dart';
 
 import '../model/project_model.dart';
 import '../provider/project_provider.dart';

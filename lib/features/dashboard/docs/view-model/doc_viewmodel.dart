@@ -128,27 +128,52 @@ class DocViewmodel extends StateNotifier<AsyncValue<List<DocumentModel>>> {
   }
 
   Future<void> deleteDocument(String documentId, BuildContext context) async {
-    // Keep track of the current documents
-    final currentDocuments = state.valueOrNull ?? [];
-
     try {
-      // Call repository to delete
+      // Call repository to delete the document
       final result = await repository.deleteDocument(documentId);
 
-      result.fold((doc) {
-        // Success case - update the documents list
-        final updatedDocuments = currentDocuments.where((doc) => doc.id != documentId).toList();
-        state = AsyncData(updatedDocuments);
+      result.fold(
+        (success) {
+          // Success case - Show success toast
+          // customToast.showToast('Document deleted successfully ☑️', context);
 
-        // Show success toast
-        customToast.showToast('Document deleted successfully ☑️', context);
-      }, (error) {
-        // Error case - DON'T change state to AsyncError
-        // Just show the toast while keeping the current documents in state
-        customToast.showToast(error is ApiFailure ? error.error : error.toString(), context);
-      });
+          getAllDocuments();
+        },
+        // (error) {
+        //   // Error case - Show error toast
+        //   // customToast.showToast(
+        //   //   error is ApiFailure ? error.error : error.toString(),
+        //   //   context,
+        //   // );
+        // },
+        (error)=> state = AsyncValue.error(error, StackTrace.current),
+      );
+    } catch (e) {
+      // Catch unexpected errors and show a toast
+      if(e is ApiFailure){
+        print('Error deleting document: ${e.error}');
+      }
+      customToast.showToast(
+        e is ApiFailure ? e.error : e.toString(),
+        context,
+      );
+    }
+  }
+
+  Future<void> getProjectDocs(String projectId) async {
+    try {
+      if (!state.isLoading) {
+        state = const AsyncValue.loading();
+      }
+
+      final result = await repository.getProjectDocs(projectId);
+
+      result.fold(
+        (listOfDocs) => state = AsyncValue.data(listOfDocs),
+        (error) => state = AsyncValue.error(error, StackTrace.current),
+      );
     } catch (e, stackTrace) {
-      customToast.showToast( e is ApiFailure ? e.error : e.toString(), context);
+      state = AsyncValue.error(e, stackTrace);
     }
   }
 }

@@ -20,4 +20,6 @@ class ProjectRepository{
   Future<Either<ProjectModel, ApiFailure>> getProjectInfo(String projectId, List<String> users) {
     return remoteDataSource.addUserToProject(projectId, users);
   }
+
+  
 }

@@ -148,7 +148,7 @@ class DocumentCardWidget extends StatelessWidget {
                                   iconColor: Colors.red,
                                   onTap: () {
                                     // print('Delete document ${document.id}');
-                                    docViewModel.deleteDocument(document.id!, context);
+                                    // docViewModel.deleteDocument(document.id!, context);
                                   },
                                   title: 'Delete',
                                   icon: CupertinoIcons.delete,

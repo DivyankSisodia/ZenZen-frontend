@@ -1,4 +1,5 @@
 import 'package:fpdart/fpdart.dart';
+import 'package:zenzen/features/dashboard/projects/model/project_model.dart';
 
 import '../../../../data/api/doc_api.dart';
 import '../../../../data/failure.dart';
@@ -27,5 +28,9 @@ class DocRepository{
 
   Future<Either<bool, ApiFailure>> deleteDocument(String docId) {
     return remoteDataSource.deleteDocument(docId);
+  }
+
+  Future<Either<List<DocumentModel>, ApiFailure>> getProjectDocs(String projectId) {
+    return remoteDataSource.getDocsForProject(projectId);
   }
 }
