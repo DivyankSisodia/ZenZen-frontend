@@ -67,11 +67,20 @@ class _DocumentEditorState extends ConsumerState<DocumentEditor> {
 
     // Setup socket listener
     widget.repository.onDocumentChange((data) {
-      _controller.compose(
-        Delta.fromJson(data['delta']),
-        _controller.selection,
-        quill.ChangeSource.remote,
-      );
+      if (data != null && data['delta'] != null) {
+        try {
+          final delta = Delta.fromJson(data['delta']);
+          _controller.compose(
+            delta,
+            _controller.selection,
+            quill.ChangeSource.remote,
+          );
+        } catch (e) {
+          print('Error parsing delta: $e');
+        }
+      } else {
+        print('Received invalid data format: $data');
+      }
     });
 
     // Listen for document changes
@@ -87,6 +96,8 @@ class _DocumentEditorState extends ConsumerState<DocumentEditor> {
         _autoSaveTimer = Timer(const Duration(seconds: 10), _saveDocument);
       }
     });
+
+    print('Controller initialized');
   }
 
   @override
