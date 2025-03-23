@@ -32,7 +32,7 @@ class ApiRoutes {
   static const String getUsers = "/auth/all-users";
   static const String createDocument = "/docs/create-doc";
   static const String createProject = "/docs/create-project";
-  static const String addUserToProject = "docs//add-users-to-project";
+  static const String addUserToProject = "/docs/add-users-to-project";
   static const String addUserToDoc = "/docs/add-users-to-doc";
   static const String getAllDocuments = "/docs/get-all-docs";
   static const String getAllProjects = "/docs/get-all-projects";
@@ -40,4 +40,8 @@ class ApiRoutes {
   static const String deleteProject = "/docs/delete-project";
   static const String deleteDocument = "/docs/delete-doc";
   static const String getDocsForProject = "/docs/get-docs-for-project";
+  static const String shareDocument = "/docs/share-doc";
+  static const String deleteAccount = "/auth/delete-account";
+  static const String updatePassword = "/auth/update-password";
+  static const String updateEmail = "/auth/update-email";
 }

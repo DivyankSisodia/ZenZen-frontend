@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:zenzen/data/failure.dart';
 
 import '../model/project_model.dart';
 import '../provider/project_provider.dart';
@@ -47,19 +48,26 @@ class ProjectViewmodel extends StateNotifier<AsyncValue<List<ProjectModel>>> {
     }
   }
 
-  Future<void> getProjectInfo(String projectId, List<String> users) async {
+  Future<void> addUserToProject(String projectId, List<String> userId) async {
     try {
       if (!state.isLoading) {
         state = const AsyncValue.loading();
       }
 
-      final result = await repository.getProjectInfo(projectId, users);
+      final result = await repository.addUsers(projectId, userId);
 
       result.fold(
-        (project) => state = AsyncValue.data([project]),
+        (project){
+          state = AsyncValue.data([project]);
+
+          getProjects();
+        },
         (error) => state = AsyncValue.error(error, StackTrace.current),
       );
     } catch (e, stackTrace) {
+      if(e is ApiFailure){
+        print(e.error);
+      }
       state = AsyncValue.error(e, stackTrace);
     }
   }

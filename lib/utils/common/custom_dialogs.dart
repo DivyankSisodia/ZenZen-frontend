@@ -8,6 +8,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:zenzen/data/failure.dart';
+import 'package:zenzen/features/auth/login/model/user_model.dart';
+import 'package:zenzen/features/auth/user/view-model/user_view_model.dart';
+import 'package:zenzen/utils/common/custom_searchbar.dart';
 
 import '../../config/constants/app_colors.dart';
 import '../../config/constants/responsive.dart';
@@ -16,6 +19,7 @@ import '../../features/dashboard/projects/model/project_model.dart';
 import '../../features/dashboard/docs/view-model/doc_viewmodel.dart';
 import '../../features/dashboard/projects/view-model/project_viewmodel.dart';
 import '../../features/dashboard/home/provider/select_project_provider.dart';
+import '../providers/select_user_provider.dart';
 import '../theme.dart';
 
 class CustomDialogs {
@@ -46,7 +50,7 @@ class CustomDialogs {
                   return projectsState.when(
                     loading: () => const Center(child: CupertinoActivityIndicator()),
                     error: (err, stack) {
-                      if(err is ApiFailure){
+                      if (err is ApiFailure) {
                         print('Error loading projects: ${err.error}');
                         return Text('Error loading projects: ${err.error}');
                       }
@@ -251,7 +255,7 @@ class CustomDialogs {
       for (var user in users) {
         userDetails.add({
           'name': user.userName ?? "Unknown User",
-          'avatar': user.avatar ?? "", 
+          'avatar': user.avatar ?? "",
         });
       }
     }
@@ -262,7 +266,7 @@ class CustomDialogs {
       for (var admin in admins) {
         adminDetails.add({
           'name': admin.userName ?? "Unknown Admin",
-          'avatar': admin.avatar ?? "", 
+          'avatar': admin.avatar ?? "",
         });
       }
     }
@@ -290,8 +294,7 @@ class CustomDialogs {
                 style: AppTheme.textMedium(context),
               ),
               const SizedBox(height: 10),
-              Text('Created: ${DateFormat.yMMMd().format(creationDate ?? DateTime.now())}', 
-                  style: AppTheme.textMedium(context).copyWith(fontSize: 16)),
+              Text('Created: ${DateFormat.yMMMd().format(creationDate ?? DateTime.now())}', style: AppTheme.textMedium(context).copyWith(fontSize: 16)),
 
               // Display collaborators
               if (userDetails.isNotEmpty) ...[
@@ -336,7 +339,7 @@ class CustomDialogs {
       ),
     );
   }
-  
+
   // Helper method to build user/admin row
   static Widget _buildUserRow(BuildContext context, Map<String, String> user) {
     return Padding(
@@ -361,7 +364,9 @@ class CustomDialogs {
         ],
       ),
     );
-  }static void startHoverTimer({
+  }
+
+  static void startHoverTimer({
     required BuildContext context,
     required String? title,
     required DateTime? creationDate,
@@ -385,5 +390,279 @@ class CustomDialogs {
         onOpenProject: onOpenProject,
       );
     });
+  }
+
+  static void showAlertDialog({
+    required BuildContext context,
+    required String title,
+    required String message,
+    required String buttonText,
+    VoidCallback? onButtonPressed,
+  }) {
+    showDialog(
+      context: context,
+      builder: (context) => CupertinoAlertDialog(
+        title: Text(title),
+        content: Text(message),
+        actions: [
+          CupertinoDialogAction(
+            onPressed: () {
+              Navigator.of(context).pop();
+              if (onButtonPressed != null) {
+                onButtonPressed();
+              }
+            },
+            child: Text(buttonText),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // show all users dialog
+  void showMultiSelectUsersBottomSheet(
+    String projectId,
+  BuildContext context, 
+  WidgetRef ref, 
+  Function(List<UserModel>) onUsersSelected
+) {
+  final userViewmodel = ref.read(userViewmodelProvider.notifier);
+  userViewmodel.getAllUsers();
+  
+  showCupertinoModalPopup(
+    context: context,
+    builder: (BuildContext sheetContext) {
+      return ProviderScope(
+        child: Material(
+          child: _MultiSelectUsersBottomSheet(
+            projectId: projectId,
+            onUsersSelected: onUsersSelected,
+          ),
+        ),
+      );
+    },
+  );
+}
+}
+
+class _MultiSelectUsersBottomSheet extends StatelessWidget {
+  String projectId;
+  final Function(List<UserModel>) onUsersSelected;
+  
+  _MultiSelectUsersBottomSheet({
+    Key? key,
+    required this.projectId,
+    required this.onUsersSelected,
+  }) : super(key: key);
+  
+  @override
+  Widget build(BuildContext context) {
+    final bottomPadding = MediaQuery.of(context).padding.bottom;
+    
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.7,
+      decoration: BoxDecoration(
+        color: CupertinoColors.systemBackground,
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(12),
+          topRight: Radius.circular(12),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Handle bar
+          Container(
+            margin: EdgeInsets.only(top: 8),
+            height: 5,
+            width: 40,
+            alignment: Alignment.center,
+            child: Container(
+              height: 5,
+              width: 40,
+              decoration: BoxDecoration(
+                color: CupertinoColors.systemGrey3,
+                borderRadius: BorderRadius.circular(2.5),
+              ),
+            ),
+          ),
+          
+          // Header
+          Padding(
+            padding: EdgeInsets.all(16),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Consumer(
+                  builder: (context, ref, _) {
+                    return GestureDetector(
+                      onTap: () {
+                        Navigator.pop(context);
+                      },
+                      child: Text(
+                        'Cancel',
+                        style: TextStyle(
+                          color: CupertinoColors.systemRed,
+                          fontSize: 16,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+                Text(
+                  'Select Users',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'SpaceGrotesk',
+                  ),
+                ),
+                Consumer(
+                  builder: (context, ref, _) {
+                    return GestureDetector(
+                      onTap: () {
+                        final selectedUsers = ref.read(selectedUsersProvider);
+                        onUsersSelected(selectedUsers);
+
+                        // call add user api here
+                        ref.read(projectViewModelProvider.notifier).addUserToProject(
+                          projectId,
+                          selectedUsers.map((user) => user.id!).toList(),
+                        );
+
+                        Navigator.pop(context);
+                      },
+                      child: Text(
+                        'Done',
+                        style: TextStyle(
+                          color: CupertinoColors.activeBlue,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+          
+          // Search bar
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16),
+            child: VoiceSearchBar(onSearch: (value) {
+              print('Search value: $value');
+              // Implement filtering logic here if needed
+            }),
+          ),
+          
+          SizedBox(height: 8),
+          
+          // Selected count
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Consumer(
+              builder: (context, ref, _) {
+                final selectedUsers = ref.watch(selectedUsersProvider);
+                return Text(
+                  'Selected ${selectedUsers.length} users',
+                  style: TextStyle(
+                    color: CupertinoColors.activeBlue,
+                    fontWeight: FontWeight.w500,
+                  ),
+                );
+              },
+            ),
+          ),
+          
+          // User list
+          Expanded(
+            child: Container(
+              margin: EdgeInsets.only(top: 8),
+              child: Consumer(
+                builder: (context, ref, _) {
+                  final usersState = ref.watch(userViewmodelProvider);
+                  
+                  return usersState.when(
+                    loading: () => Center(
+                      child: CupertinoActivityIndicator(),
+                    ),
+                    error: (err, stack) {
+                      if (err is ApiFailure) {
+                        return Center(
+                          child: Text('Error loading users: ${err.error}'),
+                        );
+                      }
+                      return Center(
+                        child: Text('Error loading users: ${err.toString()}'),
+                      );
+                    },
+                    data: (users) {
+                      return DecoratedBox(
+                        decoration: BoxDecoration(
+                          color: CupertinoColors.systemBackground,
+                        ),
+                        child: ListView.builder(
+                          itemCount: users.length,
+                          itemBuilder: (context, index) {
+                            final user = users[index];
+                            
+                            return Consumer(
+                              builder: (context, ref, _) {
+                                final selectedUsers = ref.watch(selectedUsersProvider);
+                                final isSelected = selectedUsers.any((u) => u.id == user.id);
+                                
+                                return CupertinoListTile(
+                                  leading: CircleAvatar(
+                                    backgroundImage: user.avatar != null ? NetworkImage(user.avatar!) : null,
+                                    child: user.avatar == null
+                                        ? Text(
+                                            user.userName != null && user.userName!.isNotEmpty 
+                                                ? user.userName!.substring(0, 1).toUpperCase()
+                                                : '?',
+                                            style: TextStyle(
+                                              color: CupertinoColors.white,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          )
+                                        : null,
+                                  ),
+                                  title: Text(user.userName ?? 'Unknown User'),
+                                  subtitle: Text(user.email ?? 'Unknown Email'),
+                                  trailing: CupertinoCheckbox(
+                                    value: isSelected,
+                                    onChanged: (bool? value) {
+                                      if (value == true) {
+                                        ref.read(selectedUsersProvider.notifier).addUser(user);
+                                      } else {
+                                        ref.read(selectedUsersProvider.notifier).removeUser(user);
+                                      }
+                                    },
+                                  ),
+                                  onTap: () {
+                                    if (isSelected) {
+                                      ref.read(selectedUsersProvider.notifier).removeUser(user);
+                                    } else {
+                                      ref.read(selectedUsersProvider.notifier).addUser(user);
+                                    }
+                                  },
+                                );
+                              },
+                            );
+                          },
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
+            ),
+          ),
+          
+          // Bottom safe area padding
+          SizedBox(height: bottomPadding),
+        ],
+      ),
+    );
   }
 }

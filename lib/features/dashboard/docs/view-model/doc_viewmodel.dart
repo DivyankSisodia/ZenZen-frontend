@@ -135,18 +135,18 @@ class DocViewmodel extends StateNotifier<AsyncValue<List<DocumentModel>>> {
       result.fold(
         (success) {
           // Success case - Show success toast
-          // customToast.showToast('Document deleted successfully ☑️', context);
+          customToast.showToast('Document deleted successfully ☑️', context);
 
           getAllDocuments();
         },
-        // (error) {
-        //   // Error case - Show error toast
-        //   // customToast.showToast(
-        //   //   error is ApiFailure ? error.error : error.toString(),
-        //   //   context,
-        //   // );
-        // },
-        (error)=> state = AsyncValue.error(error, StackTrace.current),
+        (error) {
+          // Error case - Show error toast
+          customToast.showToast(
+            error is ApiFailure ? error.error : error.toString(),
+            context,
+          );
+        },
+        // (error)=> state = AsyncValue.error(error, StackTrace.current),
       );
     } catch (e) {
       // Catch unexpected errors and show a toast

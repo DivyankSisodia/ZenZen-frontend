@@ -5,6 +5,7 @@ import 'package:gap/gap.dart';
 import 'package:intl/intl.dart';
 import 'package:pull_down_button/pull_down_button.dart';
 import 'package:skeletonizer/skeletonizer.dart';
+import 'package:zenzen/features/auth/login/model/user_model.dart';
 import 'package:zenzen/features/dashboard/docs/view-model/doc_viewmodel.dart';
 import 'package:zenzen/features/dashboard/projects/view-model/project_viewmodel.dart';
 import 'package:zenzen/utils/common/custom_dialogs.dart';
@@ -36,16 +37,6 @@ class _ProjectListWidgetState extends ConsumerState<ProjectListWidget> {
   int? expandedIndex;
 
   @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-
-    // WidgetsBinding.instance.addPostFrameCallback((_) {
-    //   ref.read(docViewmodelProvider.notifier).getProjectDocs('67be9a1f786d4002efcd7b84');
-    // });
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Consumer(
       builder: (context, ref, child) {
@@ -62,26 +53,28 @@ class _ProjectListWidgetState extends ConsumerState<ProjectListWidget> {
                   children: [
                     MouseRegion(
                       cursor: SystemMouseCursors.click,
-                      // onEnter: (event) {
-                      //   setState(() => isHovered = true);
-                      //   // CustomDialogs.startHoverTimer(
-                      //   //   context: context,
-                      //   //   title: data[index].title,
-                      //   //   creationDate: data[index].createdAt,
-                      //   //   users: data[index].addedUser,
-                      //   //   admins: data[index].addedUser,
-                      //   //   description: data[index].description,
-                      //   //   id: data[index].id,
-                      //   //   onOpenProject: () {
-                      //   //     debugPrint('TODO:');
-                      //   //     // context.goNamed(RoutesName.project, pathParameters: {'id': data[index].id!}, extra: data[index].title);
-                      //   //   },
-                      //   // );
-                      // },
-                      // onExit: (event) {
-                      //   setState(() => isHovered = false);
-                      //   // CustomDialogs.cancelHover();
-                      // },
+                      onEnter: (event) {
+                        if (expandedIndex != index) {
+                          setState(() => isHovered = true);
+                          CustomDialogs.startHoverTimer(
+                            context: context,
+                            title: data[index].title,
+                            creationDate: data[index].createdAt,
+                            users: data[index].addedUser,
+                            admins: data[index].addedUser,
+                            description: data[index].description,
+                            id: data[index].id,
+                            onOpenProject: () {
+                              debugPrint('TODO:');
+                              // context.goNamed(RoutesName.project, pathParameters: {'id': data[index].id!}, extra: data[index].title);
+                            },
+                          );
+                        }
+                      },
+                      onExit: (event) {
+                        setState(() => isHovered = false);
+                        CustomDialogs.cancelHover();
+                      },
                       child: Container(
                         margin: const EdgeInsets.only(bottom: 15),
                         padding: const EdgeInsets.all(10),
@@ -205,11 +198,15 @@ class _ProjectListWidgetState extends ConsumerState<ProjectListWidget> {
                             PullDownButton(
                               itemBuilder: (context) => [
                                 PullDownMenuItem(
-                                  title: 'Edit',
+                                  title: 'Add Users',
                                   onTap: () {
-                                    print('Edit');
+                                    print('add users');
+                                    customDialogs.showMultiSelectUsersBottomSheet(data[index].id!, context, ref, (List<UserModel> selectedUsers) {
+                                      print('Selected users: ${selectedUsers.length}');
+                                      print(selectedUsers.map((e) => e.id).toList());
+                                    });
                                   },
-                                  icon: CupertinoIcons.pencil,
+                                  icon: CupertinoIcons.person_add,
                                 ),
                                 PullDownMenuItem(
                                   title: 'Delete',
@@ -242,10 +239,24 @@ class _ProjectListWidgetState extends ConsumerState<ProjectListWidget> {
                             builder: (context, ref, child) {
                               return ref.watch(docViewmodelProvider).when(
                                 data: (docs) {
-                                  return docs.isEmpty? Center(child: Text('No Document found'),) : Padding(
-                                    padding: const EdgeInsets.only(top: 4.0, bottom: 10, right: 20, left: 20),
-                                    child: DocumentListWidget(documents: docs),
-                                  );
+                                  // Introduce a delay before showing the data
+                                  return docs.isEmpty
+                                      ? Container(
+                                          margin: const EdgeInsets.only(bottom: 15),
+                                          decoration: BoxDecoration(
+                                            borderRadius: BorderRadius.circular(10),
+                                            color: AppColors.lightGrey,
+                                          ),
+                                          padding: const EdgeInsets.only(top: 4.0, bottom: 10, right: 40, left: 40),
+                                          child: const Text(
+                                            'No documents found',
+                                            style: TextStyle(color: Colors.grey),
+                                          ),
+                                        )
+                                      : Padding(
+                                          padding: const EdgeInsets.only(top: 4.0, bottom: 10, right: 20, left: 20),
+                                          child: DocumentListWidget(documents: docs),
+                                        );
                                 },
                                 error: (error, stackTrace) {
                                   return Center(
@@ -256,8 +267,25 @@ class _ProjectListWidgetState extends ConsumerState<ProjectListWidget> {
                                   );
                                 },
                                 loading: () {
-                                  return const Center(
-                                    child: CircularProgressIndicator(),
+                                  // Keep showing the skeleton loader during the loading state
+                                  return Skeletonizer(
+                                    child: ListView.builder(
+                                      shrinkWrap: true,
+                                      physics: const NeverScrollableScrollPhysics(),
+                                      itemCount: 2,
+                                      itemBuilder: (context, index) {
+                                        return Card(
+                                          child: ListTile(
+                                            title: Text('Item number $index as title'),
+                                            subtitle: const Text('Subtitle here'),
+                                            trailing: const Icon(
+                                              Icons.ac_unit,
+                                              size: 32,
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                    ),
                                   );
                                 },
                               );

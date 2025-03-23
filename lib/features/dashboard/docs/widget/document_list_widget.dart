@@ -37,34 +37,6 @@ class _DocumentListWidgetState extends ConsumerState<DocumentListWidget> {
 
   @override
   Widget build(BuildContext context) {
-    print('pehle se hai');
-    return FadeIn(
-      animate: true,
-      delay: const Duration(milliseconds: 100),
-      duration: const Duration(milliseconds: 1500),
-      child: ListView.builder(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        itemCount: widget.documents.length,
-        itemBuilder: (context, index) => DocumentItem(
-          document: widget.documents[index],
-          colors: colors,
-          onHoverStart: () => CustomDialogs.startHoverTimer(
-            context: context,
-            title: widget.documents[index].title,
-            creationDate: widget.documents[index].createdAt,
-            users: widget.documents[index].users,
-            description: widget.documents[index].isPrivate ? 'Private' : 'Public',
-            id: widget.documents[index].id,
-            onOpenProject: () {
-              print('TODO');
-            },
-          ),
-          onHoverEnd: CustomDialogs.cancelHover,
-        ),
-      ),
-    );
-  
     return Consumer(
       builder: (context, ref, child) {
         print('naya data hai');
@@ -127,8 +99,6 @@ class DocumentItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return MouseRegion(
       cursor: SystemMouseCursors.click,
-      onEnter: (_) => onHoverStart(),
-      onExit: (_) => onHoverEnd(),
       child: Container(
         margin: const EdgeInsets.only(bottom: 15),
         padding: const EdgeInsets.all(10),
@@ -166,7 +136,7 @@ class DocumentItem extends StatelessWidget {
                     extra: document.title,
                   );
                 },
-                child: DocumentDetails(document: document),
+                child: DocumentDetails(document: document, onHoverStart: onHoverStart, onHoverEnd: onHoverEnd),
               ),
             ),
             Expanded(
@@ -186,42 +156,48 @@ class DocumentItem extends StatelessWidget {
 }
 
 class DocumentDetails extends StatelessWidget {
+  final VoidCallback onHoverStart;
+  final VoidCallback onHoverEnd;
   final DocumentModel document;
 
-  const DocumentDetails({super.key, required this.document});
+  const DocumentDetails({super.key, required this.document, required this.onHoverStart, required this.onHoverEnd});
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        RichText(
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          text: TextSpan(
-            text: document.title,
-            style: AppTheme.textMedium(context),
-          ),
-        ),
-        const Gap(5),
-        Row(
-          children: [
-            Text(
-              document.isPrivate ? 'Private' : 'Public',
-              style: AppTheme.textSmall(context).copyWith(
-                color: AppColors.primary.withOpacity(0.7),
-              ),
+    return MouseRegion(
+      onEnter: (_) => onHoverStart(),
+      onExit: (_) => onHoverEnd(),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          RichText(
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            text: TextSpan(
+              text: document.title,
+              style: AppTheme.textMedium(context),
             ),
-            const Gap(5),
-            if (document.isPrivate)
-              Icon(
-                Icons.lock,
-                size: 15,
-                color: AppColors.primary.withOpacity(0.7),
+          ),
+          const Gap(5),
+          Row(
+            children: [
+              Text(
+                document.isPrivate ? 'Private' : 'Public',
+                style: AppTheme.textSmall(context).copyWith(
+                  color: AppColors.primary.withOpacity(0.7),
+                ),
               ),
-          ],
-        ),
-      ],
+              const Gap(5),
+              if (document.isPrivate)
+                Icon(
+                  Icons.lock,
+                  size: 15,
+                  color: AppColors.primary.withOpacity(0.7),
+                ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }

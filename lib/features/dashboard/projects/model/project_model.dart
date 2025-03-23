@@ -1,6 +1,5 @@
 import '../../../auth/login/model/user_model.dart';
 import '../../docs/model/document_model.dart';
-// Import DocumentModel if needed.
 
 class ProjectModel {
   final String? id;
@@ -12,7 +11,6 @@ class ProjectModel {
   final String? createdBy;
   final DateTime? createdAt;
   final DateTime? updatedAt;
-  // documents can be List<String> or List<DocumentModel>
   final List<dynamic>? documents;
 
   ProjectModel({
@@ -28,36 +26,58 @@ class ProjectModel {
     this.documents,
   });
 
+  // Convert List<UserModel> to List<String> (just IDs)
+  List<String>? get addedUserIds => addedUser?.map((user) => user.id!).toList();
+  
+  // Convert List<UserModel> to List<String> (just IDs) for admin
+  List<String>? get adminIds => admin?.map((user) => user.id!).toList();
+
+  // Standard toJson that uses UserModel objects
   Map<String, dynamic> toJson() {
     return {
       'id': id,
       'title': title,
       'description': description,
-      'addedUser': addedUser,
-      'admin': admin,
+      'addedUser': addedUser?.map((user) => user.toJson()).toList(),
+      'admin': admin?.map((user) => user.toJson()).toList(),
       'isDeleted': isDeleted,
       'createdBy': createdBy,
-      'createdAt': createdAt,
-      'updatedAt': updatedAt,
+      'createdAt': createdAt?.toIso8601String(),
+      'updatedAt': updatedAt?.toIso8601String(),
       'documents': documents?.map((doc) {
         return doc is String ? doc : (doc as DocumentModel).toJson();
       }).toList(),
     };
   }
 
+  // Alternative toJson that uses just the user IDs
+  Map<String, dynamic> toJsonWithUserIds() {
+    return {
+      'id': id,
+      'title': title,
+      'description': description,
+      'addedUser': addedUserIds,
+      'admin': adminIds,
+      'isDeleted': isDeleted,
+      'createdBy': createdBy,
+      'createdAt': createdAt?.toIso8601String(),
+      'updatedAt': updatedAt?.toIso8601String(),
+      'documents': documents?.map((doc) {
+        return doc is String ? doc : (doc as DocumentModel).id;
+      }).toList(),
+    };
+  }
+
   factory ProjectModel.fromJson(Map<String, dynamic> json) {
     return ProjectModel(
-      id: json['_id'],
+      id: json['_id'] ?? json['id'],
       title: json['title'],
       description: json['description'],
       addedUser: json['addedUser'] != null
-          ? List<UserModel>.from(
-              (json['addedUser'] as List)
-                  .map((user) => UserModel.fromJson(user)))
+          ? _parseUserList(json['addedUser'])
           : null,
       admin: json['admin'] != null
-          ? List<UserModel>.from(
-              (json['admin'] as List).map((user) => UserModel.fromJson(user)))
+          ? _parseUserList(json['admin'])
           : null,
       isDeleted: json['isDeleted'],
       createdBy: json['createdBy'],
@@ -77,6 +97,22 @@ class ProjectModel {
             }).toList()
           : null,
     );
+  }
+
+  // Helper method to parse user list which could be List<Map> or List<String>
+  static List<UserModel> _parseUserList(List<dynamic> userList) {
+    return userList.map((user) {
+      if (user is String) {
+        // If it's just a string ID, create a minimal UserModel
+        return UserModel(id: user);
+      } else if (user is Map<String, dynamic>) {
+        // If it's a full user object
+        return UserModel.fromJson(user);
+      } else {
+        // Fallback
+        return UserModel();
+      }
+    }).toList();
   }
 
   // copyWith method

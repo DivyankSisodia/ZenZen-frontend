@@ -113,7 +113,7 @@ class DocumentCardWidget extends StatelessWidget {
                                   itemTheme: PullDownMenuItemTheme.maybeOf(context),
                                   leading: CachedNetworkImage(imageUrl: document.admin!.avatar ?? 'https://www.startpage.com/av/proxy-image?piurl=https%3A%2F%2Fimg.freepik.com%2Ffree-psd%2Fcontact-icon-illustration-isolated_23-2151903337.jpg&sp=1742530336Tccbf5d432c4bd56601aeefdb4b204fbaec7c563cddfe4e416727623caea3ec1b', width: 40, height: 40),
                                   title: document.admin!.userName ?? 'Profile',
-                                  subtitle: document.admin!.email ?? 'Tap to open',
+                                  subtitle: document.admin!.email,
                                   onTap: () {},
                                   icon: CupertinoIcons.profile_circled,
                                 ),
@@ -148,7 +148,7 @@ class DocumentCardWidget extends StatelessWidget {
                                   iconColor: Colors.red,
                                   onTap: () {
                                     // print('Delete document ${document.id}');
-                                    // docViewModel.deleteDocument(document.id!, context);
+                                    docViewModel.deleteDocument(document.id!, context);
                                   },
                                   title: 'Delete',
                                   icon: CupertinoIcons.delete,

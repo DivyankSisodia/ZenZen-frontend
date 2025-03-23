@@ -126,8 +126,8 @@ class ProjectApi {
       final response = await dio.post(
         '$baseUrl${ApiRoutes.addUserToProject}',
         data: {
-          'project_id': projectId,
-          'email': users,
+          'projectId': projectId,
+          'users': users,
         },
         options: Options(headers: headers),
       );
