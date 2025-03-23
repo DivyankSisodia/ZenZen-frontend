@@ -37,36 +37,34 @@ class _DocumentListWidgetState extends ConsumerState<DocumentListWidget> {
 
   @override
   Widget build(BuildContext context) {
-    if (widget.documents != null) {
-      print('pehle se hai');
-      return FadeIn(
-        animate: true,
-        delay: const Duration(milliseconds: 100),
-        duration: const Duration(milliseconds: 1500),
-        child: ListView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: widget.documents.length,
-          itemBuilder: (context, index) => DocumentItem(
-            document: widget.documents[index],
-            colors: colors,
-            onHoverStart: () => CustomDialogs.startHoverTimer(
-              context: context,
-              title: widget.documents[index].title,
-              creationDate: widget.documents[index].createdAt,
-              users: widget.documents[index].users,
-              description: widget.documents[index].isPrivate ? 'Private' : 'Public',
-              id: widget.documents[index].id,
-              onOpenProject: () {
-                print('TODO');
-              },
-            ),
-            onHoverEnd: CustomDialogs.cancelHover,
+    print('pehle se hai');
+    return FadeIn(
+      animate: true,
+      delay: const Duration(milliseconds: 100),
+      duration: const Duration(milliseconds: 1500),
+      child: ListView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        itemCount: widget.documents.length,
+        itemBuilder: (context, index) => DocumentItem(
+          document: widget.documents[index],
+          colors: colors,
+          onHoverStart: () => CustomDialogs.startHoverTimer(
+            context: context,
+            title: widget.documents[index].title,
+            creationDate: widget.documents[index].createdAt,
+            users: widget.documents[index].users,
+            description: widget.documents[index].isPrivate ? 'Private' : 'Public',
+            id: widget.documents[index].id,
+            onOpenProject: () {
+              print('TODO');
+            },
           ),
+          onHoverEnd: CustomDialogs.cancelHover,
         ),
-      );
-    }
-
+      ),
+    );
+  
     return Consumer(
       builder: (context, ref, child) {
         print('naya data hai');

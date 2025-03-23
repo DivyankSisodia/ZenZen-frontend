@@ -6,7 +6,6 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:gap/gap.dart';
 import 'package:zenzen/config/constants/app_colors.dart';
 import 'package:zenzen/config/constants/size_config.dart';
-import 'package:zenzen/features/dashboard/projects/view-model/project_viewmodel.dart';
 import 'package:zenzen/utils/common/custom_appbar.dart';
 import 'package:zenzen/utils/common/custom_dialogs.dart';
 import 'package:zenzen/utils/theme.dart';

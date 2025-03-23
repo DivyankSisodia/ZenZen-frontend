@@ -67,7 +67,7 @@ class _DocumentEditorState extends ConsumerState<DocumentEditor> {
 
     // Setup socket listener
     widget.repository.onDocumentChange((data) {
-      if (data != null && data['delta'] != null) {
+      if (data['delta'] != null) {
         try {
           final delta = Delta.fromJson(data['delta']);
           _controller.compose(

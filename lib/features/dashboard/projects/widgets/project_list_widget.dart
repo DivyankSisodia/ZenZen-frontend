@@ -5,7 +5,6 @@ import 'package:gap/gap.dart';
 import 'package:intl/intl.dart';
 import 'package:pull_down_button/pull_down_button.dart';
 import 'package:skeletonizer/skeletonizer.dart';
-import 'package:zenzen/features/dashboard/docs/provider/doc_provider.dart';
 import 'package:zenzen/features/dashboard/docs/view-model/doc_viewmodel.dart';
 import 'package:zenzen/features/dashboard/projects/view-model/project_viewmodel.dart';
 import 'package:zenzen/utils/common/custom_dialogs.dart';

@@ -12,12 +12,12 @@ class VoiceSearchBar extends StatefulWidget {
   final Function()? onTap;
 
   const VoiceSearchBar({
-    Key? key,
+    super.key,
     required this.onSearch,
     this.placeholder = 'Search',
     this.controller,
     this.onTap,
-  }) : super(key: key);
+  });
 
   @override
   State<VoiceSearchBar> createState() => _VoiceSearchBarState();

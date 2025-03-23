@@ -1,5 +1,4 @@
 import 'package:fpdart/fpdart.dart';
-import 'package:zenzen/features/dashboard/projects/model/project_model.dart';
 
 import '../../../../data/api/doc_api.dart';
 import '../../../../data/failure.dart';
