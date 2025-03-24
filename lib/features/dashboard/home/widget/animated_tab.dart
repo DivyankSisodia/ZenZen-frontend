@@ -11,6 +11,7 @@ import '../../../../config/constants/size_config.dart';
 import '../../../../data/failure.dart';
 import '../../docs/model/document_model.dart';
 import '../../docs/view-model/doc_viewmodel.dart';
+import '../../docs/view-model/fav_doc_viewmodel.dart';
 import 'document_card.dart';
 
 class AnimatedTab extends ConsumerStatefulWidget {
@@ -36,13 +37,14 @@ class _AnimatedTabState extends ConsumerState<AnimatedTab> {
   // Method to fetch documents based on tab index
   void _fetchDocumentsForTab(int tabIndex) {
     final docViewModel = ref.read(docViewmodelProvider.notifier);
+    final favoritedocViewModel = ref.read(favDocumentViewModelProvider.notifier);
 
     switch (tabIndex) {
       case 0: // Recent
         docViewModel.getAllDocuments();
         break;
       case 1: // Favorites
-        docViewModel.getAllDocuments(); // Replace with getFavoriteDocuments() when available
+        favoritedocViewModel.getAllFavorites(); // Replace with getFavoriteDocuments() when available
         break;
       case 2: // Shared
         docViewModel.getAllDocuments(); // Replace with getSharedDocuments() when available
@@ -122,7 +124,18 @@ class _AnimatedTabState extends ConsumerState<AnimatedTab> {
                     ),
                   );
                 },
-                data: (documents) => _buildDocumentGrid(documents),
+                data: (documents) {
+                  return _selectedIndex == 1
+                      ? FutureBuilder(
+                          future: Future.delayed(Duration(milliseconds: 500)),
+                          builder: (context, snapshot){
+                            return snapshot.connectionState == ConnectionState.waiting
+                                ? const Center(child: CircularProgressIndicator.adaptive())
+                                : _buildDocumentGrid(documents);
+                          },
+                        )
+                      : _buildDocumentGrid(documents);
+                },
               );
             },
           ),
@@ -167,4 +180,3 @@ class _AnimatedTabState extends ConsumerState<AnimatedTab> {
     );
   }
 }
-

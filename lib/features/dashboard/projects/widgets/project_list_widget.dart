@@ -212,6 +212,7 @@ class _ProjectListWidgetState extends ConsumerState<ProjectListWidget> {
                                   title: 'Delete',
                                   onTap: () {
                                     print('Delete');
+                                    ref.read(projectViewModelProvider.notifier).deleteProject(data[index].id!, context);
                                   },
                                   isDestructive: true,
                                   icon: CupertinoIcons.delete,

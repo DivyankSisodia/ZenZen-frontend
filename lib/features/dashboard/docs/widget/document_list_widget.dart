@@ -1,4 +1,5 @@
 import 'package:animate_do/animate_do.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -12,9 +13,12 @@ import 'package:zenzen/features/dashboard/docs/model/document_model.dart';
 import 'package:zenzen/utils/common/custom_dialogs.dart';
 
 import '../../../../config/constants/app_colors.dart';
+import '../../../../data/local/hive_models/fav_documents_model.dart';
+import '../../../../data/local/provider/hive_provider.dart';
 import '../../../../utils/theme.dart';
 import '../../../auth/login/model/user_model.dart';
 import '../view-model/doc_viewmodel.dart';
+import '../view-model/fav_doc_viewmodel.dart';
 
 class DocumentListWidget extends ConsumerStatefulWidget {
   final List<DocumentModel> documents;
@@ -147,7 +151,9 @@ class DocumentItem extends StatelessWidget {
               ),
             ),
             const Gap(20),
-            DocumentActions(),
+            DocumentActions(
+              document: document,
+            ),
           ],
         ),
       ),
@@ -259,34 +265,76 @@ class DocumentUsers extends StatelessWidget {
 }
 
 class DocumentActions extends StatelessWidget {
-  const DocumentActions({super.key});
+  final DocumentModel? document;
+  const DocumentActions({super.key, this.document});
 
   @override
   Widget build(BuildContext context) {
-    return PullDownButton(
-      itemBuilder: (context) => [
-        PullDownMenuItem(
-          title: 'Edit',
-          onTap: () => print('Edit'),
-          icon: CupertinoIcons.pencil,
-        ),
-        PullDownMenuItem(
-          title: 'Delete',
-          onTap: () => print('Delete'),
-          isDestructive: true,
-          icon: CupertinoIcons.delete,
-        ),
-        PullDownMenuItem(
-          title: 'Share',
-          onTap: () => print('Share'),
-          icon: CupertinoIcons.share,
-        ),
-      ],
-      position: PullDownMenuPosition.automatic,
-      buttonBuilder: (context, showMenu) => IconButton(
-        onPressed: showMenu,
-        icon: const Icon(CupertinoIcons.ellipsis),
-      ),
+    return Consumer(
+      builder: (context, ref, child) {
+        final docViewModel = ref.read(docViewmodelProvider.notifier);
+        return PullDownButton(
+          itemBuilder: (context) => [
+            PullDownMenuHeader(
+              itemTheme: PullDownMenuItemTheme.maybeOf(context),
+              leading: CachedNetworkImage(imageUrl: document!.admin!.avatar ?? 'https://www.startpage.com/av/proxy-image?piurl=https%3A%2F%2Fimg.freepik.com%2Ffree-psd%2Fcontact-icon-illustration-isolated_23-2151903337.jpg&sp=1742530336Tccbf5d432c4bd56601aeefdb4b204fbaec7c563cddfe4e416727623caea3ec1b', width: 40, height: 40),
+              title: document!.admin!.userName ?? 'Profile',
+              subtitle: document!.admin!.email,
+              onTap: () {},
+              icon: CupertinoIcons.profile_circled,
+            ),
+            PullDownMenuActionsRow.medium(
+              items: [
+                PullDownMenuItem(
+                  onTap: () {},
+                  title: 'Add users',
+                  icon: CupertinoIcons.person_add,
+                ),
+                PullDownMenuItem(
+                  onTap: () {},
+                  title: 'Duplicate',
+                  icon: CupertinoIcons.doc_on_doc,
+                ),
+                PullDownMenuItem(
+                  onTap: () {
+                    final favViewModel = ref.read(favDocumentViewModelProvider.notifier);
+                    if (favViewModel.isFavorite(document!.id!)) {
+                      favViewModel.removeFromFavorites(document!.id!);
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Removed from favorites')));
+                    } else {
+                      favViewModel.addToFavorites(document!);
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Added to favorites')));
+                    }
+                  },
+                  title: ref.watch(favDocumentViewModelProvider.notifier).isFavorite(document!.id!) ? 'Remove from Favorites' : 'Add to Favorites',
+                  icon: ref.watch(favDocumentViewModelProvider.notifier).isFavorite(document!.id!) ? CupertinoIcons.bookmark_fill : CupertinoIcons.bookmark,
+                ),
+              ],
+            ),
+            PullDownMenuDivider.large(),
+            PullDownMenuItem(
+              title: 'Share',
+              onTap: () {
+                print('Share');
+              },
+              icon: CupertinoIcons.share,
+            ),
+            PullDownMenuItem(
+              iconColor: Colors.red,
+              onTap: () {
+                ref.watch(favDocumentViewModelProvider.notifier).addToFavorites(document!);
+              },
+              title: 'Delete',
+              icon: CupertinoIcons.delete,
+            ),
+          ],
+          position: PullDownMenuPosition.automatic,
+          buttonBuilder: (context, showMenu) => IconButton(
+            onPressed: showMenu,
+            icon: Icon(CupertinoIcons.ellipsis),
+          ),
+        );
+      },
     );
   }
 }

@@ -20,4 +20,8 @@ class ProjectRepository{
   Future<Either<ProjectModel, ApiFailure>> addUsers(String projectId, List<String> users) {
     return remoteDataSource.addUserToProject(projectId, users);
   }
+
+  Future<Either<bool, ApiFailure>> deleteProject(String projectId) {
+    return remoteDataSource.deleteProject(projectId);
+  }
 }

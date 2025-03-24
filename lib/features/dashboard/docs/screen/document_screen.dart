@@ -11,7 +11,7 @@ import 'package:zenzen/features/dashboard/docs/repo/socket_repo.dart';
 import 'package:zenzen/features/dashboard/docs/widget/editor_widget.dart';
 import 'package:zenzen/utils/theme.dart';
 
-import '../../../auth/login/viewmodel/auth_viewmodel.dart';
+import '../../../../data/local/provider/hive_provider.dart';
 import '../view-model/doc_viewmodel.dart';
 
 class NewDocumentScreen extends ConsumerStatefulWidget {
@@ -27,7 +27,7 @@ class _NewDocumentScreenState extends ConsumerState<NewDocumentScreen> {
   final TextEditingController _titleController = TextEditingController();
   bool _isEmpty = false;
   String _documentContent = '';
-  User? currentuser;
+  LocalUser? currentuser;
 
   SocketRepository repository = SocketRepository();
 

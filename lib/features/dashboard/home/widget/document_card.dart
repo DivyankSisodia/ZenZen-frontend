@@ -11,6 +11,7 @@ import '../../../../config/constants/app_colors.dart';
 import '../../../../config/router/constants.dart';
 import '../../docs/model/document_model.dart';
 import '../../docs/view-model/doc_viewmodel.dart';
+import '../../docs/widget/document_list_widget.dart';
 
 class DocumentCardWidget extends StatelessWidget {
   const DocumentCardWidget({
@@ -104,64 +105,9 @@ class DocumentCardWidget extends StatelessWidget {
                     ),
                     Row(
                       children: [
-                        Consumer(
-                          builder: (context, ref, child) {
-                            final docViewModel = ref.read(docViewmodelProvider.notifier);
-                            return PullDownButton(
-                              itemBuilder: (context) => [
-                                PullDownMenuHeader(
-                                  itemTheme: PullDownMenuItemTheme.maybeOf(context),
-                                  leading: CachedNetworkImage(imageUrl: document.admin!.avatar ?? 'https://www.startpage.com/av/proxy-image?piurl=https%3A%2F%2Fimg.freepik.com%2Ffree-psd%2Fcontact-icon-illustration-isolated_23-2151903337.jpg&sp=1742530336Tccbf5d432c4bd56601aeefdb4b204fbaec7c563cddfe4e416727623caea3ec1b', width: 40, height: 40),
-                                  title: document.admin!.userName ?? 'Profile',
-                                  subtitle: document.admin!.email,
-                                  onTap: () {},
-                                  icon: CupertinoIcons.profile_circled,
-                                ),
-                                PullDownMenuActionsRow.medium(
-                                  items: [
-                                    PullDownMenuItem(
-                                      onTap: () {},
-                                      title: 'Add users',
-                                      icon: CupertinoIcons.person_add,
-                                    ),
-                                    PullDownMenuItem(
-                                      onTap: () {},
-                                      title: 'Duplicate',
-                                      icon: CupertinoIcons.doc_on_doc,
-                                    ),
-                                    PullDownMenuItem(
-                                      onTap: () {},
-                                      title: 'Favorite',
-                                      icon: CupertinoIcons.bookmark,
-                                    ),
-                                  ],
-                                ),
-                                PullDownMenuDivider.large(),
-                                PullDownMenuItem(
-                                  title: 'Share',
-                                  onTap: () {
-                                    print('Share');
-                                  },
-                                  icon: CupertinoIcons.share,
-                                ),
-                                PullDownMenuItem(
-                                  iconColor: Colors.red,
-                                  onTap: () {
-                                    // print('Delete document ${document.id}');
-                                    docViewModel.deleteDocument(document.id!, context);
-                                  },
-                                  title: 'Delete',
-                                  icon: CupertinoIcons.delete,
-                                ),
-                              ],
-                              position: PullDownMenuPosition.automatic,
-                              buttonBuilder: (context, showMenu) => IconButton(
-                                onPressed: showMenu,
-                                icon: Icon(CupertinoIcons.ellipsis),
-                              ),
-                            );
-                          },
-                        ),
+                        DocumentActions(
+                          document: document,
+                        )
                       ],
                     )
                   ],

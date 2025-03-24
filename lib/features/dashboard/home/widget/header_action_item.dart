@@ -8,7 +8,7 @@ import 'package:zenzen/config/constants/app_colors.dart';
 import 'package:zenzen/config/constants/responsive.dart';
 import 'package:zenzen/utils/theme.dart';
 
-import '../../../auth/login/viewmodel/auth_viewmodel.dart';
+import '../../../../data/local/provider/hive_provider.dart';
 
 class HeaderActionItems extends ConsumerStatefulWidget {
   const HeaderActionItems({super.key});

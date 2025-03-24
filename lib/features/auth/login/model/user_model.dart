@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:zenzen/data/local/hive_models/local_user_model.dart';
 
 class UserModel {
   final String? id;
@@ -35,10 +36,8 @@ class UserModel {
       mobile: json['mobile'],
       isVerified: json['isVerified'] ?? false,
       userStatus: json['user_status'],
-      accessToken:
-          json['tokens'] != null ? json['tokens']['accessToken'] : null,
-      refreshToken:
-          json['tokens'] != null ? json['tokens']['refreshToken'] : null,
+      accessToken: json['tokens'] != null ? json['tokens']['accessToken'] : null,
+      refreshToken: json['tokens'] != null ? json['tokens']['refreshToken'] : null,
     );
     return userModel;
   }
@@ -92,6 +91,19 @@ class UserModel {
       userName: userCredential.user!.displayName ?? '',
       email: userCredential.user!.email ?? '',
       avatar: userCredential.user!.photoURL ?? '',
+    );
+  }
+}
+
+extension UserModelExtension on UserModel {
+  LocalUser toLocalUser() {
+    return LocalUser(
+      userName: userName ?? '',
+      email: email ?? '',
+      avatar: avatar ?? '',
+      mobile: mobile ?? '',
+      isVerified: isVerified ?? false,
+      id: id,
     );
   }
 }

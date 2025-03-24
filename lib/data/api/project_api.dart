@@ -151,4 +151,31 @@ class ProjectApi {
       return Right(ApiFailure.fromDioException(e));
     }
   }
+
+  // delete project
+  Future<Either<bool, ApiFailure>> deleteProject(String projectId) async {
+    try {
+      final accessToken = await tokenManager.getAccessToken();
+      final Map<String, dynamic> headers = {};
+      if (accessToken != null && accessToken.isNotEmpty) {
+        headers['Authorization'] = 'Bearer $accessToken';
+      }
+
+      final response = await dio.post(
+        '$baseUrl${ApiRoutes.deleteProject}',
+        data: {
+          'projectId': projectId,
+        },
+        options: Options(headers: headers),
+      );
+
+      if (response.statusCode == 200) {
+        return Left(true);
+      } else {
+        return Right(ApiFailure('Failed to delete project'));
+      }
+    } on DioError catch (e) {
+      return Right(ApiFailure.fromDioException(e));
+    }
+  }
 }

@@ -1,47 +1,47 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'local_user_model.dart';
+part of 'fav_documents_model.dart';
 
 // **************************************************************************
 // TypeAdapterGenerator
 // **************************************************************************
 
-class LocalUserAdapter extends TypeAdapter<LocalUser> {
+class FavDocumentAdapter extends TypeAdapter<FavDocument> {
   @override
-  final int typeId = 0;
+  final int typeId = 1;
 
   @override
-  LocalUser read(BinaryReader reader) {
+  FavDocument read(BinaryReader reader) {
     final numOfFields = reader.readByte();
     final fields = <int, dynamic>{
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
-    return LocalUser(
-      userName: fields[0] as String,
-      avatar: fields[2] as String,
-      email: fields[1] as String,
-      mobile: fields[3] as String,
-      isVerified: fields[4] as bool,
-      id: fields[5] as String?,
+    return FavDocument(
+      title: fields[0] as String,
+      projectId: fields[1] as String,
+      id: fields[2] as String,
+      description: fields[3] as String?,
+      createdAt: fields[5] as DateTime,
+      admin: fields[6] as LocalUser?,
     );
   }
 
   @override
-  void write(BinaryWriter writer, LocalUser obj) {
+  void write(BinaryWriter writer, FavDocument obj) {
     writer
       ..writeByte(6)
       ..writeByte(0)
-      ..write(obj.userName)
+      ..write(obj.title)
       ..writeByte(1)
-      ..write(obj.email)
+      ..write(obj.projectId)
       ..writeByte(2)
-      ..write(obj.avatar)
+      ..write(obj.id)
       ..writeByte(3)
-      ..write(obj.mobile)
-      ..writeByte(4)
-      ..write(obj.isVerified)
+      ..write(obj.description)
       ..writeByte(5)
-      ..write(obj.id);
+      ..write(obj.createdAt)
+      ..writeByte(6)
+      ..write(obj.admin);
   }
 
   @override
@@ -50,7 +50,7 @@ class LocalUserAdapter extends TypeAdapter<LocalUser> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is LocalUserAdapter &&
+      other is FavDocumentAdapter &&
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
 }

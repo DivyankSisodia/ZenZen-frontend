@@ -7,7 +7,6 @@ class CustomToast {
     DelightToastBar(
       snackbarDuration: const Duration(seconds: 3),
       animationCurve: Curves.easeInOut,
-      animationDuration: const Duration(milliseconds: 500),
       autoDismiss: true,
       builder: (context) => ToastCard(
         leading: Icon(Icons.error, size: 28, color: Colors.red),

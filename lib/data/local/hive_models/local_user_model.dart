@@ -1,9 +1,11 @@
 import 'package:hive_ce_flutter/hive_flutter.dart';
 
+import '../../../features/auth/login/model/user_model.dart';
+
 part 'local_user_model.g.dart';
 
 @HiveType(typeId: 0)
-class User {
+class LocalUser {
   @HiveField(0)
   final String userName;
 
@@ -22,7 +24,8 @@ class User {
   @HiveField(5)
   final String? id;
 
-  User({
+
+  LocalUser({
     required this.userName,
     required this.avatar,
     required this.email,
@@ -30,4 +33,13 @@ class User {
     required this.isVerified,
     this.id,
   });
+
+  UserModel toUserModel() => UserModel(
+  id: id,
+  userName: userName,
+  email: email,
+  avatar: avatar,
+  mobile: mobile,
+  isVerified: isVerified,
+);
 }

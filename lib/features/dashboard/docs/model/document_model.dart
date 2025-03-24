@@ -31,6 +31,9 @@ class DocumentModel {
     this.projectId,
   });
 
+  // convert List<UserModel> to List<String> (just IDs)
+  List<String> get sharedusersIds => users.map((user) => user.id!).toList();
+
   factory DocumentModel.fromJson(Map<String, dynamic> json) {
   // Check for different ID field names
   String? docId;
@@ -77,7 +80,7 @@ class DocumentModel {
         ? DateTime.parse(json['updatedAt'])
         : DateTime.now(),
     isDeleted: json['isDeleted'] ?? false,
-    sharedUsers: mapUsers(json['sharedUsers']),
+    sharedUsers: json['sharedUsers'] != null ? _parseUserList(json['sharedUsers']) : [],
     sharedUserCount: json['sharedUserCount'] ?? 0,
     admin: admin ,
     projectId: json['projectId'] ?? '',
@@ -133,5 +136,21 @@ class DocumentModel {
       'admin': admin?.toJson(),
       'projectId': projectId,
     };
+  }
+
+  // helper method to convert List<UserModel> to List<String> (just IDs)
+  static List<UserModel> _parseUserList(List<dynamic> userList) {
+    return userList.map((user) {
+      if (user is String) {
+        // If it's just a string ID, create a minimal UserModel
+        return UserModel(id: user);
+      } else if (user is Map<String, dynamic>) {
+        // If it's a full user object
+        return UserModel.fromJson(user);
+      } else {
+        // Fallback
+        return UserModel();
+      }
+    }).toList();
   }
 }

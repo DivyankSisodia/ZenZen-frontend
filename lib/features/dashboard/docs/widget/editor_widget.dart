@@ -14,7 +14,7 @@ import '../model/document_model.dart';
 
 class DocumentEditor extends ConsumerStatefulWidget {
   final SocketRepository repository;
-  final User? user;
+  final LocalUser? user;
   final String? documentId;
   final String? initialContent;
 

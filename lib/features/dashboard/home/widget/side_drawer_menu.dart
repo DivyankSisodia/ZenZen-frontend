@@ -8,8 +8,8 @@ import 'package:zenzen/config/router/constants.dart';
 import 'package:zenzen/config/constants/responsive.dart';
 import 'package:zenzen/config/constants/size_config.dart';
 import 'package:zenzen/utils/providers/selected_screen_provider.dart';
+import '../../../../data/local/provider/hive_provider.dart';
 import '../../../../utils/theme.dart';
-import '../../../auth/login/viewmodel/auth_viewmodel.dart';
 
 class SideDrawerMenu extends ConsumerStatefulWidget {
   const SideDrawerMenu({super.key});

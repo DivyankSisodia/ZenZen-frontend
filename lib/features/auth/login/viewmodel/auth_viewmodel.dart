@@ -5,6 +5,7 @@ import 'package:zenzen/config/router/constants.dart';
 import 'package:zenzen/data/local/hive_models/local_user_model.dart';
 import 'package:zenzen/features/auth/login/model/user_model.dart';
 
+import '../../../../data/local/provider/hive_provider.dart';
 import '../../../../data/local/service/user_service.dart';
 import '../../../../data/local_data.dart';
 import '../provider/auth_provider.dart';
@@ -36,7 +37,7 @@ class AuthViewModel extends StateNotifier<AsyncValue<List<UserModel>>> {
             );
           }
 
-          final localUser = User(
+          final localUser = LocalUser(
             id: userModel.id ?? '',
             userName: userModel.userName ?? '',
             avatar: userModel.avatar ?? '',
@@ -140,6 +141,3 @@ final authStateProvider =
   );
 });
 
-final userDataProvider = Provider<HiveService>((ref) {
-  return HiveService();
-});
