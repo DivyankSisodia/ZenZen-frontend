@@ -6,7 +6,6 @@ import 'package:zenzen/data/local/hive_models/local_user_model.dart';
 import 'package:zenzen/features/auth/login/model/user_model.dart';
 
 import '../../../../data/local/provider/hive_provider.dart';
-import '../../../../data/local/service/user_service.dart';
 import '../../../../data/local_data.dart';
 import '../provider/auth_provider.dart';
 import '../repo/auth_repository.dart';

@@ -23,7 +23,13 @@ class AnimatedTab extends ConsumerStatefulWidget {
 
 class _AnimatedTabState extends ConsumerState<AnimatedTab> {
   int _selectedIndex = 0;
-  final List<String> _tabLabels = ['Recent', 'Favorites', 'Shared', 'External', 'Archived'];
+  final List<String> _tabLabels = [
+    'Recent',
+    'Favorites',
+    'Shared',
+    'External',
+    'Archived'
+  ];
 
   @override
   void initState() {
@@ -37,23 +43,28 @@ class _AnimatedTabState extends ConsumerState<AnimatedTab> {
   // Method to fetch documents based on tab index
   void _fetchDocumentsForTab(int tabIndex) {
     final docViewModel = ref.read(docViewmodelProvider.notifier);
-    final favoritedocViewModel = ref.read(favDocumentViewModelProvider.notifier);
+    final favoritedocViewModel =
+        ref.read(favDocumentViewModelProvider.notifier);
 
     switch (tabIndex) {
       case 0: // Recent
         docViewModel.getAllDocuments();
         break;
       case 1: // Favorites
-        favoritedocViewModel.getAllFavorites(); // Replace with getFavoriteDocuments() when available
+        favoritedocViewModel
+            .getAllFavorites(); // Replace with getFavoriteDocuments() when available
         break;
       case 2: // Shared
-        docViewModel.getAllDocuments(); // Replace with getSharedDocuments() when available
+        docViewModel
+            .getAllDocuments(); // Replace with getSharedDocuments() when available
         break;
       case 3: // External
-        docViewModel.getAllDocuments(); // Replace with getExternalDocuments() when available
+        docViewModel
+            .getAllDocuments(); // Replace with getExternalDocuments() when available
         break;
       case 4: // Archived
-        docViewModel.getAllDocuments(); // Replace with getArchivedDocuments() when available
+        docViewModel
+            .getAllDocuments(); // Replace with getArchivedDocuments() when available
         break;
     }
   }
@@ -77,12 +88,15 @@ class _AnimatedTabState extends ConsumerState<AnimatedTab> {
             children: {
               for (int i = 0; i < _tabLabels.length; i++)
                 i: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                   child: Text(
                     _tabLabels[i],
                     style: TextStyle(
                       color: _selectedIndex == i ? AppColors.primary : null,
-                      fontWeight: _selectedIndex == i ? FontWeight.bold : FontWeight.normal,
+                      fontWeight: _selectedIndex == i
+                          ? FontWeight.bold
+                          : FontWeight.normal,
                     ),
                   ),
                 ),
@@ -109,7 +123,8 @@ class _AnimatedTabState extends ConsumerState<AnimatedTab> {
 
               // Use the state without triggering API calls in the build method
               return docState.when(
-                loading: () => const Center(child: CircularProgressIndicator.adaptive()),
+                loading: () =>
+                    const Center(child: CircularProgressIndicator.adaptive()),
                 error: (error, stack) {
                   if (error is ApiFailure) {
                     print('ApiFailure details: ${error.error}');
@@ -125,13 +140,20 @@ class _AnimatedTabState extends ConsumerState<AnimatedTab> {
                   );
                 },
                 data: (documents) {
+                  final favoriteDocuments =
+                      ref.watch(favDocumentViewModelProvider);
                   return _selectedIndex == 1
-                      ? FutureBuilder(
-                          future: Future.delayed(Duration(milliseconds: 500)),
-                          builder: (context, snapshot){
-                            return snapshot.connectionState == ConnectionState.waiting
-                                ? const Center(child: CircularProgressIndicator.adaptive())
-                                : _buildDocumentGrid(documents);
+                      ? favoriteDocuments.when(
+                          loading: () => const Center(
+                              child: CircularProgressIndicator.adaptive()),
+                          error: (error, stack) =>
+                              Center(child: Text('Error: $error')),
+                          data: (favorites) {
+                            if (favorites.isEmpty) {
+                              return const Center(
+                                  child: Text('No favorites found'));
+                            }
+                            return _buildDocumentGrid(documents);
                           },
                         )
                       : _buildDocumentGrid(documents);

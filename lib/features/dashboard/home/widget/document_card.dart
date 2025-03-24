@@ -1,16 +1,11 @@
 import 'package:animate_do/animate_do.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import 'package:pull_down_button/pull_down_button.dart';
 
 import '../../../../config/constants/app_colors.dart';
 import '../../../../config/router/constants.dart';
 import '../../docs/model/document_model.dart';
-import '../../docs/view-model/doc_viewmodel.dart';
 import '../../docs/widget/document_list_widget.dart';
 
 class DocumentCardWidget extends StatelessWidget {

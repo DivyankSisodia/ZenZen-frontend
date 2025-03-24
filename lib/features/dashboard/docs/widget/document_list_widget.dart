@@ -13,8 +13,6 @@ import 'package:zenzen/features/dashboard/docs/model/document_model.dart';
 import 'package:zenzen/utils/common/custom_dialogs.dart';
 
 import '../../../../config/constants/app_colors.dart';
-import '../../../../data/local/hive_models/fav_documents_model.dart';
-import '../../../../data/local/provider/hive_provider.dart';
 import '../../../../utils/theme.dart';
 import '../../../auth/login/model/user_model.dart';
 import '../view-model/doc_viewmodel.dart';
@@ -272,7 +270,7 @@ class DocumentActions extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer(
       builder: (context, ref, child) {
-        final docViewModel = ref.read(docViewmodelProvider.notifier);
+        ref.read(docViewmodelProvider.notifier);
         return PullDownButton(
           itemBuilder: (context) => [
             PullDownMenuHeader(

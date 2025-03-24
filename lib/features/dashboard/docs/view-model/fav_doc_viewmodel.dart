@@ -1,4 +1,3 @@
-import 'dart:math';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:zenzen/features/auth/login/model/user_model.dart';
@@ -8,7 +7,8 @@ import '../../../../data/local/provider/hive_provider.dart';
 import '../../../../data/local/service/user_service.dart';
 import '../model/document_model.dart';
 
-class FavDocumentViewModel extends StateNotifier<AsyncValue<List<FavDocument>>> {
+class FavDocumentViewModel
+    extends StateNotifier<AsyncValue<List<FavDocument>>> {
   final HiveService hiveService;
 
   FavDocumentViewModel(this.hiveService) : super(const AsyncValue.loading()) {
@@ -34,14 +34,15 @@ class FavDocumentViewModel extends StateNotifier<AsyncValue<List<FavDocument>>> 
     }
   }
 
-  void addToFavorites(DocumentModel document) async{
+  void addToFavorites(DocumentModel document) async {
     try {
       final favDocument = FavDocument(
         title: document.title,
         projectId: document.projectId!,
         id: document.id!,
-        createdAt: document.createdAt ?? DateTime.now(),
-        admin: document.admin?.toLocalUser(), // Convert UserModel? to LocalUser?
+        createdAt: document.createdAt,
+        admin:
+            document.admin?.toLocalUser(), // Convert UserModel? to LocalUser?
       );
 
       await hiveService.favDocumentBox.put(document.id!, favDocument);
@@ -55,6 +56,7 @@ class FavDocumentViewModel extends StateNotifier<AsyncValue<List<FavDocument>>> 
   void removeFromFavorites(String documentId) async {
     try {
       await hiveService.favDocumentBox.delete(documentId);
+      print(hiveService.favDocumentBox.get(documentId));
       getAllFavorites(); // Refresh the list
     } catch (e, stackTrace) {
       print('Error: $e');
@@ -68,7 +70,9 @@ class FavDocumentViewModel extends StateNotifier<AsyncValue<List<FavDocument>>> 
 }
 
 // Provider definition
-final favDocumentViewModelProvider = StateNotifierProvider<FavDocumentViewModel, AsyncValue<List<FavDocument>>>((ref) {
+final favDocumentViewModelProvider =
+    StateNotifierProvider<FavDocumentViewModel, AsyncValue<List<FavDocument>>>(
+        (ref) {
   final hiveService = ref.watch(userDataProvider);
   return FavDocumentViewModel(hiveService);
 });

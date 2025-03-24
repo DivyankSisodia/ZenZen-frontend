@@ -1,7 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:zenzen/features/auth/login/model/user_model.dart';
-import 'package:zenzen/features/auth/login/viewmodel/auth_viewmodel.dart';
 import 'package:zenzen/features/auth/user/provider/user_provider.dart';
 import 'package:zenzen/features/auth/user/repo/user_repo.dart';
 
