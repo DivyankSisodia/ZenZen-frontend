@@ -8,7 +8,6 @@ import 'package:zenzen/data/local_data.dart';
 
 import '../../config/router/constants.dart';
 import '../../features/dashboard/docs/model/document_model.dart';
-import '../retry.dart';
 
 class DocApiService {
   final String baseUrl;
@@ -27,7 +26,7 @@ class DocApiService {
         compact: true,
         maxWidth: 90,
         enabled: kDebugMode,
-        // request: true,
+        request: true,
         filter: (options, args) {
           // don't print requests with uris containing '/posts'
           if (options.path.contains('/posts')) {
@@ -41,65 +40,99 @@ class DocApiService {
 
     dio.interceptors.add(QueuedInterceptorsWrapper(
       onError: (DioException error, ErrorInterceptorHandler handler) async {
-        // Only handle 401 Unauthorized errors
-        if (error.response?.statusCode != 401) {
-          handler.next(error);
-          return;
-        }
+        print('Error: $error');
+        if (error.response?.statusCode == 401) {
+          // Check if the error message contains JWT expired or token related terms
+          final errorMsg = error.response?.data?['error'] ?? '';
+          final isTokenExpired = errorMsg.toLowerCase().contains('expired') || errorMsg.toLowerCase().contains('jwt') || errorMsg.toLowerCase().contains('token');
 
-        final tokenRefreshManager = TokenRefreshManager(
-          dio: dio,
-          tokenManager: tokenManager,
-          baseUrl: baseUrl,
-        );
+          if (!isTokenExpired) {
+            handler.next(error);
+            return;
+          }
 
-        // Check if the error is token-related
-        final errorMsg = error.response?.data?['error'] ?? '';
-        final isTokenExpired = tokenRefreshManager.isTokenExpiredError(errorMsg);
-
-        if (!isTokenExpired) {
-          handler.next(error);
-          return;
-        }
-
-        // Get refresh token
-        final refreshToken = await tokenManager.getRefreshToken();
-        if (refreshToken == null || refreshToken.isEmpty) {
-          _logoutUser();
-          handler.reject(error);
-          return;
-        }
-
-        try {
-          // Attempt to refresh the token
-          final newTokens = await tokenRefreshManager.refreshAccessToken(refreshToken);
-          if (newTokens == null) {
+          final refreshToken = await tokenManager.getRefreshToken();
+          debugPrint('Refresh token: $refreshToken');
+          if (refreshToken == null || refreshToken.isEmpty) {
             _logoutUser();
             handler.reject(error);
             return;
           }
 
-          // Retry the original request with the new token
-          final response = await tokenRefreshManager.retryRequestWithNewToken(
-            error.requestOptions,
-            newTokens.accessToken,
-          );
+          try {
+            debugPrint('Refreshing token...');
+            // Call refresh token endpoint
+            final response = await dio.post(
+              '$baseUrl${ApiRoutes.getAccessToken}',
+              data: {'refreshToken': refreshToken},
+              options: Options(headers: {'Content-Type': 'application/json'}),
+            );
 
-          handler.resolve(response);
-        } catch (e) {
-          debugPrint('Error during token refresh flow: $e');
-          _logoutUser();
-          handler.reject(error);
+            if (response.statusCode == 200 && response.data != null) {
+              // Check if the data has the expected structure
+              final responseData = response.data['data'];
+              print('Response data: $responseData');
+              if (responseData is Map && responseData.containsKey('accessToken') && responseData.containsKey('refreshToken')) {
+                final newAccessToken = responseData['accessToken'];
+                final newRefreshToken = responseData['refreshToken'];
+
+                // Save new tokens
+                await tokenManager.saveTokens(
+                  accessToken: newAccessToken,
+                  refreshToken: newRefreshToken,
+                );
+
+                print('Token refreshed successfully');
+                print('New access token: $newAccessToken');
+                print('New refresh token: $newRefreshToken');
+
+                // Create a new request with the updated token
+                final opts = Options(
+                  method: error.requestOptions.method,
+                  headers: {
+                    ...error.requestOptions.headers,
+                    'Authorization': 'Bearer $newAccessToken',
+                  },
+                );
+
+                print("headers daal rha ${opts.headers}");
+
+                final clonedRequest = await dio.request(
+                  error.requestOptions.path,
+                  options: opts,
+                  data: error.requestOptions.data,
+                  queryParameters: error.requestOptions.queryParameters,
+                );
+
+                print('Request after token refresh: $clonedRequest');
+
+                // Retry the request
+
+                handler.resolve(clonedRequest);
+                return;
+              }
+            }
+
+            print('Failed to refresh token');
+
+            // If we get here, token refresh failed
+            _logoutUser();
+            handler.reject(error);
+          } catch (e) {
+            debugPrint('Error refreshing token: $e');
+            _logoutUser();
+            handler.reject(error);
+          }
+        } else {
+          handler.next(error);
         }
       },
     ));
   }
 
   void _logoutUser() {
-    // Add logout logic here
+    // Clear tokens
     tokenManager.clearTokens();
-
-    debugPrint('Logging out user...');
   }
 
   // create a document
@@ -237,7 +270,7 @@ class DocApiService {
         '$baseUrl${ApiRoutes.addUserToDoc}',
         data: {
           'docId': docId,
-          'email': sharedUsers,
+          'users': sharedUsers,
           'projectId': projectId,
         },
         options: Options(headers: headers),
@@ -263,7 +296,6 @@ class DocApiService {
   }
 
   // delete a document
-
   Future<Either<bool, ApiFailure>> deleteDocument(String docId) async {
     print('Deleting document with id: $docId');
     try {
@@ -330,6 +362,41 @@ class DocApiService {
       if(response.statusCode == 200){
         if(response.data is Map<String, dynamic> && response.data.containsKey('data')){
           final List<dynamic> documentsData = response.data['data']['documents'] as List<dynamic>;
+
+          final documents = documentsData.map((doc) => DocumentModel.fromJson(doc as Map<String, dynamic>)).toList();
+
+          return Left(documents);
+        } else {
+          return Right(ApiFailure('Response missing "data" field or has incorrect format'));
+        }
+      } else {
+        final errorMsg = response.data is Map<String, dynamic> && response.data.containsKey('message') ? response.data['message'] : 'Unknown error';
+
+        return Right(ApiFailure(errorMsg));
+      }
+    } on DioException catch (e) {
+      return Right(ApiFailure.fromDioException(e));
+    }
+  }
+
+  // get sharedDocs
+
+  Future<Either<List<DocumentModel>, ApiFailure>> getSharedDocs() async {
+    try {
+      final accessToken = await tokenManager.getAccessToken();
+      final Map<String, dynamic> headers = {};
+      if (accessToken != null && accessToken.isNotEmpty) {
+        headers['Authorization'] = 'Bearer $accessToken';
+      }
+
+      final response = await dio.post(
+        '$baseUrl${ApiRoutes.sharedDocs}',
+        options: Options(headers: headers),
+      );
+
+      if(response.statusCode == 200){
+        if(response.data is Map<String, dynamic> && response.data.containsKey('data')){
+          final List<dynamic> documentsData = response.data['data'] as List<dynamic>;
 
           final documents = documentsData.map((doc) => DocumentModel.fromJson(doc as Map<String, dynamic>)).toList();
 

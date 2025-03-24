@@ -32,4 +32,8 @@ class DocRepository{
   Future<Either<List<DocumentModel>, ApiFailure>> getProjectDocs(String projectId) {
     return remoteDataSource.getDocsForProject(projectId);
   }
+
+  Future<Either<List<DocumentModel>, ApiFailure>> getSharedWithMeDocs() {
+    return remoteDataSource.getSharedDocs();
+  }
 }

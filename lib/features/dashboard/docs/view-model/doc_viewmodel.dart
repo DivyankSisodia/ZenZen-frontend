@@ -66,7 +66,8 @@ class DocViewmodel extends StateNotifier<AsyncValue<List<DocumentModel>>> {
     }
   }
 
-  Future<void> createDocument(String title, String projectId, BuildContext context) async {
+  Future<void> createDocument(
+      String title, String projectId, BuildContext context) async {
     try {
       // Set loading state
       state = const AsyncValue.loading();
@@ -108,7 +109,8 @@ class DocViewmodel extends StateNotifier<AsyncValue<List<DocumentModel>>> {
   }
 
   // Add a user to a document
-  Future<void> shareDocToUsers(String docId, List<String> users, String projectId) async {
+  Future<void> shareDocToUsers(
+      String docId, List<String> users, String projectId) async {
     try {
       if (!state.isLoading) {
         state = const AsyncValue.loading();
@@ -117,7 +119,10 @@ class DocViewmodel extends StateNotifier<AsyncValue<List<DocumentModel>>> {
       final result = await repository.addUserToDoc(docId, users, projectId);
 
       result.fold(
-        (docModel) => state = AsyncValue.data([docModel]),
+        (docModel) {
+          state = AsyncValue.data([docModel]);
+          getAllDocuments();
+        },
         (error) => state = AsyncValue.error(error, StackTrace.current),
       );
     } catch (e, stackTrace) {
@@ -150,7 +155,7 @@ class DocViewmodel extends StateNotifier<AsyncValue<List<DocumentModel>>> {
       );
     } catch (e) {
       // Catch unexpected errors and show a toast
-      if(e is ApiFailure){
+      if (e is ApiFailure) {
         print('Error deleting document: ${e.error}');
       }
       customToast.showToast(
@@ -176,9 +181,29 @@ class DocViewmodel extends StateNotifier<AsyncValue<List<DocumentModel>>> {
       state = AsyncValue.error(e, stackTrace);
     }
   }
+
+  Future<void> getSharedDocs() async {
+    try {
+      if (!state.isLoading) {
+        state = const AsyncValue.loading();
+      }
+
+      final result = await repository.getSharedWithMeDocs();
+
+      result.fold(
+        (listOfDocs) {
+          state = AsyncValue.data(listOfDocs);
+        },
+        (error) => state = AsyncValue.error(error, StackTrace.current),
+      );
+    } catch (e, stackTrace) {
+      state = AsyncValue.error(e, stackTrace);
+    }
+  }
 }
 
-final docViewmodelProvider = StateNotifierProvider<DocViewmodel, AsyncValue<List<DocumentModel>>>((ref) {
+final docViewmodelProvider =
+    StateNotifierProvider<DocViewmodel, AsyncValue<List<DocumentModel>>>((ref) {
   final repository = ref.watch(docRepositoryProvider);
   return DocViewmodel(repository, ref);
 });

@@ -34,6 +34,8 @@ class DocumentModel {
   // convert List<UserModel> to List<String> (just IDs)
   List<String> get sharedusersIds => users.map((user) => user.id!).toList();
 
+  List<String> get usersIds => users.map((user) => user.id!).toList();
+
   factory DocumentModel.fromJson(Map<String, dynamic> json) {
   // Check for different ID field names
   String? docId;
@@ -70,7 +72,7 @@ class DocumentModel {
     id: docId,
     title: json['title'] ?? 'Untitled Document',
     document: json['document'] ?? [],
-    users: mapUsers(json['users']),
+    users: json['users'] != null ? _parseUserList(json['users']) : [],
     isPrivate: json['isPrivate'] ?? false,
     createdBy: json['createdBy'] ?? '',
     createdAt: json['createdAt'] != null
@@ -83,7 +85,7 @@ class DocumentModel {
     sharedUsers: json['sharedUsers'] != null ? _parseUserList(json['sharedUsers']) : [],
     sharedUserCount: json['sharedUserCount'] ?? 0,
     admin: admin ,
-    projectId: json['projectId'] ?? '',
+    projectId: json['project'] ?? '',
   );
 }
 

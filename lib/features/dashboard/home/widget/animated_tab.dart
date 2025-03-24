@@ -56,7 +56,7 @@ class _AnimatedTabState extends ConsumerState<AnimatedTab> {
         break;
       case 2: // Shared
         docViewModel
-            .getAllDocuments(); // Replace with getSharedDocuments() when available
+            .getSharedDocs(); // Replace with getSharedDocuments() when available
         break;
       case 3: // External
         docViewModel

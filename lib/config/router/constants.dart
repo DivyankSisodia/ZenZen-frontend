@@ -44,4 +44,5 @@ class ApiRoutes {
   static const String deleteAccount = "/auth/delete-account";
   static const String updatePassword = "/auth/update-password";
   static const String updateEmail = "/auth/update-email";
+  static const String sharedDocs = "/docs/shared-docs";
 }

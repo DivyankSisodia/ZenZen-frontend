@@ -101,6 +101,7 @@ class DocumentCardWidget extends StatelessWidget {
                     Row(
                       children: [
                         DocumentActions(
+                          isProjectIdAvailable: document.projectId != null,
                           document: document,
                         )
                       ],

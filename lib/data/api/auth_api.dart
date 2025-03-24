@@ -42,9 +42,10 @@ class AuthApiService {
     // Add token refresh interceptor
     dio.interceptors.add(QueuedInterceptorsWrapper(
       onError: (DioException error, ErrorInterceptorHandler handler) async {
+        print('Error: $error');
         if (error.response?.statusCode == 401) {
           // Check if the error message contains JWT expired or token related terms
-          final errorMsg = error.response?.data?['message'] ?? '';
+          final errorMsg = error.response?.data?['error'] ?? '';
           final isTokenExpired = errorMsg.toLowerCase().contains('expired') || errorMsg.toLowerCase().contains('jwt') || errorMsg.toLowerCase().contains('token');
 
           if (!isTokenExpired) {
@@ -71,7 +72,8 @@ class AuthApiService {
 
             if (response.statusCode == 200 && response.data != null) {
               // Check if the data has the expected structure
-              final responseData = response.data;
+              final responseData = response.data['data'];
+              print('Response data: $responseData');
               if (responseData is Map && responseData.containsKey('accessToken') && responseData.containsKey('refreshToken')) {
                 final newAccessToken = responseData['accessToken'];
                 final newRefreshToken = responseData['refreshToken'];
@@ -82,6 +84,10 @@ class AuthApiService {
                   refreshToken: newRefreshToken,
                 );
 
+                print('Token refreshed successfully');
+                print('New access token: $newAccessToken');
+                print('New refresh token: $newRefreshToken');
+
                 // Create a new request with the updated token
                 final opts = Options(
                   method: error.requestOptions.method,
@@ -91,6 +97,8 @@ class AuthApiService {
                   },
                 );
 
+                print("headers daal rha ${opts.headers}");
+
                 final clonedRequest = await dio.request(
                   error.requestOptions.path,
                   options: opts,
@@ -98,10 +106,16 @@ class AuthApiService {
                   queryParameters: error.requestOptions.queryParameters,
                 );
 
+                print('Request after token refresh: $clonedRequest');
+
+                // Retry the request
+
                 handler.resolve(clonedRequest);
                 return;
               }
             }
+
+            print('Failed to refresh token');
 
             // If we get here, token refresh failed
             _logoutUser();

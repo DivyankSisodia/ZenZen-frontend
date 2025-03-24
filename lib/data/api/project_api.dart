@@ -25,7 +25,7 @@ class ProjectApi {
         compact: true,
         maxWidth: 90,
         enabled: kDebugMode,
-        // request: true,
+        request: true,
         filter: (options, args) {
           // don't print requests with uris containing '/posts'
           // if (options.path.contains('/')) {
@@ -36,6 +36,102 @@ class ProjectApi {
         },
       ),
     );
+
+    dio.interceptors.add(QueuedInterceptorsWrapper(
+      onError: (DioException error, ErrorInterceptorHandler handler) async {
+        print('Error: $error');
+        if (error.response?.statusCode == 401) {
+          // Check if the error message contains JWT expired or token related terms
+          final errorMsg = error.response?.data?['error'] ?? '';
+          final isTokenExpired = errorMsg.toLowerCase().contains('expired') || errorMsg.toLowerCase().contains('jwt') || errorMsg.toLowerCase().contains('token');
+
+          if (!isTokenExpired) {
+            handler.next(error);
+            return;
+          }
+
+          final refreshToken = await tokenManager.getRefreshToken();
+          debugPrint('Refresh token: $refreshToken');
+          if (refreshToken == null || refreshToken.isEmpty) {
+            _logoutUser();
+            handler.reject(error);
+            return;
+          }
+
+          try {
+            debugPrint('Refreshing token...');
+            // Call refresh token endpoint
+            final response = await dio.post(
+              '$baseUrl${ApiRoutes.getAccessToken}',
+              data: {'refreshToken': refreshToken},
+              options: Options(headers: {'Content-Type': 'application/json'}),
+            );
+
+            if (response.statusCode == 200 && response.data != null) {
+              // Check if the data has the expected structure
+              final responseData = response.data['data'];
+              print('Response data: $responseData');
+              if (responseData is Map && responseData.containsKey('accessToken') && responseData.containsKey('refreshToken')) {
+                final newAccessToken = responseData['accessToken'];
+                final newRefreshToken = responseData['refreshToken'];
+
+                // Save new tokens
+                await tokenManager.saveTokens(
+                  accessToken: newAccessToken,
+                  refreshToken: newRefreshToken,
+                );
+
+                print('Token refreshed successfully');
+                print('New access token: $newAccessToken');
+                print('New refresh token: $newRefreshToken');
+
+                // Create a new request with the updated token
+                final opts = Options(
+                  method: error.requestOptions.method,
+                  headers: {
+                    ...error.requestOptions.headers,
+                    'Authorization': 'Bearer $newAccessToken',
+                  },
+                );
+
+                print("headers daal rha ${opts.headers}");
+
+                final clonedRequest = await dio.request(
+                  error.requestOptions.path,
+                  options: opts,
+                  data: error.requestOptions.data,
+                  queryParameters: error.requestOptions.queryParameters,
+                );
+
+                print('Request after token refresh: $clonedRequest');
+
+                // Retry the request
+
+                handler.resolve(clonedRequest);
+                return;
+              }
+            }
+
+            print('Failed to refresh token');
+
+            // If we get here, token refresh failed
+            _logoutUser();
+            handler.reject(error);
+          } catch (e) {
+            debugPrint('Error refreshing token: $e');
+            _logoutUser();
+            handler.reject(error);
+          }
+        } else {
+          handler.next(error);
+        }
+      },
+    ));
+  }
+
+  void _logoutUser() {
+    // Clear tokens
+    tokenManager.clearTokens();
   }
 
   Future<Either<ProjectModel, ApiFailure>> createProject(String title, String? description) async {

@@ -1,3 +1,5 @@
+// ignore_for_file: must_be_immutable
+
 import 'package:animate_do/animate_do.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
@@ -138,7 +140,10 @@ class DocumentItem extends StatelessWidget {
                     extra: document.title,
                   );
                 },
-                child: DocumentDetails(document: document, onHoverStart: onHoverStart, onHoverEnd: onHoverEnd),
+                child: DocumentDetails(
+                    document: document,
+                    onHoverStart: onHoverStart,
+                    onHoverEnd: onHoverEnd),
               ),
             ),
             Expanded(
@@ -150,6 +155,7 @@ class DocumentItem extends StatelessWidget {
             ),
             const Gap(20),
             DocumentActions(
+              isProjectIdAvailable: document.projectId != null,
               document: document,
             ),
           ],
@@ -164,7 +170,11 @@ class DocumentDetails extends StatelessWidget {
   final VoidCallback onHoverEnd;
   final DocumentModel document;
 
-  const DocumentDetails({super.key, required this.document, required this.onHoverStart, required this.onHoverEnd});
+  const DocumentDetails(
+      {super.key,
+      required this.document,
+      required this.onHoverStart,
+      required this.onHoverEnd});
 
   @override
   Widget build(BuildContext context) {
@@ -263,8 +273,11 @@ class DocumentUsers extends StatelessWidget {
 }
 
 class DocumentActions extends StatelessWidget {
+  final bool isProjectIdAvailable;
   final DocumentModel? document;
-  const DocumentActions({super.key, this.document});
+  DocumentActions({super.key, this.document,required this.isProjectIdAvailable});
+
+  CustomDialogs customDialogs = CustomDialogs();
 
   @override
   Widget build(BuildContext context) {
@@ -275,7 +288,11 @@ class DocumentActions extends StatelessWidget {
           itemBuilder: (context) => [
             PullDownMenuHeader(
               itemTheme: PullDownMenuItemTheme.maybeOf(context),
-              leading: CachedNetworkImage(imageUrl: document!.admin!.avatar ?? 'https://www.startpage.com/av/proxy-image?piurl=https%3A%2F%2Fimg.freepik.com%2Ffree-psd%2Fcontact-icon-illustration-isolated_23-2151903337.jpg&sp=1742530336Tccbf5d432c4bd56601aeefdb4b204fbaec7c563cddfe4e416727623caea3ec1b', width: 40, height: 40),
+              leading: CachedNetworkImage(
+                  imageUrl: document!.admin!.avatar ??
+                      'https://www.startpage.com/av/proxy-image?piurl=https%3A%2F%2Fimg.freepik.com%2Ffree-psd%2Fcontact-icon-illustration-isolated_23-2151903337.jpg&sp=1742530336Tccbf5d432c4bd56601aeefdb4b204fbaec7c563cddfe4e416727623caea3ec1b',
+                  width: 40,
+                  height: 40),
               title: document!.admin!.userName ?? 'Profile',
               subtitle: document!.admin!.email,
               onTap: () {},
@@ -283,10 +300,29 @@ class DocumentActions extends StatelessWidget {
             ),
             PullDownMenuActionsRow.medium(
               items: [
-                PullDownMenuItem(
-                  onTap: () {},
+                isProjectIdAvailable? PullDownMenuItem(
+                  onTap: () {
+                    customDialogs.showMultiSelectUsersBottomSheet(
+                      document!.id!,
+                      context,
+                      ref,
+                      (List<UserModel> selectedUsers) {
+                        ref
+                            .watch(docViewmodelProvider.notifier)
+                            .shareDocToUsers(
+                              document!.id!,
+                              selectedUsers.map((user) => user.id!).toList(),
+                              document!.projectId!,
+                            );
+                      },
+                    );
+                  },
                   title: 'Add users',
                   icon: CupertinoIcons.person_add,
+                ) : PullDownMenuItem(
+                  onTap: () {},
+                  title: 'Duplicate',
+                  icon: CupertinoIcons.doc_on_doc,
                 ),
                 PullDownMenuItem(
                   onTap: () {},
@@ -295,17 +331,28 @@ class DocumentActions extends StatelessWidget {
                 ),
                 PullDownMenuItem(
                   onTap: () {
-                    final favViewModel = ref.read(favDocumentViewModelProvider.notifier);
+                    final favViewModel =
+                        ref.read(favDocumentViewModelProvider.notifier);
                     if (favViewModel.isFavorite(document!.id!)) {
                       favViewModel.removeFromFavorites(document!.id!);
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Removed from favorites')));
+                      ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Removed from favorites')));
                     } else {
                       favViewModel.addToFavorites(document!);
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Added to favorites')));
+                      ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Added to favorites')));
                     }
                   },
-                  title: ref.watch(favDocumentViewModelProvider.notifier).isFavorite(document!.id!) ? 'Remove from Favorites' : 'Add to Favorites',
-                  icon: ref.watch(favDocumentViewModelProvider.notifier).isFavorite(document!.id!) ? CupertinoIcons.bookmark_fill : CupertinoIcons.bookmark,
+                  title: ref
+                          .watch(favDocumentViewModelProvider.notifier)
+                          .isFavorite(document!.id!)
+                      ? 'Remove from Favorites'
+                      : 'Add to Favorites',
+                  icon: ref
+                          .watch(favDocumentViewModelProvider.notifier)
+                          .isFavorite(document!.id!)
+                      ? CupertinoIcons.bookmark_fill
+                      : CupertinoIcons.bookmark,
                 ),
               ],
             ),
@@ -313,14 +360,16 @@ class DocumentActions extends StatelessWidget {
             PullDownMenuItem(
               title: 'Share',
               onTap: () {
-                print('Share');
+                print('Share TODO:');
               },
               icon: CupertinoIcons.share,
             ),
             PullDownMenuItem(
               iconColor: Colors.red,
               onTap: () {
-                ref.watch(favDocumentViewModelProvider.notifier).addToFavorites(document!);
+                ref
+                    .watch(favDocumentViewModelProvider.notifier)
+                    .addToFavorites(document!);
               },
               title: 'Delete',
               icon: CupertinoIcons.delete,

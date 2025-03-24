@@ -1,3 +1,5 @@
+// ignore_for_file: must_be_immutable
+
 import 'dart:async';
 
 import 'package:animated_custom_dropdown/custom_dropdown.dart';
@@ -23,7 +25,8 @@ import '../providers/select_user_provider.dart';
 import '../theme.dart';
 
 class CustomDialogs {
-  void createDocCustomDialog(BuildContext context, WidgetRef ref, String title) {
+  void createDocCustomDialog(
+      BuildContext context, WidgetRef ref, String title) {
     // Use the outer context for navigation, not the dialog's context
     final outerContext = context;
     final projectViewmodel = ref.read(projectViewModelProvider.notifier);
@@ -40,7 +43,9 @@ class CustomDialogs {
           content: Padding(
             padding: const EdgeInsets.only(top: 16.0),
             child: SizedBox(
-              width: Responsive.isMobile(dialogContext) ? SizeConfig.screenWidth / 2.5 : SizeConfig.screenWidth / 4.5,
+              width: Responsive.isMobile(dialogContext)
+                  ? SizeConfig.screenWidth / 2.5
+                  : SizeConfig.screenWidth / 4.5,
               height: 100,
               // Watch for changes in the projects state
               child: Consumer(
@@ -48,7 +53,8 @@ class CustomDialogs {
                   final projectsState = ref.watch(projectViewModelProvider);
 
                   return projectsState.when(
-                    loading: () => const Center(child: CupertinoActivityIndicator()),
+                    loading: () =>
+                        const Center(child: CupertinoActivityIndicator()),
                     error: (err, stack) {
                       if (err is ApiFailure) {
                         print('Error loading projects: ${err.error}');
@@ -62,12 +68,18 @@ class CustomDialogs {
                           padding: const EdgeInsets.symmetric(horizontal: 8.0),
                           child: Text(
                             hint,
-                            style: TextStyle(color: CupertinoColors.systemGrey, fontSize: 16, fontFamily: 'SpaceGrotesk'),
+                            style: TextStyle(
+                                color: CupertinoColors.systemGrey,
+                                fontSize: 16,
+                                fontFamily: 'SpaceGrotesk'),
                           ),
                         );
                       },
                       hintText: 'Select Project',
-                      items: projects.map((project) => project.title).whereType<String>().toList(),
+                      items: projects
+                          .map((project) => project.title)
+                          .whereType<String>()
+                          .toList(),
                       decoration: CustomDropdownDecoration(
                         hintStyle: TextStyle(color: CupertinoColors.systemGrey),
                         listItemStyle: TextStyle(color: CupertinoColors.black),
@@ -76,10 +88,12 @@ class CustomDialogs {
                         // Find the selected project's ID
                         final selectedProject = projects.firstWhere(
                           (project) => project.title == value,
-                          orElse: () => ProjectModel(id: '', title: '', description: ''),
+                          orElse: () =>
+                              ProjectModel(id: '', title: '', description: ''),
                         );
 
-                        ref.read(selectedProjectIdProvider.notifier).state = selectedProject.id!;
+                        ref.read(selectedProjectIdProvider.notifier).state =
+                            selectedProject.id!;
 
                         print('Selected Project: $value');
                         print('Selected Project ID: ${selectedProject.id}');
@@ -90,9 +104,15 @@ class CustomDialogs {
                         // Then use the outer context for document creation and navigation
                         // Use a slight delay to ensure the dialog is fully closed
                         Future.microtask(() {
-                          final docViewModel = ref.read(docViewmodelProvider.notifier);
+                          final docViewModel =
+                              ref.read(docViewmodelProvider.notifier);
                           final projectId = ref.read(selectedProjectIdProvider);
-                          docViewModel.createDocument('bhele', projectId, outerContext);
+                          print(projectId);
+                          docViewModel.createDocument(
+                            'bhele',
+                            projectId,
+                            outerContext,
+                          );
                         });
                       },
                     ),
@@ -147,14 +167,16 @@ class CustomDialogs {
                   controller: controller,
                   focusNode: focusNode,
                   placeholder: hint,
-                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
                 ),
                 const SizedBox(height: 15),
                 CupertinoTextField(
                   controller: descriptionController,
                   focusNode: descriptionFocusNode,
                   placeholder: descriptionHint,
-                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
                 ),
               ],
             ),
@@ -170,7 +192,8 @@ class CustomDialogs {
               isDefaultAction: true,
               child: const Text('OK'),
               onPressed: () {
-                if (controller.text.isEmpty || descriptionController.text.isEmpty) {
+                if (controller.text.isEmpty ||
+                    descriptionController.text.isEmpty) {
                   DelightToastBar(
                     builder: (context) => const ToastCard(
                       leading: Icon(
@@ -189,7 +212,8 @@ class CustomDialogs {
                   return;
                 }
 
-                final projectViewModel = ref.read(projectViewModelProvider.notifier);
+                final projectViewModel =
+                    ref.read(projectViewModelProvider.notifier);
 
                 projectViewModel.createProject(
                   controller.text,
@@ -294,12 +318,15 @@ class CustomDialogs {
                 style: AppTheme.textMedium(context),
               ),
               const SizedBox(height: 10),
-              Text('Created: ${DateFormat.yMMMd().format(creationDate ?? DateTime.now())}', style: AppTheme.textMedium(context).copyWith(fontSize: 16)),
+              Text(
+                  'Created: ${DateFormat.yMMMd().format(creationDate ?? DateTime.now())}',
+                  style: AppTheme.textMedium(context).copyWith(fontSize: 16)),
 
               // Display collaborators
               if (userDetails.isNotEmpty) ...[
                 const SizedBox(height: 10),
-                Text('Collaborators:', style: AppTheme.mediumBodyTheme(context)),
+                Text('Collaborators:',
+                    style: AppTheme.mediumBodyTheme(context)),
                 const SizedBox(height: 5),
                 ...userDetails.map<Widget>(
                   (user) => _buildUserRow(context, user),
@@ -348,7 +375,9 @@ class CustomDialogs {
         children: [
           CircleAvatar(
             radius: 15,
-            backgroundImage: user['avatar']!.isNotEmpty ? NetworkImage(user['avatar']!) : null,
+            backgroundImage: user['avatar']!.isNotEmpty
+                ? NetworkImage(user['avatar']!)
+                : null,
             child: user['avatar']!.isEmpty
                 ? Text(
                     user['name']!.substring(0, 1).toUpperCase(),
@@ -360,7 +389,8 @@ class CustomDialogs {
                 : null,
           ),
           const SizedBox(width: 10),
-          Text(user['name']!, style: AppTheme.textMedium(context).copyWith(fontSize: 16)),
+          Text(user['name']!,
+              style: AppTheme.textMedium(context).copyWith(fontSize: 16)),
         ],
       ),
     );
@@ -420,45 +450,40 @@ class CustomDialogs {
   }
 
   // show all users dialog
-  void showMultiSelectUsersBottomSheet(
-    String projectId,
-  BuildContext context, 
-  WidgetRef ref, 
-  Function(List<UserModel>) onUsersSelected
-) {
-  final userViewmodel = ref.read(userViewmodelProvider.notifier);
-  userViewmodel.getAllUsers();
-  
-  showCupertinoModalPopup(
-    context: context,
-    builder: (BuildContext sheetContext) {
-      return ProviderScope(
-        child: Material(
-          child: _MultiSelectUsersBottomSheet(
-            projectId: projectId,
-            onUsersSelected: onUsersSelected,
+  void showMultiSelectUsersBottomSheet(String projectId, BuildContext context,
+      WidgetRef ref, Function(List<UserModel>) onUsersSelected) {
+    final userViewmodel = ref.read(userViewmodelProvider.notifier);
+    userViewmodel.getAllUsers();
+
+    showCupertinoModalPopup(
+      context: context,
+      builder: (BuildContext sheetContext) {
+        return ProviderScope(
+          child: Material(
+            child: _MultiSelectUsersBottomSheet(
+              projectId: projectId,
+              onUsersSelected: onUsersSelected,
+            ),
           ),
-        ),
-      );
-    },
-  );
-}
+        );
+      },
+    );
+  }
 }
 
 class _MultiSelectUsersBottomSheet extends StatelessWidget {
   String projectId;
   final Function(List<UserModel>) onUsersSelected;
-  
+
   _MultiSelectUsersBottomSheet({
-    Key? key,
     required this.projectId,
     required this.onUsersSelected,
-  }) : super(key: key);
-  
+  });
+
   @override
   Widget build(BuildContext context) {
     final bottomPadding = MediaQuery.of(context).padding.bottom;
-    
+
     return Container(
       height: MediaQuery.of(context).size.height * 0.7,
       decoration: BoxDecoration(
@@ -486,7 +511,7 @@ class _MultiSelectUsersBottomSheet extends StatelessWidget {
               ),
             ),
           ),
-          
+
           // Header
           Padding(
             padding: EdgeInsets.all(16),
@@ -522,15 +547,17 @@ class _MultiSelectUsersBottomSheet extends StatelessWidget {
                     return GestureDetector(
                       onTap: () {
                         final selectedUsers = ref.read(selectedUsersProvider);
-                        onUsersSelected(selectedUsers);
 
-                        // call add user api here
-                        ref.read(projectViewModelProvider.notifier).addUserToProject(
-                          projectId,
-                          selectedUsers.map((user) => user.id!).toList(),
-                        );
+                        // Just call the callback with selected users
+                        onUsersSelected(selectedUsers.cast<UserModel>());
 
+                        // Close the bottom sheet
                         Navigator.pop(context);
+
+                        // Clear selection state
+                        ref
+                            .read(selectedUsersProvider.notifier)
+                            .clearSelection();
                       },
                       child: Text(
                         'Done',
@@ -546,7 +573,7 @@ class _MultiSelectUsersBottomSheet extends StatelessWidget {
               ],
             ),
           ),
-          
+
           // Search bar
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 16),
@@ -555,9 +582,9 @@ class _MultiSelectUsersBottomSheet extends StatelessWidget {
               // Implement filtering logic here if needed
             }),
           ),
-          
+
           SizedBox(height: 8),
-          
+
           // Selected count
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -574,7 +601,7 @@ class _MultiSelectUsersBottomSheet extends StatelessWidget {
               },
             ),
           ),
-          
+
           // User list
           Expanded(
             child: Container(
@@ -582,7 +609,7 @@ class _MultiSelectUsersBottomSheet extends StatelessWidget {
               child: Consumer(
                 builder: (context, ref, _) {
                   final usersState = ref.watch(userViewmodelProvider);
-                  
+
                   return usersState.when(
                     loading: () => Center(
                       child: CupertinoActivityIndicator(),
@@ -606,19 +633,26 @@ class _MultiSelectUsersBottomSheet extends StatelessWidget {
                           itemCount: users.length,
                           itemBuilder: (context, index) {
                             final user = users[index];
-                            
+
                             return Consumer(
                               builder: (context, ref, _) {
-                                final selectedUsers = ref.watch(selectedUsersProvider);
-                                final isSelected = selectedUsers.any((u) => u.id == user.id);
-                                
+                                final selectedUsers =
+                                    ref.watch(selectedUsersProvider);
+                                final isSelected =
+                                    selectedUsers.any((u) => u.id == user.id);
+
                                 return CupertinoListTile(
                                   leading: CircleAvatar(
-                                    backgroundImage: user.avatar != null ? NetworkImage(user.avatar!) : null,
+                                    backgroundImage: user.avatar != null
+                                        ? NetworkImage(user.avatar!)
+                                        : null,
                                     child: user.avatar == null
                                         ? Text(
-                                            user.userName != null && user.userName!.isNotEmpty 
-                                                ? user.userName!.substring(0, 1).toUpperCase()
+                                            user.userName != null &&
+                                                    user.userName!.isNotEmpty
+                                                ? user.userName!
+                                                    .substring(0, 1)
+                                                    .toUpperCase()
                                                 : '?',
                                             style: TextStyle(
                                               color: CupertinoColors.white,
@@ -633,17 +667,27 @@ class _MultiSelectUsersBottomSheet extends StatelessWidget {
                                     value: isSelected,
                                     onChanged: (bool? value) {
                                       if (value == true) {
-                                        ref.read(selectedUsersProvider.notifier).addUser(user);
+                                        ref
+                                            .read(
+                                                selectedUsersProvider.notifier)
+                                            .addUser(user);
                                       } else {
-                                        ref.read(selectedUsersProvider.notifier).removeUser(user);
+                                        ref
+                                            .read(
+                                                selectedUsersProvider.notifier)
+                                            .removeUser(user);
                                       }
                                     },
                                   ),
                                   onTap: () {
                                     if (isSelected) {
-                                      ref.read(selectedUsersProvider.notifier).removeUser(user);
+                                      ref
+                                          .read(selectedUsersProvider.notifier)
+                                          .removeUser(user);
                                     } else {
-                                      ref.read(selectedUsersProvider.notifier).addUser(user);
+                                      ref
+                                          .read(selectedUsersProvider.notifier)
+                                          .addUser(user);
                                     }
                                   },
                                 );
@@ -658,7 +702,7 @@ class _MultiSelectUsersBottomSheet extends StatelessWidget {
               ),
             ),
           ),
-          
+
           // Bottom safe area padding
           SizedBox(height: bottomPadding),
         ],
