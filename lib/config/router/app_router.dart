@@ -7,6 +7,7 @@ import 'package:zenzen/features/auth/login/screen/signup_screen.dart';
 import 'package:zenzen/features/auth/splash/screen/intro_screen.dart';
 import 'package:zenzen/features/auth/splash/screen/splash_screen.dart';
 import 'package:zenzen/features/dashboard/docs/screen/document_screen.dart';
+import 'package:zenzen/features/dashboard/file-transfer/screen/file_transfer_screen.dart';
 import 'package:zenzen/features/dashboard/home/screen/home_screen.dart';
 import 'package:zenzen/features/dashboard/projects/screen/project_list_screen.dart';
 
@@ -19,6 +20,16 @@ class RouteConfig {
   static GoRouter returnRouter() {
     return GoRouter(
       initialLocation: '/',
+      debugLogDiagnostics: true,
+      errorPageBuilder: (context, state) {
+        return MaterialPage(
+          child: Scaffold(
+            body: Center(
+              child: Text('An error occurred: ${state.error}'),
+            ),
+          ),
+        );
+      },
       routes: [
         GoRoute(
           path: '/',
@@ -116,6 +127,17 @@ class RouteConfig {
               key: state.pageKey,
               child: const ProjectListScreen(),
               transitionType: PageTransitionType.fade,
+            );
+          },
+        ),
+        GoRoute(
+          path: '/file-transfer',
+          name: RoutesName.fileTransfer,
+          pageBuilder: (context, state) {
+            return customTransitionPage(
+              key: state.pageKey,
+              child: const FileTransferScreen(),
+              transitionType: PageTransitionType.rightToLeftWithFade,
             );
           },
         )

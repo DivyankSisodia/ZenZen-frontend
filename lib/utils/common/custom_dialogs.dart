@@ -24,6 +24,9 @@ import '../../features/dashboard/home/provider/select_project_provider.dart';
 import '../providers/select_user_provider.dart';
 import '../theme.dart';
 
+// Replace VoidCallback with void Function() if used
+// typedef void Function() CallbackType;
+
 class CustomDialogs {
   void createDocCustomDialog(
       BuildContext context, WidgetRef ref, String title) {
@@ -269,7 +272,7 @@ class CustomDialogs {
     required List? admins,
     required String? description,
     required String? id,
-    VoidCallback? onOpenProject,
+    void Function()? onOpenProject,
   }) {
     if (!_isHovered) return;
 
@@ -404,7 +407,7 @@ class CustomDialogs {
     List? admins,
     required String? description,
     required String? id,
-    VoidCallback? onOpenProject,
+    void Function()? onOpenProject,
   }) {
     _hoverTimer?.cancel();
     _hoverTimer = Timer(const Duration(seconds: 2), () {
@@ -427,7 +430,7 @@ class CustomDialogs {
     required String title,
     required String message,
     required String buttonText,
-    VoidCallback? onButtonPressed,
+    void Function()? onButtonPressed,
   }) {
     showDialog(
       context: context,

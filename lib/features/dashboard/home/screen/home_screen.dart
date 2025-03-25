@@ -4,8 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:gap/gap.dart';
+import 'package:go_router/go_router.dart';
 import 'package:zenzen/config/constants/app_colors.dart';
 import 'package:zenzen/config/constants/size_config.dart';
+import 'package:zenzen/config/router/constants.dart';
 import 'package:zenzen/utils/common/custom_appbar.dart';
 import 'package:zenzen/utils/common/custom_dialogs.dart';
 import 'package:zenzen/utils/theme.dart';
@@ -178,7 +180,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                     // Navigator.pushNamed(context, AppRouter.addMembers);
                                     break;
                                   case 3:
-                                    // Navigator.pushNamed(context, AppRouter.transferFiles);
+                                    context.goNamed(RoutesName.fileTransfer);
                                     break;
                                   default:
                                     // Navigator.pushNamed(context, AppRouter.newDocument);

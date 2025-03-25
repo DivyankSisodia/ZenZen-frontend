@@ -13,6 +13,7 @@ class RoutesName {
   static const String project = "project";
   static const String allDocs = "all-documents";
   static const String allProjects = "all-projects";
+  static const String fileTransfer = "file-transfer";
 }
 
 class ApiRoutes {

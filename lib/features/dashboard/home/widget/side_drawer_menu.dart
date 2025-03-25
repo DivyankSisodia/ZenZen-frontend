@@ -7,6 +7,7 @@ import 'package:zenzen/config/constants/app_images.dart';
 import 'package:zenzen/config/router/constants.dart';
 import 'package:zenzen/config/constants/responsive.dart';
 import 'package:zenzen/config/constants/size_config.dart';
+import 'package:zenzen/data/local_data.dart';
 import 'package:zenzen/utils/providers/selected_screen_provider.dart';
 import '../../../../data/local/provider/hive_provider.dart';
 import '../../../../utils/theme.dart';
@@ -81,6 +82,8 @@ class _SideDrawerMenuState extends ConsumerState<SideDrawerMenu> {
     AppImages.messageLight,
     AppImages.menuLight
   ];
+
+  TokenManager tokenManager = TokenManager();
 
   @override
   Widget build(BuildContext context) {
@@ -298,6 +301,11 @@ class _SideDrawerMenuState extends ConsumerState<SideDrawerMenu> {
               title: 'Logout',
               icon: FontAwesomeIcons.signOutAlt,
               isCompact: isLowHeight,
+              onTap: (){
+                hiveService.userBox.delete('currentUser');
+                tokenManager.clearTokens();
+                context.goNamed(RoutesName.login);
+              },
             ),
 
             SizedBox(height: isLowHeight ? 20 : 30),
