@@ -89,6 +89,8 @@ class DocViewmodel extends StateNotifier<AsyncValue<List<DocumentModel>>> {
             return; // Don't navigate if ID is null
           }
 
+          getAllDocuments();
+
           // Navigate to the document screen with the newly created document's ID and title
           context.goNamed(
             RoutesName.doc,

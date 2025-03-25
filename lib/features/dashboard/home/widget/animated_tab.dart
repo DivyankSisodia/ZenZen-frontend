@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
+import 'package:zenzen/data/local/hive_models/fav_documents_model.dart';
 
 import '../../../../config/constants/app_colors.dart';
 import '../../../../config/constants/responsive.dart';
@@ -51,20 +52,16 @@ class _AnimatedTabState extends ConsumerState<AnimatedTab> {
         docViewModel.getAllDocuments();
         break;
       case 1: // Favorites
-        favoritedocViewModel
-            .getAllFavorites(); // Replace with getFavoriteDocuments() when available
+        favoritedocViewModel.getAllFavorites();
         break;
       case 2: // Shared
-        docViewModel
-            .getSharedDocs(); // Replace with getSharedDocuments() when available
+        docViewModel.getSharedDocs();
         break;
       case 3: // External
-        docViewModel
-            .getAllDocuments(); // Replace with getExternalDocuments() when available
+        docViewModel.getAllDocuments(); // Replace with getExternalDocuments() when available
         break;
       case 4: // Archived
-        docViewModel
-            .getAllDocuments(); // Replace with getArchivedDocuments() when available
+        docViewModel.getAllDocuments(); // Replace with getArchivedDocuments() when available
         break;
     }
   }
@@ -117,53 +114,63 @@ class _AnimatedTabState extends ConsumerState<AnimatedTab> {
         ),
         const Gap(12),
         Expanded(
-          child: Consumer(
-            builder: (context, ref, child) {
-              final docState = ref.watch(docViewmodelProvider);
-
-              // Use the state without triggering API calls in the build method
-              return docState.when(
-                loading: () =>
-                    const Center(child: CircularProgressIndicator.adaptive()),
-                error: (error, stack) {
-                  if (error is ApiFailure) {
-                    print('ApiFailure details: ${error.error}');
-                    // You can also print other properties if ApiFailure has them
-                    // print('Status code: ${error.statusCode}');
-                  }
-
-                  return Center(
-                    child: Text(
-                      (error is ApiFailure) ? error.error : 'An error occurred',
-                      style: const TextStyle(color: Colors.red),
-                    ),
-                  );
-                },
-                data: (documents) {
-                  final favoriteDocuments =
-                      ref.watch(favDocumentViewModelProvider);
-                  return _selectedIndex == 1
-                      ? favoriteDocuments.when(
-                          loading: () => const Center(
-                              child: CircularProgressIndicator.adaptive()),
-                          error: (error, stack) =>
-                              Center(child: Text('Error: $error')),
-                          data: (favorites) {
-                            if (favorites.isEmpty) {
-                              return const Center(
-                                  child: Text('No favorites found'));
-                            }
-                            return _buildDocumentGrid(documents);
-                          },
-                        )
-                      : _buildDocumentGrid(documents);
-                },
-              );
-            },
-          ),
+          child: _buildTabContent(),
         )
       ],
     );
+  }
+
+  // New method to build the appropriate content based on selected tab
+  Widget _buildTabContent() {
+    switch (_selectedIndex) {
+      case 1: // Favorites tab
+        return Consumer(
+          builder: (context, ref, child) {
+            final favoriteDocuments = ref.watch(favDocumentViewModelProvider);
+            
+            return favoriteDocuments.when(
+              loading: () => const Center(
+                child: CircularProgressIndicator.adaptive(),
+              ),
+              error: (error, stack) => Center(
+                child: Text('Error: $error'),
+              ),
+              data: (favorites) {
+                if (favorites.isEmpty) {
+                  return const Center(
+                    child: Text('No favorites found'),
+                  );
+                }
+                return _buildDocumentGrid(favorites.map((fav) => fav.toDocumentModel()).toList());
+              },
+            );
+          },
+        );
+      default: // All other tabs
+        return Consumer(
+          builder: (context, ref, child) {
+            final docState = ref.watch(docViewmodelProvider);
+            
+            return docState.when(
+              loading: () => const Center(
+                child: CircularProgressIndicator.adaptive(),
+              ),
+              error: (error, stack) {
+                if (error is ApiFailure) {
+                  print('ApiFailure details: ${error.error}');
+                }
+                return Center(
+                  child: Text(
+                    (error is ApiFailure) ? error.error : 'An error occurred',
+                    style: const TextStyle(color: Colors.red),
+                  ),
+                );
+              },
+              data: (documents) => _buildDocumentGrid(documents),
+            );
+          },
+        );
+    }
   }
 
   Widget _buildDocumentGrid(List<DocumentModel> documents) {

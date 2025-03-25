@@ -61,7 +61,7 @@ class _ProjectListWidgetState extends ConsumerState<ProjectListWidget> {
                             title: data[index].title,
                             creationDate: data[index].createdAt,
                             users: data[index].addedUser,
-                            admins: data[index].addedUser,
+                            admins: data[index].admin,
                             description: data[index].description,
                             id: data[index].id,
                             onOpenProject: () {

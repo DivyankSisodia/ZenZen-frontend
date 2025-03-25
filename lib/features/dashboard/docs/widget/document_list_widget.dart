@@ -11,6 +11,7 @@ import 'package:intl/intl.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:pull_down_button/pull_down_button.dart';
 import 'package:zenzen/config/router/constants.dart';
+import 'package:zenzen/data/local/hive_models/fav_documents_model.dart';
 import 'package:zenzen/features/dashboard/docs/model/document_model.dart';
 import 'package:zenzen/utils/common/custom_dialogs.dart';
 
@@ -275,7 +276,9 @@ class DocumentUsers extends StatelessWidget {
 class DocumentActions extends StatelessWidget {
   final bool isProjectIdAvailable;
   final DocumentModel? document;
-  DocumentActions({super.key, this.document,required this.isProjectIdAvailable});
+  final FavDocument? favDocument;
+  DocumentActions(
+      {super.key, this.document,required this.isProjectIdAvailable, this.favDocument});
 
   CustomDialogs customDialogs = CustomDialogs();
 
@@ -289,10 +292,10 @@ class DocumentActions extends StatelessWidget {
             PullDownMenuHeader(
               itemTheme: PullDownMenuItemTheme.maybeOf(context),
               leading: CachedNetworkImage(
-                  imageUrl: document!.admin!.avatar ??
-                      'https://www.startpage.com/av/proxy-image?piurl=https%3A%2F%2Fimg.freepik.com%2Ffree-psd%2Fcontact-icon-illustration-isolated_23-2151903337.jpg&sp=1742530336Tccbf5d432c4bd56601aeefdb4b204fbaec7c563cddfe4e416727623caea3ec1b',
-                  width: 40,
-                  height: 40),
+                imageUrl: document!.admin!.avatar ?? '',
+                width: 40,
+                height: 40,
+              ),
               title: document!.admin!.userName ?? 'Profile',
               subtitle: document!.admin!.email,
               onTap: () {},
@@ -300,35 +303,46 @@ class DocumentActions extends StatelessWidget {
             ),
             PullDownMenuActionsRow.medium(
               items: [
-                isProjectIdAvailable? PullDownMenuItem(
-                  onTap: () {
-                    customDialogs.showMultiSelectUsersBottomSheet(
-                      document!.id!,
-                      context,
-                      ref,
-                      (List<UserModel> selectedUsers) {
-                        ref
-                            .watch(docViewmodelProvider.notifier)
-                            .shareDocToUsers(
-                              document!.id!,
-                              selectedUsers.map((user) => user.id!).toList(),
-                              document!.projectId!,
-                            );
-                      },
-                    );
-                  },
-                  title: 'Add users',
-                  icon: CupertinoIcons.person_add,
-                ) : PullDownMenuItem(
-                  onTap: () {},
-                  title: 'Duplicate',
-                  icon: CupertinoIcons.doc_on_doc,
-                ),
-                PullDownMenuItem(
-                  onTap: () {},
-                  title: 'Duplicate',
-                  icon: CupertinoIcons.doc_on_doc,
-                ),
+                isProjectIdAvailable
+                    ? PullDownMenuItem(
+                        onTap: () {
+                          customDialogs.showMultiSelectUsersBottomSheet(
+                            document!.id!,
+                            context,
+                            ref,
+                            (List<UserModel> selectedUsers) {
+                              ref
+                                  .watch(docViewmodelProvider.notifier)
+                                  .shareDocToUsers(
+                                    document!.id!,
+                                    selectedUsers
+                                        .map((user) => user.id!)
+                                        .toList(),
+                                    document!.projectId!,
+                                  );
+                            },
+                          );
+                        },
+                        title: 'Add users',
+                        icon: CupertinoIcons.person_add,
+                      )
+                    : PullDownMenuItem(
+                        onTap: () {},
+                        title: 'Report',
+                        icon: CupertinoIcons.doc_on_doc,
+                      ),
+                if (isProjectIdAvailable)
+                  PullDownMenuItem(
+                    onTap: () {
+                      ref.watch(docViewmodelProvider.notifier).createDocument(
+                            'Untitled Document',
+                            document!.projectId!,
+                            context,
+                          );
+                    },
+                    title: 'Duplicate',
+                    icon: CupertinoIcons.doc_on_doc,
+                  ),
                 PullDownMenuItem(
                   onTap: () {
                     final favViewModel =
@@ -368,8 +382,8 @@ class DocumentActions extends StatelessWidget {
               iconColor: Colors.red,
               onTap: () {
                 ref
-                    .watch(favDocumentViewModelProvider.notifier)
-                    .addToFavorites(document!);
+                    .watch(docViewmodelProvider.notifier)
+                    .deleteDocument(document!.id!, context);
               },
               title: 'Delete',
               icon: CupertinoIcons.delete,

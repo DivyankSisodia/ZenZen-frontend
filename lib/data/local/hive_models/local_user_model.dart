@@ -24,7 +24,6 @@ class LocalUser {
   @HiveField(5)
   final String? id;
 
-
   LocalUser({
     required this.userName,
     required this.avatar,
@@ -35,11 +34,20 @@ class LocalUser {
   });
 
   UserModel toUserModel() => UserModel(
-  id: id,
-  userName: userName,
-  email: email,
-  avatar: avatar,
-  mobile: mobile,
-  isVerified: isVerified,
-);
+    id: id,
+    userName: userName,
+    email: email,
+    avatar: avatar,
+    mobile: mobile,
+    isVerified: isVerified,
+  );
+
+  Map<String, dynamic> toJson() => {
+  'id': id,
+  'userName': userName,
+  'email': email,
+  'avatar': avatar,
+  'mobile': mobile,
+  'isVerified': isVerified,
+};
 }

@@ -1,4 +1,3 @@
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:zenzen/features/auth/login/model/user_model.dart';
 
@@ -22,6 +21,8 @@ class FavDocumentViewModel
       await Future.delayed(const Duration(milliseconds: 800));
       final favBox = hiveService.favDocumentBox;
       final favorites = favBox.values.toList();
+      // Call this wherever you need to print documents
+      hiveService.printDocuments();
       try {
         print('Favorites: ${favorites.length}');
         state = AsyncValue.data(favorites);

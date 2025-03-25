@@ -47,14 +47,6 @@ class DocumentModel {
     docId = json['documentId'];
   }
 
-  // Properly map user objects
-  List<UserModel> mapUsers(List<dynamic>? usersList) {
-    if (usersList == null) return [];
-    return usersList.map((userJson) => 
-      UserModel.fromJson(userJson as Map<String, dynamic>)
-    ).toList();
-  }
-
   // Parse admin object if present
   UserModel? admin;
   if (json['admin'] != null) {

@@ -23,13 +23,15 @@ class FavDocumentAdapter extends TypeAdapter<FavDocument> {
       description: fields[3] as String?,
       createdAt: fields[5] as DateTime,
       admin: fields[6] as LocalUser?,
+      users: fields[7] as LocalUser?,
+      isPrivate: fields[8] as bool?,
     );
   }
 
   @override
   void write(BinaryWriter writer, FavDocument obj) {
     writer
-      ..writeByte(6)
+      ..writeByte(8)
       ..writeByte(0)
       ..write(obj.title)
       ..writeByte(1)
@@ -41,7 +43,11 @@ class FavDocumentAdapter extends TypeAdapter<FavDocument> {
       ..writeByte(5)
       ..write(obj.createdAt)
       ..writeByte(6)
-      ..write(obj.admin);
+      ..write(obj.admin)
+      ..writeByte(7)
+      ..write(obj.users)
+      ..writeByte(8)
+      ..write(obj.isPrivate);
   }
 
   @override

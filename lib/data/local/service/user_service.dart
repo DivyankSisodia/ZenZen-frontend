@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:hive_ce_flutter/hive_flutter.dart';
 import 'package:zenzen/data/local/hive_models/local_user_model.dart';
 
@@ -36,6 +38,18 @@ class HiveService {
     for (var key in box.keys) {
       final user = box.get(key);
       print('Key: $key, Value: $user');
+    }
+  }
+
+  void printDocuments() {
+    final box = favDocumentBox;
+    final encoder = JsonEncoder.withIndent('  ');
+
+    for (var key in box.keys) {
+      final document = box.get(key);
+      print('Key: $key');
+      print(encoder.convert(document?.toJson()));
+      print('----------------------');
     }
   }
 }
