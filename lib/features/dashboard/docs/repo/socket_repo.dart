@@ -119,7 +119,9 @@ class SocketRepository {
   }
 
   void leaveRoom(String roomId) {
+    print('Leaving room $roomId');
     _socketClient.emit('leave_file_room', roomId);
+    print('Left room $roomId');
   }
 
   void disconnect() {

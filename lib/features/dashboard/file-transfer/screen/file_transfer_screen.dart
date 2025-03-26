@@ -5,6 +5,8 @@ import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
 import 'dart:io' show File, Platform, Process;
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:gap/gap.dart';
 import 'package:open_file/open_file.dart';
 // ignore: depend_on_referenced_packages
 import 'package:path/path.dart' as path;
@@ -17,11 +19,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:universal_html/html.dart' as html;
 import 'package:uuid/uuid.dart';
+import 'package:zenzen/config/constants/app_colors.dart';
 import 'package:zenzen/utils/common/custom_textfield.dart';
 import 'package:zenzen/utils/theme.dart';
 import '../../docs/repo/socket_repo.dart';
 import '../model/file_info_model.dart';
 import '../model/file_transfer_model.dart';
+import '../widget/dropzone_container.dart';
 
 class FileTransferScreen extends ConsumerStatefulWidget {
   const FileTransferScreen({super.key});
@@ -165,7 +169,8 @@ class _FileTransferScreenState extends ConsumerState<FileTransferScreen> {
     }
   }
 
-  Future<void> _saveAndDisplayReceivedFile(String fileId, String fileName) async {
+  Future<void> _saveAndDisplayReceivedFile(
+      String fileId, String fileName) async {
     final progress = _incomingFiles[fileId]!;
 
     // Combine all chunks
@@ -457,9 +462,11 @@ class _FileTransferScreenState extends ConsumerState<FileTransferScreen> {
   void dispose() {
     // TODO: implement dispose
     super.dispose();
+    if (_currentRoomId != null) {
+      _socketRepository.leaveRoom(_currentRoomId!);
+    }
     _roomIdController.dispose();
     focusNode.dispose();
-    _socketRepository.leaveRoom(_currentRoomId!);
   }
 
   @override
@@ -501,7 +508,8 @@ class _FileTransferScreenState extends ConsumerState<FileTransferScreen> {
                               borderRadius: BorderRadius.circular(8),
                             ),
                             shadowColor: Colors.grey[700],
-                            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 12, horizontal: 24),
                           ),
                           child: Text(
                             'Create Room',
@@ -511,7 +519,10 @@ class _FileTransferScreenState extends ConsumerState<FileTransferScreen> {
                         const SizedBox(height: 16),
                         const Text('OR'),
                         const SizedBox(height: 16),
-                        CustomTextField(controller: _roomIdController, focusNode: focusNode, hint: 'Enter Room Id'),
+                        CustomTextField(
+                            controller: _roomIdController,
+                            focusNode: focusNode,
+                            hint: 'Enter Room Id'),
                         const SizedBox(height: 16),
                         ElevatedButton(
                           onPressed: _joinRoom,
@@ -520,7 +531,8 @@ class _FileTransferScreenState extends ConsumerState<FileTransferScreen> {
                               borderRadius: BorderRadius.circular(8),
                             ),
                             shadowColor: Colors.grey[700],
-                            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 12, horizontal: 24),
                           ),
                           child: Text(
                             'Join Room',
@@ -534,6 +546,8 @@ class _FileTransferScreenState extends ConsumerState<FileTransferScreen> {
               )
             else
               Card(
+                elevation: 5,
+                color: AppColors.background,
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Column(
@@ -543,19 +557,82 @@ class _FileTransferScreenState extends ConsumerState<FileTransferScreen> {
                         style: AppTheme.textSmall(context),
                       ),
                       const SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: _pickAndSendFiles,
-                        style: ElevatedButton.styleFrom(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          shadowColor: Colors.grey[700],
-                          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
-                        ),
-                        child: Text(
-                          'Select Files to Send',
-                          style: AppTheme.smallBodyTheme(context),
-                        ),
+                      // ElevatedButton(
+                      //   onPressed: _pickAndSendFiles,
+                      //   style: ElevatedButton.styleFrom(
+                      //     shape: RoundedRectangleBorder(
+                      //       borderRadius: BorderRadius.circular(8),
+                      //     ),
+                      //     shadowColor: Colors.grey[700],
+                      //     padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+                      //   ),
+                      //   child: Text(
+                      //     'Select Files to Send',
+                      //     style: AppTheme.smallBodyTheme(context),
+                      //   ),
+                      // ),
+                      // GestureDetector(
+                      //   onTap: _pickAndSendFiles,
+                      //   child: Container(
+                      //     height: MediaQuery.of(context).size.height * 0.3,
+                      //     width: MediaQuery.of(context).size.width * 0.6,
+                      //     decoration: BoxDecoration(
+                      //       border: Border.all(color: Colors.grey),
+                      //       borderRadius: BorderRadius.circular(16),
+                      //       boxShadow: [
+                      //         BoxShadow(
+                      //           color: Colors.grey[700]!,
+                      //           blurRadius: 2,
+                      //           spreadRadius: 1,
+                      //         ),
+                      //       ],
+                      //       color: AppColors.background,
+                      //     ),
+                      //     child: Column(
+                      //       mainAxisAlignment: MainAxisAlignment.center,
+                      //       crossAxisAlignment: CrossAxisAlignment.center,
+                      //       children: [
+                      //         Icon(
+                      //           FontAwesomeIcons.fileUpload,
+                      //           size: 50,
+                      //           color: Colors.blue,
+                      //         ),
+                      //         const Gap(20),
+                      //         RichText(
+                      //           textAlign: TextAlign.center,
+                      //           text: TextSpan(
+                      //             text: 'Drag and drop files here',
+                      //             style: AppTheme.textLarge(context),
+                      //             children: [
+                      //               TextSpan(
+                      //                 text: ' or ',
+                      //                 style: AppTheme.textLarge(context),
+                      //               ),
+                      //               TextSpan(
+                      //                 text: 'click to select files',
+                      //                 style: AppTheme.textLarge(context)
+                      //                     .copyWith(color: Colors.blue),
+                      //               ),
+                      //             ],
+                      //           ),
+                      //         ),
+                      //         const Gap(8),
+                      //         Text(
+                      //           'Files will be sent to the room',
+                      //           style: AppTheme.textSmall(context),
+                      //         ),
+                      //         const Gap(8),
+                      //         Text(
+                      //           'Maximum file size is 100 MB',
+                      //           style: AppTheme.textSmall(context),
+                      //         ),
+                      //       ],
+                      //     ),
+                      //   ),
+                      // ),
+                      DragDropContainer(
+                        onTap: _pickAndSendFiles,
+                        onSendFile: _sendFile,
                       ),
                       const SizedBox(height: 16),
                       ElevatedButton(
@@ -570,9 +647,11 @@ class _FileTransferScreenState extends ConsumerState<FileTransferScreen> {
                           ),
                           shadowColor: Colors.grey[700],
                           backgroundColor: Colors.red,
-                          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 12, horizontal: 24),
                         ),
-                        child: Text('Leave Room', style: AppTheme.textLarge(context)),
+                        child: Text('Leave Room',
+                            style: AppTheme.textLarge(context)),
                       ),
                     ],
                   ),
@@ -586,7 +665,8 @@ class _FileTransferScreenState extends ConsumerState<FileTransferScreen> {
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
                   itemCount: _receivedFiles.length,
-                  itemBuilder: (context, index) => _buildFileDisplay(_receivedFiles.values.elementAt(index)),
+                  itemBuilder: (context, index) =>
+                      _buildFileDisplay(_receivedFiles.values.elementAt(index)),
                 ),
               ),
             ],
@@ -602,76 +682,107 @@ class _FileTransferScreenState extends ConsumerState<FileTransferScreen> {
                   children: [
                     ..._outgoingFiles.entries.map((entry) {
                       final progress = entry.value;
-                      final percentage = (progress.receivedChunks.length / progress.totalChunks * 100).toStringAsFixed(1);
+                      final percentage = (progress.receivedChunks.length /
+                              progress.totalChunks *
+                              100)
+                          .toStringAsFixed(1);
 
                       return Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 8, horizontal: 16),
                         child: ListTile(
-                          title: Text(progress.fileName, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                          title: Text(progress.fileName,
+                              style: TextStyle(
+                                  fontSize: 16, fontWeight: FontWeight.bold)),
                           subtitle: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              if (progress.receivedChunks.length / progress.totalChunks < 1)
+                              if (progress.receivedChunks.length /
+                                      progress.totalChunks <
+                                  1)
                                 Row(
                                   children: [
                                     CircularProgressIndicator(
-                                      value: progress.receivedChunks.length / progress.totalChunks,
+                                      value: progress.receivedChunks.length /
+                                          progress.totalChunks,
                                       strokeWidth: 4,
                                     ),
                                     const SizedBox(width: 8),
-                                    Text('${progress.receivedChunks.length / progress.totalChunks * 100}%'),
+                                    Text(
+                                        '${progress.receivedChunks.length / progress.totalChunks * 100}%'),
                                   ],
                                 )
                               else
                                 Row(
                                   children: [
-                                    Icon(Icons.check_circle, color: Colors.green),
+                                    Icon(Icons.check_circle,
+                                        color: Colors.green),
                                     const SizedBox(width: 8),
-                                    const Text('File sent', style: TextStyle(color: Colors.blue)),
+                                    const Text(
+                                      'File sent',
+                                      style: TextStyle(
+                                        color: Colors.blue,
+                                      ),
+                                    ),
                                   ],
                                 ),
                             ],
                           ),
-                          leading: Icon(progress.receivedChunks.length / progress.totalChunks < 1 ? Icons.upload_file : Icons.done, color: Colors.blueAccent),
+                          leading: Icon(
+                            progress.receivedChunks.length /
+                                        progress.totalChunks <
+                                    1
+                                ? Icons.upload_file
+                                : Icons.done,
+                            color: Colors.blueAccent,
+                          ),
                         ),
                       );
                     }),
                     ..._incomingFiles.entries.map((entry) {
                       final progress = entry.value;
-                      final percentage = (progress.receivedChunks.length / progress.totalChunks * 100).toStringAsFixed(1);
+                      final percentage = (progress.receivedChunks.length /
+                              progress.totalChunks *
+                              100)
+                          .toStringAsFixed(1);
 
                       return ListTile(
                         title: Text(progress.fileName),
                         subtitle: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            if (progress.receivedChunks.length / progress.totalChunks < 1)
-                                Row(
-                                  children: [
-                                    CircularProgressIndicator(
-                                      value: progress.receivedChunks.length / progress.totalChunks,
-                                      strokeWidth: 4,
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Text('${progress.receivedChunks.length / progress.totalChunks * 100}%'),
-                                  ],
-                                )
-                              else
-                                Row(
-                                  children: [
-                                    Icon(Icons.check_circle, color: Colors.green),
-                                    const SizedBox(width: 8),
-                                    const Text('File received', style: TextStyle(color: Colors.green)),
-                                  ],
-                                ),
-                              // SingleChildScrollView(
-                              //   scrollDirection: Axis.horizontal,
-                              //   child: Row(
-                              //     children: _receivedFiles.values.map((fileInfo) {
-                              //       return _buildFileDisplay(fileInfo);
-                              //     }).toList(),
-                              //   ),
-                              // ),
+                            if (progress.receivedChunks.length /
+                                    progress.totalChunks <
+                                1)
+                              Row(
+                                children: [
+                                  CircularProgressIndicator(
+                                    value: progress.receivedChunks.length /
+                                        progress.totalChunks,
+                                    strokeWidth: 4,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                      '${progress.receivedChunks.length / progress.totalChunks * 100}%'),
+                                ],
+                              )
+                            else
+                              Row(
+                                children: [
+                                  Icon(Icons.check_circle, color: Colors.green),
+                                  const SizedBox(width: 8),
+                                  const Text('File received',
+                                      style: TextStyle(color: Colors.green)),
+                                ],
+                              ),
+                            // SingleChildScrollView(
+                            //   scrollDirection: Axis.horizontal,
+                            //   child: Row(
+                            //     children: _receivedFiles.values.map((fileInfo) {
+                            //       return _buildFileDisplay(fileInfo);
+                            //     }).toList(),
+                            //   ),
+                            // ),
                           ],
                         ),
                         leading: const Icon(Icons.download_rounded),
