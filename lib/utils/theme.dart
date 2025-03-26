@@ -389,7 +389,7 @@ class AppTheme {
         fontFamily: 'SpaceGrotesk',
         fontSize: 20,
         fontWeight: FontWeight.w700,
-        color: AppColors.surface,
+        color: AppColors.primary,
       );
     } else {
       return TextStyle(

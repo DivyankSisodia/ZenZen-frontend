@@ -1,3 +1,5 @@
+// ignore_for_file: unused_local_variable
+
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
@@ -15,6 +17,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:universal_html/html.dart' as html;
 import 'package:uuid/uuid.dart';
+import 'package:zenzen/utils/common/custom_textfield.dart';
+import 'package:zenzen/utils/theme.dart';
 import '../../docs/repo/socket_repo.dart';
 import '../model/file_info_model.dart';
 import '../model/file_transfer_model.dart';
@@ -35,6 +39,8 @@ class _FileTransferScreenState extends ConsumerState<FileTransferScreen> {
   final Map<String, FileDisplayInfo> _receivedFiles = {};
   late SocketRepository _socketRepository;
 
+  final FocusNode focusNode = FocusNode();
+
   @override
   void initState() {
     super.initState();
@@ -43,8 +49,6 @@ class _FileTransferScreenState extends ConsumerState<FileTransferScreen> {
   }
 
   void _connectToServer() {
-    // Establish connection and set up listeners
-
     setState(() {
       _isConnected = true;
     });
@@ -450,6 +454,15 @@ class _FileTransferScreenState extends ConsumerState<FileTransferScreen> {
   }
 
   @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+    _roomIdController.dispose();
+    focusNode.dispose();
+    _socketRepository.leaveRoom(_currentRoomId!);
+  }
+
+  @override
   Widget build(BuildContext context) {
     print('Received files: ${_receivedFiles.keys}');
     return Scaffold(
@@ -473,37 +486,49 @@ class _FileTransferScreenState extends ConsumerState<FileTransferScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             if (_currentRoomId == null)
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    children: [
-                      ElevatedButton(
-                        onPressed: _createRoom,
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+              Center(
+                child: Card(
+                  elevation: 5,
+                  shadowColor: Colors.grey[700],
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      children: [
+                        ElevatedButton(
+                          onPressed: _createRoom,
+                          style: ElevatedButton.styleFrom(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            shadowColor: Colors.grey[700],
+                            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+                          ),
+                          child: Text(
+                            'Create Room',
+                            style: AppTheme.buttonText(context),
+                          ),
                         ),
-                        child: const Text('Create Room'),
-                      ),
-                      const SizedBox(height: 16),
-                      const Text('OR'),
-                      const SizedBox(height: 16),
-                      TextField(
-                        controller: _roomIdController,
-                        decoration: const InputDecoration(
-                          border: OutlineInputBorder(),
-                          labelText: 'Enter Room ID',
+                        const SizedBox(height: 16),
+                        const Text('OR'),
+                        const SizedBox(height: 16),
+                        CustomTextField(controller: _roomIdController, focusNode: focusNode, hint: 'Enter Room Id'),
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: _joinRoom,
+                          style: ElevatedButton.styleFrom(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            shadowColor: Colors.grey[700],
+                            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+                          ),
+                          child: Text(
+                            'Join Room',
+                            style: AppTheme.buttonText(context),
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: _joinRoom,
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
-                        ),
-                        child: const Text('Join Room'),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               )
@@ -515,15 +540,22 @@ class _FileTransferScreenState extends ConsumerState<FileTransferScreen> {
                     children: [
                       Text(
                         'Room: $_currentRoomId',
-                        style: Theme.of(context).textTheme.bodySmall,
+                        style: AppTheme.textSmall(context),
                       ),
                       const SizedBox(height: 16),
                       ElevatedButton(
                         onPressed: _pickAndSendFiles,
                         style: ElevatedButton.styleFrom(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          shadowColor: Colors.grey[700],
                           padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
                         ),
-                        child: const Text('Select Files to Send'),
+                        child: Text(
+                          'Select Files to Send',
+                          style: AppTheme.smallBodyTheme(context),
+                        ),
                       ),
                       const SizedBox(height: 16),
                       ElevatedButton(
@@ -533,10 +565,14 @@ class _FileTransferScreenState extends ConsumerState<FileTransferScreen> {
                           });
                         },
                         style: ElevatedButton.styleFrom(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          shadowColor: Colors.grey[700],
                           backgroundColor: Colors.red,
                           padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
                         ),
-                        child: const Text('Leave Room'),
+                        child: Text('Leave Room', style: AppTheme.buttonText(context)),
                       ),
                     ],
                   ),
@@ -546,9 +582,9 @@ class _FileTransferScreenState extends ConsumerState<FileTransferScreen> {
             if (_incomingFiles.isNotEmpty || _outgoingFiles.isNotEmpty) ...[
               Text(
                 'File Transfers',
-                style: Theme.of(context).textTheme.bodyMedium,
+                style: AppTheme.largeBodyTheme(context),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 15),
               Expanded(
                 child: ListView(
                   children: [
@@ -556,18 +592,36 @@ class _FileTransferScreenState extends ConsumerState<FileTransferScreen> {
                       final progress = entry.value;
                       final percentage = (progress.receivedChunks.length / progress.totalChunks * 100).toStringAsFixed(1);
 
-                      return ListTile(
-                        title: Text(progress.fileName),
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('Sending... $percentage%'),
-                            LinearProgressIndicator(
-                              value: progress.receivedChunks.length / progress.totalChunks,
-                            ),
-                          ],
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                        child: ListTile(
+                          title: Text(progress.fileName, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                          subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              if (progress.receivedChunks.length / progress.totalChunks < 1)
+                                Row(
+                                  children: [
+                                    CircularProgressIndicator(
+                                      value: progress.receivedChunks.length / progress.totalChunks,
+                                      strokeWidth: 4,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Text('${progress.receivedChunks.length / progress.totalChunks * 100}%'),
+                                  ],
+                                )
+                              else
+                                Row(
+                                  children: [
+                                    Icon(Icons.check_circle, color: Colors.green),
+                                    const SizedBox(width: 8),
+                                    const Text('File Received', style: TextStyle(color: Colors.green)),
+                                  ],
+                                ),
+                            ],
+                          ),
+                          leading: Icon(progress.receivedChunks.length / progress.totalChunks < 1 ? Icons.upload_file : Icons.done, color: Colors.blueAccent),
                         ),
-                        leading: const Icon(Icons.upload_file),
                       );
                     }),
                     ..._incomingFiles.entries.map((entry) {
