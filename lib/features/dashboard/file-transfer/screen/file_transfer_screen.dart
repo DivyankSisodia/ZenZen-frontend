@@ -505,7 +505,7 @@ class _FileTransferScreenState extends ConsumerState<FileTransferScreen> {
                           ),
                           child: Text(
                             'Create Room',
-                            style: AppTheme.buttonText(context),
+                            style: AppTheme.textLarge(context),
                           ),
                         ),
                         const SizedBox(height: 16),
@@ -524,7 +524,7 @@ class _FileTransferScreenState extends ConsumerState<FileTransferScreen> {
                           ),
                           child: Text(
                             'Join Room',
-                            style: AppTheme.buttonText(context),
+                            style: AppTheme.textLarge(context),
                           ),
                         ),
                       ],
@@ -572,12 +572,24 @@ class _FileTransferScreenState extends ConsumerState<FileTransferScreen> {
                           backgroundColor: Colors.red,
                           padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
                         ),
-                        child: Text('Leave Room', style: AppTheme.buttonText(context)),
+                        child: Text('Leave Room', style: AppTheme.textLarge(context)),
                       ),
                     ],
                   ),
                 ),
               ),
+            if (_receivedFiles.isNotEmpty) ...[
+              Text('Received Files', style: AppTheme.largeBodyTheme(context)),
+              const SizedBox(height: 15),
+              SizedBox(
+                height: 120,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: _receivedFiles.length,
+                  itemBuilder: (context, index) => _buildFileDisplay(_receivedFiles.values.elementAt(index)),
+                ),
+              ),
+            ],
             const SizedBox(height: 16),
             if (_incomingFiles.isNotEmpty || _outgoingFiles.isNotEmpty) ...[
               Text(
@@ -615,7 +627,7 @@ class _FileTransferScreenState extends ConsumerState<FileTransferScreen> {
                                   children: [
                                     Icon(Icons.check_circle, color: Colors.green),
                                     const SizedBox(width: 8),
-                                    const Text('File Received', style: TextStyle(color: Colors.green)),
+                                    const Text('File sent', style: TextStyle(color: Colors.blue)),
                                   ],
                                 ),
                             ],
@@ -633,29 +645,33 @@ class _FileTransferScreenState extends ConsumerState<FileTransferScreen> {
                         subtitle: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('Receiving... $percentage%'),
-                            LinearProgressIndicator(
-                              value: progress.receivedChunks.length / progress.totalChunks,
-                            ),
-                            ElevatedButton(
-                              onPressed: openSavedFile,
-                              child: const Text('Open Saved File'),
-                            ),
-                            if (_receivedFiles.isNotEmpty) ...[
-                              Text(
-                                'Received Files',
-                                style: Theme.of(context).textTheme.bodyMedium,
-                              ),
-                              const SizedBox(height: 8),
-                              SingleChildScrollView(
-                                scrollDirection: Axis.horizontal,
-                                child: Row(
-                                  children: _receivedFiles.values.map((fileInfo) {
-                                    return _buildFileDisplay(fileInfo);
-                                  }).toList(),
+                            if (progress.receivedChunks.length / progress.totalChunks < 1)
+                                Row(
+                                  children: [
+                                    CircularProgressIndicator(
+                                      value: progress.receivedChunks.length / progress.totalChunks,
+                                      strokeWidth: 4,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Text('${progress.receivedChunks.length / progress.totalChunks * 100}%'),
+                                  ],
+                                )
+                              else
+                                Row(
+                                  children: [
+                                    Icon(Icons.check_circle, color: Colors.green),
+                                    const SizedBox(width: 8),
+                                    const Text('File received', style: TextStyle(color: Colors.green)),
+                                  ],
                                 ),
-                              ),
-                            ],
+                              // SingleChildScrollView(
+                              //   scrollDirection: Axis.horizontal,
+                              //   child: Row(
+                              //     children: _receivedFiles.values.map((fileInfo) {
+                              //       return _buildFileDisplay(fileInfo);
+                              //     }).toList(),
+                              //   ),
+                              // ),
                           ],
                         ),
                         leading: const Icon(Icons.download_rounded),
@@ -682,14 +698,14 @@ class _FileTransferScreenState extends ConsumerState<FileTransferScreen> {
           if (imageExtensions.contains(fileInfo.fileType))
             Image.memory(
               fileInfo.fileData,
-              width: 100,
-              height: 100,
+              width: 70,
+              height: 70,
               fit: BoxFit.cover,
             )
           else
             const Icon(
               Icons.insert_drive_file,
-              size: 100,
+              size: 70,
               color: Colors.grey,
             ),
           const SizedBox(height: 8),
@@ -700,7 +716,7 @@ class _FileTransferScreenState extends ConsumerState<FileTransferScreen> {
           ),
           ElevatedButton(
             onPressed: () => _openSavedFileLocation(fileInfo.filePath),
-            child: const Text('Open File'),
+            child: Text('Open File', style: AppTheme.smallBodyTheme(context)),
           ),
         ],
       ),
