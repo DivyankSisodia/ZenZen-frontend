@@ -20,4 +20,8 @@ class UserRepo {
   Future<Either<List<UserModel>, ApiFailure>> getAllUsers() async {
     return miscApi.getAllUsers();
   }
+
+  Future<Either<UserModel, ApiFailure>> getUser(String id) async {
+    return miscApi.getUserById(id);
+  }
 }

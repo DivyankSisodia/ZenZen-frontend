@@ -79,4 +79,24 @@ class MiscApi {
       return Right(ApiFailure.fromDioException(e));
     }
   }
+
+  Future<Either<UserModel, ApiFailure>> getUserById(String userId) async {
+    try {
+      final response = await dio.post(
+        '$baseUrl${ApiRoutes.getUserById}',
+        data: {
+          'id': userId,
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final user = UserModel.fromJson(response.data['data'] as Map<String, dynamic>);
+        return Left(user);
+      } else {
+        return Right(ApiFailure.custom(response.data['message'] ?? 'Unknown error'));
+      }
+    } on DioException catch (e) {
+      return Right(ApiFailure.fromDioException(e));
+    }
+  }
 }

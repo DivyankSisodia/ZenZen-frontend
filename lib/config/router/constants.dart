@@ -14,6 +14,7 @@ class RoutesName {
   static const String allDocs = "all-documents";
   static const String allProjects = "all-projects";
   static const String fileTransfer = "file-transfer";
+  static const String messagingScreen = "messaging-screen";
 }
 
 class ApiRoutes {
@@ -46,4 +47,5 @@ class ApiRoutes {
   static const String updatePassword = "/auth/update-password";
   static const String updateEmail = "/auth/update-email";
   static const String sharedDocs = "/docs/shared-docs";
+  static const String getUserById = "/auth/get-user";
 }

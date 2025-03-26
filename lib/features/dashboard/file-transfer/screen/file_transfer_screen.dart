@@ -5,8 +5,6 @@ import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
 import 'dart:io' show File, Platform, Process;
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:gap/gap.dart';
 import 'package:open_file/open_file.dart';
 // ignore: depend_on_referenced_packages
 import 'package:path/path.dart' as path;
@@ -189,28 +187,26 @@ class _FileTransferScreenState extends ConsumerState<FileTransferScreen> {
       filePath = await _saveFileNative(fileName, fileData);
     }
 
-    if (filePath != null) {
-      // Determine file type
-      final fileType = fileName.split('.').last.toLowerCase();
+    // Determine file type
+    final fileType = fileName.split('.').last.toLowerCase();
 
-      // Create FileDisplayInfo
-      final displayInfo = FileDisplayInfo(
-        fileName: fileName,
-        filePath: filePath,
-        fileType: fileType,
-        fileData: fileData,
-      );
+    // Create FileDisplayInfo
+    final displayInfo = FileDisplayInfo(
+      fileName: fileName,
+      filePath: filePath,
+      fileType: fileType,
+      fileData: fileData,
+    );
 
-      // Add to received files map
-      _receivedFiles[fileId] = displayInfo;
+    // Add to received files map
+    _receivedFiles[fileId] = displayInfo;
 
-      setState(() {});
+    setState(() {});
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('File received: $fileName')),
-      );
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('File received: $fileName')),
+    );
     }
-  }
 
   String? _lastSavedFilePath;
 
@@ -557,79 +553,6 @@ class _FileTransferScreenState extends ConsumerState<FileTransferScreen> {
                         style: AppTheme.textSmall(context),
                       ),
                       const SizedBox(height: 16),
-                      // ElevatedButton(
-                      //   onPressed: _pickAndSendFiles,
-                      //   style: ElevatedButton.styleFrom(
-                      //     shape: RoundedRectangleBorder(
-                      //       borderRadius: BorderRadius.circular(8),
-                      //     ),
-                      //     shadowColor: Colors.grey[700],
-                      //     padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
-                      //   ),
-                      //   child: Text(
-                      //     'Select Files to Send',
-                      //     style: AppTheme.smallBodyTheme(context),
-                      //   ),
-                      // ),
-                      // GestureDetector(
-                      //   onTap: _pickAndSendFiles,
-                      //   child: Container(
-                      //     height: MediaQuery.of(context).size.height * 0.3,
-                      //     width: MediaQuery.of(context).size.width * 0.6,
-                      //     decoration: BoxDecoration(
-                      //       border: Border.all(color: Colors.grey),
-                      //       borderRadius: BorderRadius.circular(16),
-                      //       boxShadow: [
-                      //         BoxShadow(
-                      //           color: Colors.grey[700]!,
-                      //           blurRadius: 2,
-                      //           spreadRadius: 1,
-                      //         ),
-                      //       ],
-                      //       color: AppColors.background,
-                      //     ),
-                      //     child: Column(
-                      //       mainAxisAlignment: MainAxisAlignment.center,
-                      //       crossAxisAlignment: CrossAxisAlignment.center,
-                      //       children: [
-                      //         Icon(
-                      //           FontAwesomeIcons.fileUpload,
-                      //           size: 50,
-                      //           color: Colors.blue,
-                      //         ),
-                      //         const Gap(20),
-                      //         RichText(
-                      //           textAlign: TextAlign.center,
-                      //           text: TextSpan(
-                      //             text: 'Drag and drop files here',
-                      //             style: AppTheme.textLarge(context),
-                      //             children: [
-                      //               TextSpan(
-                      //                 text: ' or ',
-                      //                 style: AppTheme.textLarge(context),
-                      //               ),
-                      //               TextSpan(
-                      //                 text: 'click to select files',
-                      //                 style: AppTheme.textLarge(context)
-                      //                     .copyWith(color: Colors.blue),
-                      //               ),
-                      //             ],
-                      //           ),
-                      //         ),
-                      //         const Gap(8),
-                      //         Text(
-                      //           'Files will be sent to the room',
-                      //           style: AppTheme.textSmall(context),
-                      //         ),
-                      //         const Gap(8),
-                      //         Text(
-                      //           'Maximum file size is 100 MB',
-                      //           style: AppTheme.textSmall(context),
-                      //         ),
-                      //       ],
-                      //     ),
-                      //   ),
-                      // ),
                       DragDropContainer(
                         onTap: _pickAndSendFiles,
                         onSendFile: _sendFile,
@@ -775,14 +698,6 @@ class _FileTransferScreenState extends ConsumerState<FileTransferScreen> {
                                       style: TextStyle(color: Colors.green)),
                                 ],
                               ),
-                            // SingleChildScrollView(
-                            //   scrollDirection: Axis.horizontal,
-                            //   child: Row(
-                            //     children: _receivedFiles.values.map((fileInfo) {
-                            //       return _buildFileDisplay(fileInfo);
-                            //     }).toList(),
-                            //   ),
-                            // ),
                           ],
                         ),
                         leading: const Icon(Icons.download_rounded),

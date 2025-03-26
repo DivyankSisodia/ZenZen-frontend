@@ -177,6 +177,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                     );
                                     break;
                                   case 2:
+                                    context.goNamed(RoutesName.messagingScreen);
                                     // Navigator.pushNamed(context, AppRouter.addMembers);
                                     break;
                                   case 3:
