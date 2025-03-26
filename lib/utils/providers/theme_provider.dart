@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../config/local_data.dart';
+import '../../data/local_data.dart';
 
 // Theme state notifier
 class ThemeNotifier extends StateNotifier<ThemeMode> {

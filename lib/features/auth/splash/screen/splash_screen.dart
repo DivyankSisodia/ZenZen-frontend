@@ -1,9 +1,11 @@
-import 'package:flutter/foundation.dart' show kIsWeb;
+// ignore_for_file: unnecessary_null_comparison
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:go_router/go_router.dart';
-import 'package:zenzen/config/constants.dart';
-import 'package:zenzen/features/auth/splash/screen/intro_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:zenzen/config/router/constants.dart';
 import '../../../../utils/providers/theme_provider.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
@@ -17,21 +19,31 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    // Use kIsWeb instead of Platform checks
-    if (!kIsWeb) {
-      // For mobile platforms
-      context.goNamed(RoutesName.intro);
-    } else {
-      // For web platform
-      Future.delayed(const Duration(seconds: 2), () {
-        context.goNamed(RoutesName.intro);
-      });
-    }
+    _initializeAsync();
+    printPrefs();
+  }
 
-    // Alternatively, you could simplify to just:
-    // Future.delayed(const Duration(seconds: 3), () {
-    //   Navigator.pushReplacementNamed(context, '/intro');
-    // });
+  void printPrefs() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    print('Theme: ${prefs.getString('theme')}');
+  }
+
+  Future<void> _initializeAsync() async {
+    FlutterSecureStorage storage = const FlutterSecureStorage();
+
+    final token = await storage.read(key: 'access_token');
+    print('Access Token: $token');
+
+    // Schedule navigation after the first frame
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Future.delayed(const Duration(seconds: 3), () {
+        if (mounted) {
+          (token?.isNotEmpty == true)
+              ? context.goNamed(RoutesName.home)
+              : context.goNamed(RoutesName.intro);
+        }
+      });
+    });
   }
 
   @override

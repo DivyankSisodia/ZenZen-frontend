@@ -1,12 +1,17 @@
+// ignore_for_file: deprecated_member_use, must_be_immutable, depend_on_referenced_packages
+
 import 'package:device_preview/device_preview.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:zenzen/config/app_router.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_quill/flutter_quill.dart';
+import 'package:zenzen/config/router/app_router.dart';
+// ignore: unused_import
+import 'package:zenzen/config/constants/app_colors.dart';
 import 'package:zenzen/firebase_options.dart';
-
-import 'utils/providers/theme_provider.dart';
+import 'data/local/service/user_service.dart';
+import 'utils/theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -14,12 +19,13 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
+  // Initialize Hive
+  final hiveService = HiveService();
+  await hiveService.init();
+
   runApp(
-    ProviderScope(
-      child: DevicePreview(
-        enabled: !kReleaseMode,
-        builder: (context) => const MyApp(), // Wrap your app
-      ),
+    const ProviderScope(
+      child: MyApp(),
     ),
   );
 }
@@ -40,23 +46,25 @@ class _MyAppState extends ConsumerState<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    final themeMode = ref.watch(themeProvider);
     return MaterialApp.router(
+      debugShowCheckedModeBanner: false,
       useInheritedMediaQuery: true,
       locale: DevicePreview.locale(context),
       builder: DevicePreview.appBuilder,
       routerConfig: RouteConfig.returnRouter(),
       title: 'Flutter Demo',
-      themeMode: themeMode,
-      theme: ThemeData(
-        brightness: Brightness.light,
-        primarySwatch: Colors.blue,
-        fontFamily: 'SpaceGrotesk',
-      ),
-      darkTheme: ThemeData(
-        brightness: Brightness.dark,
-        primarySwatch: Colors.indigo,
-      ),
+      theme: AppTheme.lightTheme(context),
+      // darkTheme: AppTheme.darkTheme(context),
+
+      // Add these lines to support localization for Flutter Quill
+      localizationsDelegates: const [
+        ...GlobalMaterialLocalizations.delegates,
+        FlutterQuillLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('en'),
+        // Add other locales your app supports
+      ],
     );
   }
 }

@@ -3,9 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
-import 'package:zenzen/config/app_theme.dart';
+import 'package:zenzen/config/constants/app_colors.dart';
 
-import '../../../../config/constants.dart';
+import '../../../../config/router/constants.dart';
+import '../../../../utils/theme.dart';
 
 class MobileIntro extends ConsumerStatefulWidget {
   const MobileIntro({super.key});
@@ -100,9 +101,14 @@ class _MobileIntroState extends ConsumerState<MobileIntro> {
                     );
                   }
                 },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.getIconsColor(context),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+                ),
                 child: Text(
                   currentPage == 2 ? 'Start Over' : 'Next',
-                  style: const TextStyle(color: Colors.white),
+                  style: AppTheme.buttonText(context),
                 ),
               ),
               const Gap(10),
@@ -114,11 +120,9 @@ class _MobileIntroState extends ConsumerState<MobileIntro> {
                     curve: Curves.easeIn,
                   );
                 },
-                child: const Text(
+                child: Text(
                   'Skip',
-                  style: TextStyle(
-                    color: Colors.black,
-                  ),
+                  style: AppTheme.textSmall(context),
                 ),
               ),
             ],

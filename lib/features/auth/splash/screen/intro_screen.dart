@@ -17,7 +17,7 @@ class _IntroScreensState extends ConsumerState<IntroScreens> {
     return Scaffold(
       body: LayoutBuilder(
         builder: (context, contraints) {
-          if (contraints.maxWidth < 600) {
+          if (contraints.maxWidth < 800) {
             return const MobileIntro();
           } else if (contraints.maxWidth < 1200) {
             return const DesktopIntro();
