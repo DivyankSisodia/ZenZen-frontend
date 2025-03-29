@@ -1,8 +1,9 @@
+// ignore_for_file: unnecessary_null_comparison
+
 import 'dart:async';
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 
 import '../../../../config/constants/app_colors.dart';
 import '../../../../data/local/provider/hive_provider.dart';
@@ -334,13 +335,13 @@ class _HeaderActionItemsState extends ConsumerState<HeaderActionItems> {
               child: CircleAvatar(
                 radius: 20,
                 backgroundColor: Colors.grey[300],
-                backgroundImage: currentUser!.avatar != null && currentUser.avatar!.isNotEmpty
-                    ? NetworkImage(currentUser.avatar!)
+                backgroundImage: currentUser!.avatar != null && currentUser.avatar.isNotEmpty
+                    ? NetworkImage(currentUser.avatar)
                     : null,
-                child: currentUser.avatar == null || currentUser.avatar!.isEmpty
+                child: currentUser.avatar.isEmpty
                     ? Text(
-                        currentUser.userName != null && currentUser.userName!.isNotEmpty
-                            ? currentUser.userName![0].toUpperCase()
+                        currentUser.userName.isNotEmpty
+                            ? currentUser.userName[0].toUpperCase()
                             : '?',
                         style: const TextStyle(
                           fontSize: 16, 

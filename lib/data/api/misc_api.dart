@@ -99,4 +99,31 @@ class MiscApi {
       return Right(ApiFailure.fromDioException(e));
     }
   }
+
+  Future<Either<List<UserModel>, ApiFailure>> getMultipleUsers(List<String> ids) async {
+    try {
+      final response = await dio.post(
+        '$baseUrl${ApiRoutes.getMultipleUsers}',
+        data: {
+          'userIds': ids,
+        },
+      );
+
+      if(response.statusCode == 200) {
+        // Access the 'data' array from the response
+        if (response.data is Map<String, dynamic> && response.data.containsKey('data')) {
+          final List<dynamic> documentsData = response.data['data'] as List<dynamic>;
+
+          final documents = documentsData.map((doc) => UserModel.fromJson(doc as Map<String, dynamic>)).toList();
+
+          return Left(documents);
+        } else {
+          return Right(ApiFailure('Response missing "data" field or has incorrect format'));
+        }
+      }
+      return Right(ApiFailure('Unexpected response status code'));
+    } on DioException catch (e) {
+      return Right(ApiFailure.fromDioException(e));
+    }
+  }
 }

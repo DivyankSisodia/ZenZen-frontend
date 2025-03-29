@@ -7,10 +7,13 @@ import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'dart:convert';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_quill_extensions/flutter_quill_extensions.dart';
+import 'package:zenzen/config/constants/responsive.dart';
 import 'package:zenzen/features/dashboard/docs/repo/socket_repo.dart';
 
 import '../../../../data/local/hive_models/local_user_model.dart';
+import '../../../auth/user/view-model/user_view_model.dart';
 import '../model/document_model.dart';
+import '../provider/editor_provider.dart';
 
 class DocumentEditor extends ConsumerStatefulWidget {
   final SocketRepository repository;
@@ -95,6 +98,19 @@ class _DocumentEditorState extends ConsumerState<DocumentEditor> {
         _autoSaveTimer?.cancel();
         _autoSaveTimer = Timer(const Duration(seconds: 10), _saveDocument);
       }
+    });
+
+    // get users count
+    widget.repository.onUsersCountUpdate((documentId, users, count) {
+      print('Document ID: $documentId');
+      print('user count wala Users: $users');
+      print('Count: $count');
+
+      // Update provider state with user IDs
+      ref.read(currentEditorUserProvider.notifier).update((state) => users.map((user) => user.toString()).toList());
+
+      // Log updated state
+      print('User List in provider: ${ref.read(currentEditorUserProvider)}');
     });
 
     print('Controller initialized');
@@ -202,6 +218,43 @@ class _DocumentEditorState extends ConsumerState<DocumentEditor> {
               ),
               controller: _controller,
             ),
+          if (!Responsive.isDesktop(context))
+            Consumer(
+              builder: (context, ref, child) {
+                final userList = ref.watch(currentEditorUserProvider);
+                final asyncUsers = ref.watch(userViewmodelProvider);
+                final userViewModel = ref.read(userViewmodelProvider.notifier);
+
+                // Trigger user fetch when user list changes
+                ref.listen(currentEditorUserProvider, (_, nextUserIds) {
+                  if (nextUserIds.isNotEmpty) {
+                    userViewModel.getMultipleUser(nextUserIds);
+                  }
+                });
+
+                return Container(
+                  padding: const EdgeInsets.all(8.0),
+                  color: Colors.grey.shade200,
+                  child: Column(
+                    children: [
+                      const Text('Users currently editing this document:'),
+                      if (userList.isEmpty) const Text('No users are currently editing this document.'),
+                      if (userList.isNotEmpty)
+                        asyncUsers.when(
+                          loading: () => const CircularProgressIndicator(),
+                          error: (error, stackTrace) => Text('Error loading users: $error'),
+                          data: (users) => Column(
+                            children: users
+                                .map((user) => Text(user.userName!) // Assuming UserModel has a 'name' property
+                                    )
+                                .toList(),
+                          ),
+                        ),
+                    ],
+                  ),
+                );
+              },
+            ),
           Expanded(
             child: Container(
               padding: const EdgeInsets.all(8.0),
@@ -263,8 +316,7 @@ class TimeStampEmbed extends Embeddable {
 
   static const String timeStampType = 'timeStamp';
 
-  static TimeStampEmbed fromDocument(Document document) =>
-      TimeStampEmbed(jsonEncode(document.toDelta().toJson()));
+  static TimeStampEmbed fromDocument(Document document) => TimeStampEmbed(jsonEncode(document.toDelta().toJson()));
 
   Document get document => Document.fromJson(jsonDecode(data));
 }
@@ -319,18 +371,3 @@ class DocumentBrowser extends StatelessWidget {
     );
   }
 }
-
-// Document model for your app
-// class DocumentModel {
-//   final String id;
-//   final String title;
-//   final String lastEdited;
-//   final String content;
-
-//   DocumentModel({
-//     required this.id,
-//     required this.title,
-//     required this.lastEdited,
-//     required this.content,
-//   });
-// }

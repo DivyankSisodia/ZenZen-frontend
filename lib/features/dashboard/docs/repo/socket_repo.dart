@@ -39,9 +39,9 @@ class SocketRepository {
   }
 
   // Listen for users count updates
-  void onUsersCountUpdate(void Function(String, int) callback) {
-    _socketClient.on('users-count', (data) {
-      callback(data['documentId'] as String, data['count'] as int);
+  void onUsersCountUpdate(void Function(String, List,int) callback) {
+    _socketClient.on('users-list', (data) {
+      callback(data['documentId'] as String, data['users'] ,data['count'] as int);
     });
   }
 
@@ -52,7 +52,6 @@ class SocketRepository {
   // From here onwards we have events
   // for file-transfer.
 
-  // File Transfer Methods
   void sendFileChunk(Map<String, dynamic> data) {
     _socketClient.emit('file_chunk', data);
   }

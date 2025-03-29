@@ -2,6 +2,7 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart' show Gap;
+import 'package:universal_html/html.dart' as html;
 import 'package:zenzen/config/constants/app_colors.dart';
 import 'package:zenzen/config/constants/app_images.dart';
 import 'package:zenzen/config/constants/responsive.dart';
@@ -23,7 +24,7 @@ class NewDocumentScreen extends ConsumerStatefulWidget {
   ConsumerState<ConsumerStatefulWidget> createState() => _NewDocumentScreenState();
 }
 
-class _NewDocumentScreenState extends ConsumerState<NewDocumentScreen> {
+class _NewDocumentScreenState extends ConsumerState<NewDocumentScreen> with WidgetsBindingObserver {
   final TextEditingController _titleController = TextEditingController();
   bool _isEmpty = false;
   String _documentContent = '';
@@ -59,6 +60,14 @@ class _NewDocumentScreenState extends ConsumerState<NewDocumentScreen> {
 
     joinDocument();
     // ignore: unused_element
+
+    html.window.onBeforeUnload.listen((event) {
+      // Perform cleanup before the tab is closed
+      repository.leaveDocument({
+        'documentId': widget.id,
+        'userId': currentuser?.id ?? '',
+      });
+    });
   }
 
   void joinDocument() {
@@ -102,6 +111,52 @@ class _NewDocumentScreenState extends ConsumerState<NewDocumentScreen> {
       'userId': currentuser!.id,
     });
     repository.disconnect();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    switch (state) {
+      case AppLifecycleState.resumed:
+        // Reconnect socket and join document room when app is resumed
+        if (currentuser != null && repository.socketClient.connected) {
+          repository.joinDocument({
+            'documentId': widget.id,
+            'userId': currentuser!.id,
+          });
+        } else {
+          // Reconnect socket if needed
+          if (!repository.socketClient.connected) {
+            repository.socketClient.connect();
+
+            // Wait for connection before joining
+            repository.socketClient.once('connect', (_) {
+              repository.joinDocument({
+                'documentId': widget.id,
+                'userId': currentuser!.id,
+              });
+            });
+          }
+        }
+        break;
+      case AppLifecycleState.paused:
+        // Leave document room when app is paused
+        repository.leaveDocument({
+          'documentId': widget.id,
+          'userId': currentuser!.id,
+        });
+        break;
+      case AppLifecycleState.detached:
+        // Handle detached state if needed
+        print('App is detached');
+        repository.leaveDocument({
+          'documentId': widget.id,
+          'userId': currentuser!.id,
+        });
+        print('Left document room');
+        break;
+      default:
+        break;
+    }
   }
 
   @override

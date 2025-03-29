@@ -54,6 +54,20 @@ class UserViewModel extends StateNotifier<AsyncValue<List<UserModel>>> {
       return right(ApiFailure(e.toString()));
     }
   }
+
+  Future<Either<List<UserModel>, ApiFailure>> getMultipleUser(List<String> id) async {
+    try {
+      final result = await repository.getMultipleUser(id);
+      result.fold(
+        (user) => state = AsyncValue.data(user),
+        (error) => state = AsyncValue.error(error, StackTrace.current),
+      );
+      return result;
+    } catch (e, stackTrace) {
+      state = AsyncValue.error(e, stackTrace);
+      return right(ApiFailure(e.toString()));
+    }
+  }
 }
 
 final userViewmodelProvider = StateNotifierProvider<UserViewModel, AsyncValue<List<UserModel>>>((ref) {
