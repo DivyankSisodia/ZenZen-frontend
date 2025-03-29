@@ -15,6 +15,7 @@ class _IntroScreensState extends ConsumerState<IntroScreens> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       body: LayoutBuilder(
         builder: (context, contraints) {
           if (contraints.maxWidth < 800) {

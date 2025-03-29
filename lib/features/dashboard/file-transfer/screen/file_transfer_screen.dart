@@ -5,6 +5,7 @@ import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
 import 'dart:io' show File, Platform, Process;
+import 'package:go_router/go_router.dart';
 import 'package:open_file/open_file.dart';
 // ignore: depend_on_referenced_packages
 import 'package:path/path.dart' as path;
@@ -18,6 +19,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:universal_html/html.dart' as html;
 import 'package:uuid/uuid.dart';
 import 'package:zenzen/config/constants/app_colors.dart';
+import 'package:zenzen/config/router/constants.dart';
 import 'package:zenzen/utils/common/custom_textfield.dart';
 import 'package:zenzen/utils/theme.dart';
 import '../../docs/repo/socket_repo.dart';
@@ -470,6 +472,11 @@ class _FileTransferScreenState extends ConsumerState<FileTransferScreen> {
     print('Received files: ${_receivedFiles.keys}');
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(onPressed: (){
+          context.goNamed(RoutesName.home);
+          // context.pop();
+        }, icon: const Icon(Icons.arrow_back)),
+        automaticallyImplyLeading: true,
         title: const Text('File Transfer App'),
         actions: [
           Container(

@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
+import 'package:zenzen/data/cache/api_cache.dart';
 import 'package:zenzen/data/failure.dart';
 import 'package:zenzen/data/local_data.dart';
 // Add this import
@@ -13,6 +14,7 @@ class DocApiService {
   final String baseUrl;
   final Dio dio;
   final TokenManager tokenManager;
+  final ApiCache apiCache = ApiCache();
 
   DocApiService(this.baseUrl, this.dio, this.tokenManager) {
     // Add interceptor for authentication
@@ -180,8 +182,12 @@ class DocApiService {
   }
 
   // get all documents
-  // get all documents
   Future<Either<List<DocumentModel>, ApiFailure>> getDocuments() async {
+    // fist check if the data is in cache
+    final cachedData = apiCache.get('All_Documents');
+    if (cachedData != null) {
+      return Left(cachedData as List<DocumentModel>);
+    }
     try {
       final accessToken = await tokenManager.getAccessToken();
       final Map<String, dynamic> headers = {};

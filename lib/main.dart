@@ -1,6 +1,7 @@
 // ignore_for_file: deprecated_member_use, must_be_immutable, depend_on_referenced_packages
 
 import 'package:device_preview/device_preview.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -28,6 +29,12 @@ void main() async {
       child: MyApp(),
     ),
   );
+  // runApp(
+  //   DevicePreview(
+  //     enabled: !kReleaseMode,
+  //     builder: (context) => ProviderScope(child: MyApp()), // Wrap your app
+  //   ),
+  // );
 }
 
 class MyApp extends ConsumerStatefulWidget {

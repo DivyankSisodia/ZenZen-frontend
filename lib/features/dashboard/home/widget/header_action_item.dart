@@ -6,12 +6,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../config/constants/app_colors.dart';
+import '../../../../data/cache/api_cache.dart';
 import '../../../../data/local/provider/hive_provider.dart';
 import '../../../auth/login/model/user_model.dart';
 import '../../../auth/user/view-model/user_view_model.dart';
 
 class HeaderActionItems extends ConsumerStatefulWidget {
-  const HeaderActionItems({Key? key}) : super(key: key);
+  const HeaderActionItems({super.key});
 
   @override
   ConsumerState<HeaderActionItems> createState() => _HeaderActionItemsState();
@@ -22,7 +23,9 @@ class _HeaderActionItemsState extends ConsumerState<HeaderActionItems> {
   static bool _isHovered = false;
   OverlayEntry? _overlayEntry;
 
- // Cancel hover and cleanup
+  final ApiCache _cache = ApiCache();
+
+  // Cancel hover and cleanup
   void cancelHover() {
     _hoverTimer?.cancel();
     _isHovered = false;
@@ -40,8 +43,15 @@ class _HeaderActionItemsState extends ConsumerState<HeaderActionItems> {
   }) {
     _hoverTimer?.cancel();
     _hoverTimer = Timer(const Duration(milliseconds: 500), () async {
-       if (!mounted) return; // Critical: Check if widget is still alive
+      if (!mounted) return; // Critical: Check if widget is still alive
       _isHovered = true;
+
+      // Check cache first
+      final cachedUser = _cache.get('user_$userId');
+      if (cachedUser != null) {
+        showHoverCard(context: context, user: cachedUser, position: position);
+        return;
+      }
 
       // Fetch user data from ViewModel
       final userViewModel = ref.read(userViewmodelProvider.notifier);
@@ -69,8 +79,8 @@ class _HeaderActionItemsState extends ConsumerState<HeaderActionItems> {
     // Create new overlay entry
     _overlayEntry = OverlayEntry(
       builder: (context) => Positioned(
-        left: position.dx -250, // Adjust positioning relative to avatar
-        top: position.dy +30,
+        left: position.dx - 250, // Adjust positioning relative to avatar
+        top: position.dy + 10,
         child: MouseRegion(
           onEnter: (_) => _isHovered = true,
           onExit: (_) {
@@ -87,9 +97,7 @@ class _HeaderActionItemsState extends ConsumerState<HeaderActionItems> {
               child: Container(
                 width: 300,
                 decoration: BoxDecoration(
-                  color: Theme.of(context).brightness == Brightness.dark 
-                      ? const Color(0xFF2D2C2C) 
-                      : Colors.white,
+                  color: Theme.of(context).brightness == Brightness.dark ? const Color(0xFF2D2C2C) : Colors.white,
                   borderRadius: BorderRadius.circular(8),
                   boxShadow: [
                     BoxShadow(
@@ -107,9 +115,7 @@ class _HeaderActionItemsState extends ConsumerState<HeaderActionItems> {
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: Theme.of(context).brightness == Brightness.dark 
-                            ? const Color(0xFF444444) 
-                            : const Color(0xFFF5F5F5),
+                        color: Theme.of(context).brightness == Brightness.dark ? const Color(0xFF444444) : const Color(0xFFF5F5F5),
                         borderRadius: const BorderRadius.only(
                           topLeft: Radius.circular(8),
                           topRight: Radius.circular(8),
@@ -120,19 +126,11 @@ class _HeaderActionItemsState extends ConsumerState<HeaderActionItems> {
                           CircleAvatar(
                             radius: 30,
                             backgroundColor: Colors.grey[300],
-                            backgroundImage: user.avatar != null && user.avatar!.isNotEmpty
-                                ? NetworkImage(user.avatar!)
-                                : null,
+                            backgroundImage: user.avatar != null && user.avatar!.isNotEmpty ? NetworkImage(user.avatar!) : null,
                             child: user.avatar == null || user.avatar!.isEmpty
                                 ? Text(
-                                    user.userName != null && user.userName!.isNotEmpty
-                                        ? user.userName![0].toUpperCase()
-                                        : '?',
-                                    style: const TextStyle(
-                                      fontSize: 24, 
-                                      fontWeight: FontWeight.bold, 
-                                      color: Colors.white
-                                    ),
+                                    user.userName != null && user.userName!.isNotEmpty ? user.userName![0].toUpperCase() : '?',
+                                    style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
                                   )
                                 : null,
                           ),
@@ -144,11 +142,9 @@ class _HeaderActionItemsState extends ConsumerState<HeaderActionItems> {
                                 Text(
                                   user.userName ?? "Unknown User",
                                   style: TextStyle(
-                                    fontSize: 18, 
+                                    fontSize: 18,
                                     fontWeight: FontWeight.bold,
-                                    color: Theme.of(context).brightness == Brightness.dark 
-                                        ? Colors.white 
-                                        : Colors.black87,
+                                    color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black87,
                                   ),
                                   overflow: TextOverflow.ellipsis,
                                 ),
@@ -156,18 +152,14 @@ class _HeaderActionItemsState extends ConsumerState<HeaderActionItems> {
                                 Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                                   decoration: BoxDecoration(
-                                    color: user.userStatus == "Active" 
-                                        ? Colors.green[100] 
-                                        : Colors.grey[300],
+                                    color: user.userStatus == "Active" ? Colors.green[100] : Colors.grey[300],
                                     borderRadius: BorderRadius.circular(10),
                                   ),
                                   child: Text(
                                     user.userStatus ?? "Offline",
                                     style: TextStyle(
                                       fontSize: 12,
-                                      color: user.userStatus == "Active" 
-                                          ? Colors.green[800] 
-                                          : Colors.grey[700],
+                                      color: user.userStatus == "Active" ? Colors.green[800] : Colors.grey[700],
                                     ),
                                   ),
                                 ),
@@ -177,7 +169,7 @@ class _HeaderActionItemsState extends ConsumerState<HeaderActionItems> {
                         ],
                       ),
                     ),
-                    
+
                     // User details
                     Padding(
                       padding: const EdgeInsets.all(16),
@@ -207,7 +199,7 @@ class _HeaderActionItemsState extends ConsumerState<HeaderActionItems> {
                         ],
                       ),
                     ),
-                    
+
                     // Action buttons
                     Padding(
                       padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
@@ -238,10 +230,8 @@ class _HeaderActionItemsState extends ConsumerState<HeaderActionItems> {
   }
 
   Widget _buildInfoRow(BuildContext context, IconData icon, String label, String value) {
-    final textColor = Theme.of(context).brightness == Brightness.dark 
-        ? Colors.white70 
-        : Colors.black54;
-    
+    final textColor = Theme.of(context).brightness == Brightness.dark ? Colors.white70 : Colors.black54;
+
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -262,9 +252,7 @@ class _HeaderActionItemsState extends ConsumerState<HeaderActionItems> {
                 value,
                 style: TextStyle(
                   fontSize: 14,
-                  color: Theme.of(context).brightness == Brightness.dark 
-                      ? Colors.white 
-                      : Colors.black87,
+                  color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black87,
                 ),
                 overflow: TextOverflow.ellipsis,
               ),
@@ -276,10 +264,10 @@ class _HeaderActionItemsState extends ConsumerState<HeaderActionItems> {
   }
 
   Widget _buildActionButton(BuildContext context, IconData icon, String label) {
-    final primaryColor = Theme.of(context).brightness == Brightness.dark 
+    final primaryColor = Theme.of(context).brightness == Brightness.dark
         ? const Color(0xFF6264A7) // Teams dark mode purple
         : const Color(0xFF6264A7); // Teams light mode purple
-    
+
     return InkWell(
       onTap: () {},
       borderRadius: BorderRadius.circular(4),
@@ -335,16 +323,12 @@ class _HeaderActionItemsState extends ConsumerState<HeaderActionItems> {
               child: CircleAvatar(
                 radius: 20,
                 backgroundColor: Colors.grey[300],
-                backgroundImage: currentUser!.avatar != null && currentUser.avatar.isNotEmpty
-                    ? NetworkImage(currentUser.avatar)
-                    : null,
+                backgroundImage: currentUser!.avatar != null && currentUser.avatar.isNotEmpty ? NetworkImage(currentUser.avatar) : null,
                 child: currentUser.avatar.isEmpty
                     ? Text(
-                        currentUser.userName.isNotEmpty
-                            ? currentUser.userName[0].toUpperCase()
-                            : '?',
+                        currentUser.userName.isNotEmpty ? currentUser.userName[0].toUpperCase() : '?',
                         style: const TextStyle(
-                          fontSize: 16, 
+                          fontSize: 16,
                           fontWeight: FontWeight.bold,
                         ),
                       )
