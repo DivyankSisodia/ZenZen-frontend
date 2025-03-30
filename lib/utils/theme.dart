@@ -234,7 +234,7 @@ class AppTheme {
         fontFamily: 'SpaceGrotesk',
         fontSize: 20,
         fontWeight: FontWeight.w700,
-        color: AppColors.primary,
+        color: AppColors.lightGrey,
       );
     }
   }
@@ -252,7 +252,7 @@ class AppTheme {
         fontFamily: 'SpaceGrotesk',
         fontSize: 16,
         fontWeight: FontWeight.w400,
-        color: AppColors.primary,
+        color: AppColors.lightGrey,
       );
     }
   }
@@ -396,7 +396,7 @@ class AppTheme {
         fontFamily: 'SpaceGrotesk',
         fontSize: 20,
         fontWeight: FontWeight.w700,
-        color: AppColors.lightGrey,
+        color: AppColors.primary,
       );
     }
   }

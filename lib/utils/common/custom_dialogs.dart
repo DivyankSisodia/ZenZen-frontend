@@ -9,6 +9,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:zenzen/data/cache/api_cache.dart';
 import 'package:zenzen/data/failure.dart';
 import 'package:zenzen/features/auth/login/model/user_model.dart';
 import 'package:zenzen/features/auth/user/view-model/user_view_model.dart';
@@ -28,7 +29,8 @@ import '../theme.dart';
 // typedef void Function() CallbackType;
 
 class CustomDialogs {
-  void createDocCustomDialog(BuildContext context, WidgetRef ref, String title) {
+  void createDocCustomDialog(
+      BuildContext context, WidgetRef ref, String title) {
     // Use the outer context for navigation, not the dialog's context
     final outerContext = context;
     final projectViewmodel = ref.read(projectViewModelProvider.notifier);
@@ -45,7 +47,9 @@ class CustomDialogs {
           content: Padding(
             padding: const EdgeInsets.only(top: 16.0),
             child: SizedBox(
-              width: Responsive.isMobile(dialogContext) ? SizeConfig.screenWidth / 2.5 : SizeConfig.screenWidth / 4.5,
+              width: Responsive.isMobile(dialogContext)
+                  ? SizeConfig.screenWidth / 2.5
+                  : SizeConfig.screenWidth / 4.5,
               height: 100,
               // Watch for changes in the projects state
               child: Consumer(
@@ -53,7 +57,8 @@ class CustomDialogs {
                   final projectsState = ref.watch(projectViewModelProvider);
 
                   return projectsState.when(
-                    loading: () => const Center(child: CupertinoActivityIndicator()),
+                    loading: () =>
+                        const Center(child: CupertinoActivityIndicator()),
                     error: (err, stack) {
                       if (err is ApiFailure) {
                         print('Error loading projects: ${err.error}');
@@ -67,12 +72,18 @@ class CustomDialogs {
                           padding: const EdgeInsets.symmetric(horizontal: 8.0),
                           child: Text(
                             hint,
-                            style: TextStyle(color: CupertinoColors.systemGrey, fontSize: 16, fontFamily: 'SpaceGrotesk'),
+                            style: TextStyle(
+                                color: CupertinoColors.systemGrey,
+                                fontSize: 16,
+                                fontFamily: 'SpaceGrotesk'),
                           ),
                         );
                       },
                       hintText: 'Select Project',
-                      items: projects.map((project) => project.title).whereType<String>().toList(),
+                      items: projects
+                          .map((project) => project.title)
+                          .whereType<String>()
+                          .toList(),
                       decoration: CustomDropdownDecoration(
                         hintStyle: TextStyle(color: CupertinoColors.systemGrey),
                         listItemStyle: TextStyle(color: CupertinoColors.black),
@@ -81,10 +92,12 @@ class CustomDialogs {
                         // Find the selected project's ID
                         final selectedProject = projects.firstWhere(
                           (project) => project.title == value,
-                          orElse: () => ProjectModel(id: '', title: '', description: ''),
+                          orElse: () =>
+                              ProjectModel(id: '', title: '', description: ''),
                         );
 
-                        ref.read(selectedProjectIdProvider.notifier).state = selectedProject.id!;
+                        ref.read(selectedProjectIdProvider.notifier).state =
+                            selectedProject.id!;
 
                         print('Selected Project: $value');
                         print('Selected Project ID: ${selectedProject.id}');
@@ -95,7 +108,8 @@ class CustomDialogs {
                         // Then use the outer context for document creation and navigation
                         // Use a slight delay to ensure the dialog is fully closed
                         Future.microtask(() {
-                          final docViewModel = ref.read(docViewmodelProvider.notifier);
+                          final docViewModel =
+                              ref.read(docViewmodelProvider.notifier);
                           final projectId = ref.read(selectedProjectIdProvider);
                           print(projectId);
                           docViewModel.createDocument(
@@ -137,6 +151,8 @@ class CustomDialogs {
   ) {
     final outerContext = context;
 
+    ApiCache apiCache = ApiCache();
+
     showCupertinoDialog(
       context: context,
       builder: (BuildContext dialogContext) {
@@ -157,14 +173,16 @@ class CustomDialogs {
                   controller: controller,
                   focusNode: focusNode,
                   placeholder: hint,
-                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
                 ),
                 const SizedBox(height: 15),
                 CupertinoTextField(
                   controller: descriptionController,
                   focusNode: descriptionFocusNode,
                   placeholder: descriptionHint,
-                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
                 ),
               ],
             ),
@@ -180,7 +198,8 @@ class CustomDialogs {
               isDefaultAction: true,
               child: const Text('OK'),
               onPressed: () {
-                if (controller.text.isEmpty || descriptionController.text.isEmpty) {
+                if (controller.text.isEmpty ||
+                    descriptionController.text.isEmpty) {
                   DelightToastBar(
                     builder: (context) => const ToastCard(
                       leading: Icon(
@@ -199,7 +218,10 @@ class CustomDialogs {
                   return;
                 }
 
-                final projectViewModel = ref.read(projectViewModelProvider.notifier);
+                apiCache.clear();
+
+                final projectViewModel =
+                    ref.read(projectViewModelProvider.notifier);
 
                 projectViewModel.createProject(
                   controller.text,
@@ -304,12 +326,15 @@ class CustomDialogs {
                 style: AppTheme.textMedium(context),
               ),
               const SizedBox(height: 10),
-              Text('Created: ${DateFormat.yMMMd().format(creationDate ?? DateTime.now())}', style: AppTheme.textMedium(context).copyWith(fontSize: 16)),
+              Text(
+                  'Created: ${DateFormat.yMMMd().format(creationDate ?? DateTime.now())}',
+                  style: AppTheme.textMedium(context).copyWith(fontSize: 16)),
 
               // Display collaborators
               if (userDetails.isNotEmpty) ...[
                 const SizedBox(height: 10),
-                Text('Collaborators:', style: AppTheme.mediumBodyTheme(context)),
+                Text('Collaborators:',
+                    style: AppTheme.mediumBodyTheme(context)),
                 const SizedBox(height: 5),
                 ...userDetails.map<Widget>(
                   (user) => _buildUserRow(context, user),
@@ -358,7 +383,9 @@ class CustomDialogs {
         children: [
           CircleAvatar(
             radius: 15,
-            backgroundImage: user['avatar']!.isNotEmpty ? NetworkImage(user['avatar']!) : null,
+            backgroundImage: user['avatar']!.isNotEmpty
+                ? NetworkImage(user['avatar']!)
+                : null,
             child: user['avatar']!.isEmpty
                 ? Text(
                     user['name']!.substring(0, 1).toUpperCase(),
@@ -370,7 +397,8 @@ class CustomDialogs {
                 : null,
           ),
           const SizedBox(width: 10),
-          Text(user['name']!, style: AppTheme.textMedium(context).copyWith(fontSize: 16)),
+          Text(user['name']!,
+              style: AppTheme.textMedium(context).copyWith(fontSize: 16)),
         ],
       ),
     );
@@ -403,7 +431,13 @@ class CustomDialogs {
   }
 
   // Show user profile dialog
-  static void showUserProfileDialog({required BuildContext context, required String userName, required String email, required String mobile, required String status, required String avatar}) {
+  static void showUserProfileDialog(
+      {required BuildContext context,
+      required String userName,
+      required String email,
+      required String mobile,
+      required String status,
+      required String avatar}) {
     if (!_isHovered) return;
 
     showDialog(
@@ -414,17 +448,18 @@ class CustomDialogs {
           children: [
             CircleAvatar(
               radius: 30,
-              backgroundImage: avatar != null && avatar!.isNotEmpty ? NetworkImage(avatar!) : null,
-              child: avatar == null || avatar!.isEmpty
+              backgroundImage: avatar.isNotEmpty ? NetworkImage(avatar) : null,
+              child: avatar.isEmpty
                   ? Text(
-                      userName != null && userName!.isNotEmpty ? userName![0].toUpperCase() : '?',
-                      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                      userName.isNotEmpty ? userName[0].toUpperCase() : '?',
+                      style: const TextStyle(
+                          fontSize: 20, fontWeight: FontWeight.bold),
                     )
                   : null,
             ),
             const SizedBox(width: 10),
             Text(
-              userName ?? "Unknown User",
+              userName,
               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
           ],
@@ -433,11 +468,11 @@ class CustomDialogs {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Email: ${email ?? "N/A"}'),
+            Text('Email: $email'),
             const SizedBox(height: 5),
-            Text('Mobile: ${mobile ?? "N/A"}'),
+            Text('Mobile: $mobile'),
             const SizedBox(height: 5),
-            Text('Status: ${status ?? "N/A"}'),
+            Text('Status: $status'),
             const SizedBox(height: 5),
           ],
         ),
@@ -452,7 +487,13 @@ class CustomDialogs {
   }
 
   // Start hover timer
-  static void startProfileHoverTimer({required BuildContext context, required String userName, required String email, required String mobile, required String status, required String avatar}) {
+  static void startProfileHoverTimer(
+      {required BuildContext context,
+      required String userName,
+      required String email,
+      required String mobile,
+      required String status,
+      required String avatar}) {
     _hoverTimer?.cancel();
     _hoverTimer = Timer(const Duration(seconds: 1), () {
       _isHovered = true;
@@ -495,7 +536,8 @@ class CustomDialogs {
   }
 
   // show all users dialog
-  void showMultiSelectUsersBottomSheet(String projectId, BuildContext context, WidgetRef ref, Function(List<UserModel>) onUsersSelected) {
+  void showMultiSelectUsersBottomSheet(String projectId, BuildContext context,
+      WidgetRef ref, Function(List<UserModel>) onUsersSelected) {
     final userViewmodel = ref.read(userViewmodelProvider.notifier);
     userViewmodel.getAllUsers();
 
@@ -599,7 +641,9 @@ class _MultiSelectUsersBottomSheet extends StatelessWidget {
                         Navigator.pop(context);
 
                         // Clear selection state
-                        ref.read(selectedUsersProvider.notifier).clearSelection();
+                        ref
+                            .read(selectedUsersProvider.notifier)
+                            .clearSelection();
                       },
                       child: Text(
                         'Done',
@@ -678,15 +722,24 @@ class _MultiSelectUsersBottomSheet extends StatelessWidget {
 
                             return Consumer(
                               builder: (context, ref, _) {
-                                final selectedUsers = ref.watch(selectedUsersProvider);
-                                final isSelected = selectedUsers.any((u) => u.id == user.id);
+                                final selectedUsers =
+                                    ref.watch(selectedUsersProvider);
+                                final isSelected =
+                                    selectedUsers.any((u) => u.id == user.id);
 
                                 return CupertinoListTile(
                                   leading: CircleAvatar(
-                                    backgroundImage: user.avatar != null ? NetworkImage(user.avatar!) : null,
+                                    backgroundImage: user.avatar != null
+                                        ? NetworkImage(user.avatar!)
+                                        : null,
                                     child: user.avatar == null
                                         ? Text(
-                                            user.userName != null && user.userName!.isNotEmpty ? user.userName!.substring(0, 1).toUpperCase() : '?',
+                                            user.userName != null &&
+                                                    user.userName!.isNotEmpty
+                                                ? user.userName!
+                                                    .substring(0, 1)
+                                                    .toUpperCase()
+                                                : '?',
                                             style: TextStyle(
                                               color: CupertinoColors.white,
                                               fontWeight: FontWeight.bold,
@@ -700,17 +753,27 @@ class _MultiSelectUsersBottomSheet extends StatelessWidget {
                                     value: isSelected,
                                     onChanged: (bool? value) {
                                       if (value == true) {
-                                        ref.read(selectedUsersProvider.notifier).addUser(user);
+                                        ref
+                                            .read(
+                                                selectedUsersProvider.notifier)
+                                            .addUser(user);
                                       } else {
-                                        ref.read(selectedUsersProvider.notifier).removeUser(user);
+                                        ref
+                                            .read(
+                                                selectedUsersProvider.notifier)
+                                            .removeUser(user);
                                       }
                                     },
                                   ),
                                   onTap: () {
                                     if (isSelected) {
-                                      ref.read(selectedUsersProvider.notifier).removeUser(user);
+                                      ref
+                                          .read(selectedUsersProvider.notifier)
+                                          .removeUser(user);
                                     } else {
-                                      ref.read(selectedUsersProvider.notifier).addUser(user);
+                                      ref
+                                          .read(selectedUsersProvider.notifier)
+                                          .addUser(user);
                                     }
                                   },
                                 );

@@ -184,7 +184,7 @@ class DocApiService {
   // get all documents
   Future<Either<List<DocumentModel>, ApiFailure>> getDocuments() async {
     // fist check if the data is in cache
-    final cachedData = apiCache.get('All_Documents');
+    final cachedData = apiCache.get(CacheConstants.getDocs);
     if (cachedData != null) {
       return Left(cachedData as List<DocumentModel>);
     }
@@ -206,6 +206,9 @@ class DocApiService {
           final List<dynamic> documentsData = response.data['data'] as List<dynamic>;
 
           final documents = documentsData.map((doc) => DocumentModel.fromJson(doc as Map<String, dynamic>)).toList();
+
+          // store the data in cache
+          apiCache.set(CacheConstants.getDocs, documents);
 
           return Left(documents);
         } else {
@@ -346,6 +349,13 @@ class DocApiService {
   }
 
   Future<Either<List<DocumentModel>, ApiFailure>> getDocsForProject(String projectId) async {
+    // first check if the data is in cache
+    final cachedData = apiCache.get("${CacheConstants.projectDocs}-$projectId");
+    if (cachedData != null) {
+      return Left(cachedData as List<DocumentModel>);
+    }
+    // if not in cache, make the API call
+
     try {
       final accessToken = await tokenManager.getAccessToken();
       final Map<String, dynamic> headers = {};
@@ -370,6 +380,8 @@ class DocApiService {
           final List<dynamic> documentsData = response.data['data']['documents'] as List<dynamic>;
 
           final documents = documentsData.map((doc) => DocumentModel.fromJson(doc as Map<String, dynamic>)).toList();
+
+          apiCache.set("${CacheConstants.projectDocs}-$projectId", documents);
 
           return Left(documents);
         } else {

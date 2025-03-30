@@ -18,8 +18,8 @@ class RoutesName {
 }
 
 class ApiRoutes {
-  // static const String baseUrl = "https://zenzen.onrender.com/api";
-  static const String baseUrl = "http://localhost:5762/api";
+  static const String baseUrl = "https://zenzen.onrender.com/api";
+  // static const String baseUrl = "http://localhost:5762/api";
   static const String signup = "/auth/signup";
   static const String login = "/auth/login";
   static const String logout = "/auth/logout";
@@ -49,4 +49,13 @@ class ApiRoutes {
   static const String sharedDocs = "/docs/shared-docs";
   static const String getUserById = "/auth/get-user";
   static const String getMultipleUsers = "/auth/get-multiple-users";
+}
+
+class CacheConstants {
+  static const String getDocs = "allDocs";
+  static const String getProjects = "allProjects";
+  static const String getUser = "user";
+  static const String getUserById = "userById";
+  static const String getSharedDocs = "sharedDocs";
+  static const String projectDocs = "projectDocs";
 }

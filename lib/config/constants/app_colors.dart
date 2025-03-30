@@ -18,7 +18,7 @@ class AppColors {
 
   static Color getBackgroundColor(BuildContext context) {
     if (Theme.of(context).brightness == Brightness.dark) {
-      return AppColors.white;
+      return AppColors.black.withOpacity(0.9);
     } else {
       return AppColors.white;
     }

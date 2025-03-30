@@ -2,6 +2,7 @@
 
 import 'dart:async';
 import 'package:animate_do/animate_do.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -323,7 +324,7 @@ class _HeaderActionItemsState extends ConsumerState<HeaderActionItems> {
               child: CircleAvatar(
                 radius: 20,
                 backgroundColor: Colors.grey[300],
-                backgroundImage: currentUser!.avatar != null && currentUser.avatar.isNotEmpty ? NetworkImage(currentUser.avatar) : null,
+                backgroundImage: currentUser!.avatar != null && currentUser.avatar.isNotEmpty ? CachedNetworkImageProvider(currentUser.avatar, errorListener: (p0) => debugPrint('error'),) : null,
                 child: currentUser.avatar.isEmpty
                     ? Text(
                         currentUser.userName.isNotEmpty ? currentUser.userName[0].toUpperCase() : '?',

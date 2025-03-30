@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:zenzen/data/cache/api_cache.dart';
 import 'package:zenzen/features/dashboard/docs/model/document_model.dart';
 import 'package:zenzen/features/dashboard/docs/repo/document_repo.dart';
 import 'package:zenzen/utils/common/custom_toast.dart';
@@ -20,6 +21,8 @@ class DocViewmodel extends StateNotifier<AsyncValue<List<DocumentModel>>> {
 
   CustomToast customToast = CustomToast();
 
+  ApiCache apiCache = ApiCache();
+
   Future<void> getAllDocuments() async {
     // Skip if already loading
     if (_isLoading) return;
@@ -28,6 +31,13 @@ class DocViewmodel extends StateNotifier<AsyncValue<List<DocumentModel>>> {
     state = const AsyncValue.loading();
 
     try {
+      // Check if cache is available
+      final cachedDocs = await apiCache.get(CacheConstants.getDocs);
+      if (cachedDocs != null) {
+        state = AsyncValue.data(cachedDocs);
+        return;
+      }
+
       final result = await repository.getDocuments();
       if (mounted) {
         result.fold(
@@ -171,6 +181,13 @@ class DocViewmodel extends StateNotifier<AsyncValue<List<DocumentModel>>> {
     try {
       if (!state.isLoading) {
         state = const AsyncValue.loading();
+      }
+
+      // first we will chwck if cache is available
+      final cachedDocs = await apiCache.get("${CacheConstants.projectDocs}-$projectId");
+      if (cachedDocs != null) {
+        state = AsyncValue.data(cachedDocs);
+        return;
       }
 
       final result = await repository.getProjectDocs(projectId);

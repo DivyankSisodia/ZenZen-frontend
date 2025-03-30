@@ -4,7 +4,7 @@ class ApiCache {
   ApiCache._internal();
 
   final _cache = <String, CacheEntry>{};
-  final Duration defaultCacheDuration = const Duration(minutes: 10);
+  final Duration defaultCacheDuration = const Duration(minutes: 2);
 
   dynamic get(String key) {
     final entry = _cache[key];
