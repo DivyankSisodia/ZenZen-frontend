@@ -110,7 +110,7 @@ class DocumentItem extends StatelessWidget {
         decoration: BoxDecoration(
           boxShadow: [
             BoxShadow(
-              color: AppColors.black.withOpacity(0.1),
+              color: AppColors.shadowColor(context).withOpacity(0.2),
               blurRadius: 2,
               spreadRadius: 1,
             ),
@@ -125,7 +125,7 @@ class DocumentItem extends StatelessWidget {
               size: 30,
               shadows: [
                 BoxShadow(
-                  color: AppColors.primary.withOpacity(0.3),
+                  color: AppColors.shadowColor(context).withOpacity(0.3),
                   blurRadius: 10,
                 ),
               ],
@@ -142,9 +142,10 @@ class DocumentItem extends StatelessWidget {
                   );
                 },
                 child: DocumentDetails(
-                    document: document,
-                    onHoverStart: onHoverStart,
-                    onHoverEnd: onHoverEnd),
+                  document: document,
+                  onHoverStart: onHoverStart,
+                  onHoverEnd: onHoverEnd,
+                ),
               ),
             ),
             Expanded(
@@ -171,11 +172,7 @@ class DocumentDetails extends StatelessWidget {
   final VoidCallback onHoverEnd;
   final DocumentModel document;
 
-  const DocumentDetails(
-      {super.key,
-      required this.document,
-      required this.onHoverStart,
-      required this.onHoverEnd});
+  const DocumentDetails({super.key, required this.document, required this.onHoverStart, required this.onHoverEnd});
 
   @override
   Widget build(BuildContext context) {
@@ -190,7 +187,7 @@ class DocumentDetails extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
             text: TextSpan(
               text: document.title,
-              style: AppTheme.textMedium(context),
+              style: AppTheme.misc1(context),
             ),
           ),
           const Gap(5),
@@ -277,8 +274,7 @@ class DocumentActions extends StatelessWidget {
   final bool isProjectIdAvailable;
   final DocumentModel? document;
   final FavDocument? favDocument;
-  DocumentActions(
-      {super.key, this.document,required this.isProjectIdAvailable, this.favDocument});
+  DocumentActions({super.key, this.document, required this.isProjectIdAvailable, this.favDocument});
 
   CustomDialogs customDialogs = CustomDialogs();
 
@@ -311,13 +307,9 @@ class DocumentActions extends StatelessWidget {
                             context,
                             ref,
                             (List<UserModel> selectedUsers) {
-                              ref
-                                  .watch(docViewmodelProvider.notifier)
-                                  .shareDocToUsers(
+                              ref.watch(docViewmodelProvider.notifier).shareDocToUsers(
                                     document!.id!,
-                                    selectedUsers
-                                        .map((user) => user.id!)
-                                        .toList(),
+                                    selectedUsers.map((user) => user.id!).toList(),
                                     document!.projectId!,
                                   );
                             },
@@ -345,32 +337,23 @@ class DocumentActions extends StatelessWidget {
                   ),
                 PullDownMenuItem(
                   onTap: () {
-                    final favViewModel =
-                        ref.read(favDocumentViewModelProvider.notifier);
+                    final favViewModel = ref.read(favDocumentViewModelProvider.notifier);
                     if (favViewModel.isFavorite(document!.id!)) {
                       favViewModel.removeFromFavorites(document!.id!);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Removed from favorites')));
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Removed from favorites')));
                     } else {
                       favViewModel.addToFavorites(document!);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Added to favorites')));
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Added to favorites')));
                     }
                   },
-                  title: ref
-                          .watch(favDocumentViewModelProvider.notifier)
-                          .isFavorite(document!.id!)
-                      ? 'Remove from Favorites'
-                      : 'Add to Favorites',
-                  icon: ref
-                          .watch(favDocumentViewModelProvider.notifier)
-                          .isFavorite(document!.id!)
-                      ? CupertinoIcons.bookmark_fill
-                      : CupertinoIcons.bookmark,
+                  title: ref.watch(favDocumentViewModelProvider.notifier).isFavorite(document!.id!) ? 'Remove from Favorites' : 'Add to Favorites',
+                  icon: ref.watch(favDocumentViewModelProvider.notifier).isFavorite(document!.id!) ? CupertinoIcons.bookmark_fill : CupertinoIcons.bookmark,
                 ),
               ],
             ),
-            PullDownMenuDivider.large(),
+            PullDownMenuDivider.large(
+              color: AppColors.getNegativeBackgroundColor(context).withOpacity(0.2),
+            ),
             PullDownMenuItem(
               title: 'Share',
               onTap: () {
@@ -381,9 +364,7 @@ class DocumentActions extends StatelessWidget {
             PullDownMenuItem(
               iconColor: Colors.red,
               onTap: () {
-                ref
-                    .watch(docViewmodelProvider.notifier)
-                    .deleteDocument(document!.id!, context);
+                ref.watch(docViewmodelProvider.notifier).deleteDocument(document!.id!, context);
               },
               title: 'Delete',
               icon: CupertinoIcons.delete,
@@ -392,7 +373,7 @@ class DocumentActions extends StatelessWidget {
           position: PullDownMenuPosition.automatic,
           buttonBuilder: (context, showMenu) => IconButton(
             onPressed: showMenu,
-            icon: Icon(CupertinoIcons.ellipsis),
+            icon: Icon(CupertinoIcons.ellipsis, color: AppColors.misc1(context),),
           ),
         );
       },

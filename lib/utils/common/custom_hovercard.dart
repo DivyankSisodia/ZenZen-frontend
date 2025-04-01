@@ -1,25 +1,14 @@
-// ignore_for_file: unnecessary_null_comparison
-
 import 'dart:async';
+
 import 'package:animate_do/animate_do.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../config/constants/app_colors.dart';
-import '../../../../data/cache/api_cache.dart';
-import '../../../../data/local/provider/hive_provider.dart';
-import '../../../auth/login/model/user_model.dart';
-import '../../../auth/user/view-model/user_view_model.dart';
+import '../../data/cache/api_cache.dart';
+import '../../features/auth/login/model/user_model.dart';
+import '../../features/auth/user/view-model/user_view_model.dart';
 
-class HeaderActionItems extends ConsumerStatefulWidget {
-  const HeaderActionItems({super.key});
-
-  @override
-  ConsumerState<HeaderActionItems> createState() => _HeaderActionItemsState();
-}
-
-class _HeaderActionItemsState extends ConsumerState<HeaderActionItems> {
+class CustomHovercard {
   static Timer? _hoverTimer;
   static bool _isHovered = false;
   OverlayEntry? _overlayEntry;
@@ -27,23 +16,6 @@ class _HeaderActionItemsState extends ConsumerState<HeaderActionItems> {
   bool _showAnimation = false;
 
   final ApiCache _cache = ApiCache();
-
-  // Cancel hover and cleanup
-  void cancelHover() {
-    if (_isMovingToCard) return; // Don't cancel if moving to card
-    
-    _hoverTimer?.cancel();
-    _isHovered = false;
-
-    setState(() {
-      _showAnimation = true; // Reset animation state
-    });
-    // Remove overlay and reset reference
-    _overlayEntry?.remove();
-    _overlayEntry = null;
-  }
-
-  // Start hover timer
   void startHoverTimer({
     required BuildContext context,
     required String userId,
@@ -52,7 +24,6 @@ class _HeaderActionItemsState extends ConsumerState<HeaderActionItems> {
   }) {
     _hoverTimer?.cancel();
     _hoverTimer = Timer(const Duration(milliseconds: 500), () async {
-      if (!mounted) return; // Critical: Check if widget is still alive
       _isHovered = true;
 
       // Check cache first
@@ -73,13 +44,25 @@ class _HeaderActionItemsState extends ConsumerState<HeaderActionItems> {
     });
   }
 
-  // Show hover card
+  void cancelHover() {
+    if (_isMovingToCard) return; // Don't cancel if moving to card
+
+    _hoverTimer?.cancel();
+    _isHovered = false;
+
+    _showAnimation = true; // Reset animation state
+    
+    // Remove overlay and reset reference
+    _overlayEntry?.remove();
+    _overlayEntry = null;
+  }
+
   void showHoverCard({
     required BuildContext context,
     required UserModel user,
     required Offset position,
   }) {
-    if (!_isHovered || !mounted) return;
+    if (!_isHovered ) return;
 
     // Remove existing overlay entry if present
     _overlayEntry?.remove();
@@ -197,48 +180,60 @@ class _HeaderActionItemsState extends ConsumerState<HeaderActionItems> {
                           ],
                         ),
                       ),
-            
+
                       // User details section and action buttons remain unchanged
                       Padding(
                         padding: const EdgeInsets.all(16),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            _buildInfoRow(
-                              context,
-                              Icons.email_outlined,
-                              "Email",
-                              user.email ?? "N/A",
+                            InfoRowWidget(
+                              context: context,
+                              icon: Icons.email_outlined,
+                              label: "Email",
+                              value: user.email ?? "N/A",
                             ),
                             const SizedBox(height: 12),
-                            _buildInfoRow(
-                              context,
-                              Icons.phone_outlined,
-                              "Phone",
-                              user.mobile ?? "N/A",
+                            InfoRowWidget(
+                              context: context,
+                              icon: Icons.phone_outlined,
+                              label: "Phone",
+                              value: user.mobile ?? "N/A",
                             ),
                             const SizedBox(height: 12),
-                            _buildInfoRow(
-                              context,
-                              Icons.verified_outlined,
-                              "Verified",
-                              user.isVerified == true ? "Yes" : "No",
+                            InfoRowWidget(
+                              context: context,
+                              icon: Icons.verified,
+                              label: "Verified",
+                              value: user.isVerified == true ? "Yes" : "No",
                             ),
                           ],
                         ),
                       ),
-            
+
                       // Action buttons
                       Padding(
                         padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.start,
                           children: [
-                            _buildActionButton(context, Icons.chat_outlined, "Chat"),
+                            ActionButtonWidget(
+                              context: context,
+                              icon:  Icons.chat_outlined,
+                              label:  "Chat",
+                            ),
                             const SizedBox(width: 12),
-                            _buildActionButton(context, Icons.call_outlined, "Call"),
+                            ActionButtonWidget(
+                              context: context,
+                              icon: Icons.call_outlined,
+                              label: "Call",
+                            ),
                             const SizedBox(width: 12),
-                            _buildActionButton(context, Icons.videocam_outlined, "Video"),
+                            ActionButtonWidget(
+                              context: context,
+                              icon: Icons.video_call_outlined,
+                              label: "Video",
+                            ),
                           ],
                         ),
                       ),
@@ -257,8 +252,24 @@ class _HeaderActionItemsState extends ConsumerState<HeaderActionItems> {
       overlay.insert(_overlayEntry!);
     }
   }
+}
 
-  Widget _buildInfoRow(BuildContext context, IconData icon, String label, String value) {
+class InfoRowWidget extends StatelessWidget {
+  const InfoRowWidget({
+    super.key,
+    required this.context,
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
+
+  final BuildContext context;
+  final IconData icon;
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
     final textColor = Theme.of(context).brightness == Brightness.dark ? Colors.white70 : Colors.black54;
 
     return Row(
@@ -291,8 +302,22 @@ class _HeaderActionItemsState extends ConsumerState<HeaderActionItems> {
       ],
     );
   }
+}
 
-  Widget _buildActionButton(BuildContext context, IconData icon, String label) {
+class ActionButtonWidget extends StatelessWidget {
+  const ActionButtonWidget({
+    super.key,
+    required this.context,
+    required this.icon,
+    required this.label,
+  });
+
+  final BuildContext context;
+  final IconData icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
     final primaryColor = Theme.of(context).brightness == Brightness.dark
         ? const Color(0xFF6264A7) // Teams dark mode purple
         : const Color(0xFF6264A7); // Teams light mode purple
@@ -316,67 +341,6 @@ class _HeaderActionItemsState extends ConsumerState<HeaderActionItems> {
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final hiveService = ref.watch(userDataProvider);
-    final currentUser = hiveService.userBox.get('currentUser');
-
-    return Container(
-      margin: const EdgeInsets.only(right: 20),
-      child: Row(
-        children: [
-          IconButton(
-            onPressed: () {},
-            icon: Icon(Icons.nightlight, color: AppColors.getIconsColor(context)),
-          ),
-          IconButton(
-            onPressed: () {},
-            icon: Icon(Icons.notifications, color: AppColors.getIconsColor(context)),
-          ),
-          const SizedBox(width: 10),
-          MouseRegion(
-            onEnter: (event) {
-              _isHovered = true; // Set hover state when entering avatar
-              startHoverTimer(
-                context: context,
-                userId: currentUser.id!,
-                ref: ref,
-                position: event.position,
-              );
-            },
-            onExit: (event) {
-              _isHovered = false; // Reset hover state
-              // Only cancel if not moving to card
-              Future.delayed(const Duration(milliseconds: 100), () {
-                if (!_isMovingToCard) {
-                  cancelHover();
-                }
-              });
-            },
-            child: InkWell(
-              borderRadius: BorderRadius.circular(50),
-              onTap: () {},
-              child: CircleAvatar(
-                radius: 20,
-                backgroundColor: Colors.grey[300],
-                backgroundImage: currentUser!.avatar != null && currentUser.avatar.isNotEmpty ? CachedNetworkImageProvider(currentUser.avatar, errorListener: (p0) => debugPrint('error'),) : null,
-                child: currentUser.avatar.isEmpty
-                    ? Text(
-                        currentUser.userName.isNotEmpty ? currentUser.userName[0].toUpperCase() : '?',
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      )
-                    : null,
-              ),
-            ),
-          )
-        ],
       ),
     );
   }

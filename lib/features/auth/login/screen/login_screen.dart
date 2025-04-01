@@ -50,15 +50,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         if (next.failure!.error == "Email already exists") {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: const Text(
-                  "This email is already registered. Try signing in instead."),
+              content: const Text("This email is already registered. Try signing in instead."),
               action: SnackBarAction(
                 label: "Sign In",
                 onPressed: () {
                   // Switch to sign in mode or auto-sign in
-                  ref
-                      .read(authProvider.notifier)
-                      .signInWithGoogle(true, context); // true for login
+                  ref.read(authProvider.notifier).signInWithGoogle(true, context); // true for login
                 },
               ),
             ),
@@ -93,7 +90,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               const Gap(20),
               Card(
                 elevation: 10,
-                color: Colors.white,
+                color: AppColors.getContainerColor(context),
                 child: Padding(
                   padding: const EdgeInsets.all(20),
                   child: Form(
@@ -105,8 +102,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         children: [
                           Text(
                             'Sign in with your email and password',
-                            style: AppTheme.smallBodyTheme(context).copyWith(
-                                fontSize: 20, fontWeight: FontWeight.w500),
+                            style: AppTheme.smallBodyTheme(context).copyWith(fontSize: 20, fontWeight: FontWeight.w500),
                             textAlign: TextAlign.center,
                           ),
                           const Gap(20),
@@ -127,9 +123,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             validator: (value) {
                               if (value == null || value.isEmpty) {
                                 return 'Please enter your email';
-                              } else if (!RegExp(
-                                      r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
-                                  .hasMatch(value)) {
+                              } else if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
                                 return 'Invalid email format';
                               }
                               return null;
@@ -169,9 +163,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 child: RichText(
                                   text: TextSpan(
                                     text: 'Don\'t have an account? ',
-                                    style: AppTheme.smallBodyTheme(context)
-                                        .copyWith(
-                                      color: AppColors.primary,
+                                    style: AppTheme.smallBodyTheme(context).copyWith(
                                       fontSize: 15,
                                     ),
                                     children: [
@@ -181,8 +173,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                             context.goNamed(RoutesName.signup);
                                           },
                                         text: 'Sign Up',
-                                        style: AppTheme.smallBodyTheme(context)
-                                            .copyWith(
+                                        style: AppTheme.smallBodyTheme(context).copyWith(
                                           color: AppColors.black,
                                           fontWeight: FontWeight.bold,
                                         ),
@@ -196,9 +187,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                   onPressed: () {},
                                   child: Text(
                                     'Forgot password?',
-                                    style: AppTheme.smallBodyTheme(context)
-                                        .copyWith(
-                                      color: AppColors.primary,
+                                    style: AppTheme.smallBodyTheme(context).copyWith(
                                       fontSize: 15,
                                     ),
                                   ),
@@ -208,21 +197,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           ),
                           const Gap(20),
                           authState.isLoading
-                              ? const Center(
-                                  child: CircularProgressIndicator.adaptive())
+                              ? const Center(child: CircularProgressIndicator.adaptive())
                               : Align(
                                   alignment: Alignment.center,
                                   child: ElevatedButton(
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: AppColors.primary,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 30,
-                                        vertical: 10,
-                                      ),
-                                    ),
+                                    style: AppColors.getButtonStyle(context),
                                     onPressed: () {
                                       if (_formKey.currentState!.validate()) {
                                         authViewModel.login(
@@ -241,8 +220,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                       child: Text(
                                         textAlign: TextAlign.center,
                                         'Sign In',
-                                        style: AppTheme.smallBodyTheme(context)
-                                            .copyWith(color: Colors.white),
+                                        style: AppTheme.smallBodyTheme(context).copyWith(color: AppColors.getButtonTextColor(context)).copyWith(
+                                              fontFamily: 'SpaceGrotesk',
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.w800,
+                                            ),
                                       ),
                                     ),
                                   ),
@@ -259,11 +241,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                   child: Text(
                                     textAlign: TextAlign.center,
                                     (authState.error is ApiFailure)
-                                        ? (authState.error as ApiFailure)
-                                            .error // Correct way to access the error message
+                                        ? (authState.error as ApiFailure).error // Correct way to access the error message
                                         : authState.error.toString(),
-                                    style: AppTheme.smallBodyTheme(context)
-                                        .copyWith(
+                                    style: AppTheme.smallBodyTheme(context).copyWith(
                                       color: Colors.red,
                                     ),
                                   ),

@@ -114,7 +114,7 @@ class _ProjectListWidgetState extends ConsumerState<ProjectListWidget> {
                                 size: 30,
                                 shadows: [
                                   BoxShadow(
-                                    color: AppColors.primary.withOpacity(0.3),
+                                    color: AppColors.misc1(context),
                                     blurRadius: 10,
                                   ),
                                 ],
@@ -126,22 +126,19 @@ class _ProjectListWidgetState extends ConsumerState<ProjectListWidget> {
                               child: InkWell(
                                 onTap: () {
                                   print(data[index].id);
-                                  // setState(() {
-                                  //   expandedIndex = isExpanded ? null : index;
-                                  // });
-                                  // final projects = ref.watch(projectViewModelProvider.notifier).getProjectDocs(data[index].id!);
-                                  // print(projects);
-                                  // context.goNamed(RoutesName.doc, pathParameters: {'id': data[index].id!}, extra: data[index].title);
                                 },
                                 child: Row(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
+                                    Gap(10),
                                     RichText(
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                       text: TextSpan(
                                         text: data[index].title,
-                                        style: AppTheme.textMedium(context),
+                                        style: AppTheme.misc1(context).copyWith(
+                                          fontSize: 20,
+                                        ),
                                       ),
                                     ),
                                     const Gap(10),

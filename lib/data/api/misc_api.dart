@@ -127,6 +127,8 @@ class MiscApi {
 
           final documents = documentsData.map((doc) => UserModel.fromJson(doc as Map<String, dynamic>)).toList();
 
+          print('Documents: $documents');
+
           return Left(documents);
         } else {
           return Right(ApiFailure('Response missing "data" field or has incorrect format'));

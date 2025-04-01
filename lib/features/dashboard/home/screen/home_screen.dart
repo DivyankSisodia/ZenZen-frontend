@@ -73,7 +73,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget build(BuildContext context) {
     SizeConfig().init(context);
     return Scaffold(
-      backgroundColor: AppColors.white,
+      backgroundColor: AppColors.getBackgroundColor(context),
       key: drawerKey,
       drawer: SizedBox(
         width: SizeConfig.screenWidth / 2,
@@ -130,7 +130,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           if (Responsive.isMobile(context))
                             Expanded(
                               child: Divider(
-                                color: AppColors.primary.withOpacity(0.3),
+                                color: AppColors.getNegativeBackgroundColor(context).withOpacity(0.5),
                                 thickness: 2,
                               ),
                             ),
@@ -216,7 +216,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           if (Responsive.isMobile(context))
                             Expanded(
                               child: Divider(
-                                color: AppColors.primary.withOpacity(0.3),
+                                color: AppColors.getNegativeBackgroundColor(context).withOpacity(0.5),
                                 thickness: 2,
                               ),
                             ),
