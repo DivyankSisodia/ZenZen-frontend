@@ -692,10 +692,8 @@ class HoverCardController {
     
     // Insert into overlay
     final overlay = Overlay.of(context);
-    if (overlay != null) {
-      overlay.insert(_overlayEntry!);
+    overlay.insert(_overlayEntry!);
     }
-  }
   
   void handleCardEnter() {
     _isMovingToCard = true;
@@ -732,14 +730,14 @@ class HoverTrigger extends StatefulWidget {
   final ValueChanged<bool>? onHoverChanged;
   
   const HoverTrigger({
-    Key? key,
+    super.key,
     required this.child,
     required this.id,
     required this.controller,
     required this.fetchData,
     required this.buildCard,
     this.onHoverChanged,
-  }) : super(key: key);
+  });
 
   @override
   State<HoverTrigger> createState() => _HoverTriggerState();

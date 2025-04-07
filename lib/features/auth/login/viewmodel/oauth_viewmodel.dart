@@ -61,12 +61,12 @@ class AuthNotifier extends StateNotifier<AuthState> {
         TokenManager tokenManager = TokenManager();
 
         print('Access Token: ${userCredential.credential!.accessToken}');
-        print('Refresh Token: ${userCredential!.user!.refreshToken}');
+        print('Refresh Token: ${userCredential.user!.refreshToken}');
 
-        if (userCredential.credential!.accessToken != null && userCredential!.user!.refreshToken != null) {
+        if (userCredential.credential!.accessToken != null && userCredential.user!.refreshToken != null) {
           tokenManager.saveTokens(
             accessToken: userCredential.credential!.accessToken!,
-            refreshToken: userCredential!.user!.refreshToken!,
+            refreshToken: userCredential.user!.refreshToken!,
           );
         }
 

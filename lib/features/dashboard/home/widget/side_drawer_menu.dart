@@ -56,12 +56,12 @@ class _SideDrawerMenuState extends ConsumerState<SideDrawerMenu> {
         break;
       case 3:
         // Navigate to Messages
-        // Navigator.pushNamed(context, '/messages');
+        context.goNamed(RoutesName.messagingScreen);
         print('Messages');
         break;
       case 4:
         // Open Contact Us page
-        // Navigator.pushNamed(context, '/contact');
+        context.goNamed(RoutesName.contactUs);
         print('Contact Us');
         break;
       default:

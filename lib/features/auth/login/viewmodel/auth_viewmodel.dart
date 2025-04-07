@@ -7,6 +7,7 @@ import 'package:zenzen/features/auth/login/model/user_model.dart';
 
 import '../../../../data/local/provider/hive_provider.dart';
 import '../../../../data/local_data.dart';
+import '../../../../utils/common/custom_toast.dart';
 import '../provider/auth_provider.dart';
 import '../repo/auth_repository.dart';
 
@@ -20,7 +21,7 @@ class AuthViewModel extends StateNotifier<AsyncValue<List<UserModel>>> {
   AuthViewModel(this.repository, this.tokenManager, this.ref)
       : super(const AsyncValue.data([]));
 
-  Future<void> login(String email, String password, BuildContext context) async {
+    Future<void> login(String email, String password, BuildContext context) async {
     try {
       state = const AsyncValue.loading();
       final result = await repository.login(email, password);
@@ -61,13 +62,40 @@ class AuthViewModel extends StateNotifier<AsyncValue<List<UserModel>>> {
         },
         (error) {
           print('Login error: $error');
-          state = AsyncValue.error(error, StackTrace.current);
+          
+          // Check if it's a network connection error
+          if (error.isConnectionError) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Network error: Please check your internet connection'),
+                backgroundColor: Colors.red,
+              ),
+            );
+            state = const AsyncValue.data([]); // Reset state to avoid showing error container
+          } else {
+            state = AsyncValue.error(error, StackTrace.current);
+          }
         },
       );
     } catch (e, stackTrace) {
       print('Unexpected error in login: $e');
       print('Stack trace: $stackTrace');
-      state = AsyncValue.error(e, stackTrace);
+      
+      // For other exceptions, check if they are connection-related
+      if (e.toString().contains('SocketException') || 
+          e.toString().contains('Connection') ||
+          e.toString().contains('Network')) {
+        // ScaffoldMessenger.of(context).showSnackBar(
+        //   SnackBar(
+        //     content: Text('Network error: Please check your internet connection'),
+        //     backgroundColor: Colors.red,
+        //   ),
+        // );
+        CustomToast().showToast('Network error: Please check your internet connection', context);
+        state = const AsyncValue.data([]);
+      } else {
+        state = AsyncValue.error(e, stackTrace);
+      }
     }
   }
 

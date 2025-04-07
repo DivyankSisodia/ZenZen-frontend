@@ -248,10 +248,8 @@ class CustomHovercard {
     );
 
     final overlay = Overlay.of(context);
-    if (overlay != null) {
-      overlay.insert(_overlayEntry!);
+    overlay.insert(_overlayEntry!);
     }
-  }
 }
 
 class InfoRowWidget extends StatelessWidget {

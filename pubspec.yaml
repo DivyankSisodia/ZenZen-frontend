@@ -39,6 +39,7 @@ dependencies:
   device_preview: null
   dio: ^5.8.0+1
   file_picker: ^9.0.2
+  filesystem_picker: ^4.1.0
   firebase_auth: ^5.5.1
   firebase_core: ^3.12.1
   flutter:
@@ -57,7 +58,7 @@ dependencies:
   google_fonts: ^6.2.1
   google_sign_in: ^6.2.2
   hive_ce_flutter: null
-  internet_connection_checker_plus: ^2.7.0
+  internet_connection_checker_plus: ^2.7.1
   intl: null
   json_annotation: ^4.9.0
   logger: null

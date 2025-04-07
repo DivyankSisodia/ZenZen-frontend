@@ -208,7 +208,7 @@ class _FileTransferScreenState extends ConsumerState<FileTransferScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('File received: $fileName')),
     );
-    }
+  }
 
   String? _lastSavedFilePath;
 
@@ -253,12 +253,79 @@ class _FileTransferScreenState extends ConsumerState<FileTransferScreen> {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       allowMultiple: true,
       withData: true,
+      type: FileType.any,
     );
 
     if (result != null) {
       for (PlatformFile file in result.files) {
         _sendFile(file);
       }
+    }
+  }
+
+  Future<void> _pickAndSendFolder() async {
+    if (_currentRoomId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please create or join a room first')),
+      );
+      return;
+    }
+
+    // Check if we're running on web
+    if (kIsWeb) {
+      try {
+        // For web, we need to use a different approach
+        final result = await FilePicker.platform.pickFiles(
+          allowMultiple: true,
+          type: FileType.any,
+          withData: true,
+        );
+
+        if (result != null && result.files.isNotEmpty) {
+          // Process the selected files directly
+          for (var platformFile in result.files) {
+            _sendFile(platformFile);
+          }
+        }
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error selecting files: $e')),
+        );
+      }
+    } else {
+      // Original code for mobile/desktop platforms
+      String? selectedDirectory = await FilePicker.platform.getDirectoryPath();
+
+      if (selectedDirectory != null) {
+        final directory = Directory(selectedDirectory);
+        await _sendFolder(directory);
+      }
+    }
+  }
+
+  Future<void> _sendFolder(Directory directory) async {
+    try {
+      // Only used for non-web platforms
+      final files = await directory
+          .list(recursive: true)
+          .where((entity) => entity is File)
+          .toList();
+
+      for (var file in files) {
+        if (file is File) {
+          final platformFile = PlatformFile(
+            name: path.basename(file.path),
+            path: file.path,
+            size: await file.length(),
+            bytes: await file.readAsBytes(),
+          );
+          _sendFile(platformFile);
+        }
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error sending folder: $e')),
+      );
     }
   }
 
@@ -472,10 +539,12 @@ class _FileTransferScreenState extends ConsumerState<FileTransferScreen> {
     print('Received files: ${_receivedFiles.keys}');
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(onPressed: (){
-          context.goNamed(RoutesName.home);
-          // context.pop();
-        }, icon: const Icon(Icons.arrow_back)),
+        leading: IconButton(
+            onPressed: () {
+              context.goNamed(RoutesName.home);
+              // context.pop();
+            },
+            icon: const Icon(Icons.arrow_back)),
         automaticallyImplyLeading: true,
         title: const Text('File Transfer App'),
         actions: [
@@ -563,6 +632,55 @@ class _FileTransferScreenState extends ConsumerState<FileTransferScreen> {
                       DragDropContainer(
                         onTap: _pickAndSendFiles,
                         onSendFile: _sendFile,
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          ElevatedButton(
+                            onPressed: _pickAndSendFiles,
+                            style: ElevatedButton.styleFrom(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              shadowColor: Colors.grey[700],
+                              padding: const EdgeInsets.symmetric(
+                                  vertical: 12, horizontal: 24),
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.upload_file),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'Upload Files',
+                                  style: AppTheme.textLarge(context),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          ElevatedButton(
+                            onPressed: _pickAndSendFolder,
+                            style: ElevatedButton.styleFrom(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              shadowColor: Colors.grey[700],
+                              padding: const EdgeInsets.symmetric(
+                                  vertical: 12, horizontal: 24),
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.folder),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'Upload Folder',
+                                  style: AppTheme.textLarge(context),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 16),
                       ElevatedButton(

@@ -8,13 +8,9 @@ import 'dart:convert';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_quill_extensions/flutter_quill_extensions.dart';
 import 'package:zenzen/config/constants/app_colors.dart';
-import 'package:zenzen/config/constants/responsive.dart';
 import 'package:zenzen/features/dashboard/docs/repo/socket_repo.dart';
 
 import '../../../../data/local/hive_models/local_user_model.dart';
-import '../../../auth/user/view-model/user_view_model.dart';
-import '../model/document_model.dart';
-import '../provider/editor_provider.dart';
 
 class DocumentEditor extends ConsumerStatefulWidget {
   final SocketRepository repository;
@@ -265,7 +261,8 @@ class TimeStampEmbed extends Embeddable {
 
   static const String timeStampType = 'timeStamp';
 
-  static TimeStampEmbed fromDocument(Document document) => TimeStampEmbed(jsonEncode(document.toDelta().toJson()));
+  static TimeStampEmbed fromDocument(Document document) =>
+      TimeStampEmbed(jsonEncode(document.toDelta().toJson()));
 
   Document get document => Document.fromJson(jsonDecode(data));
 }

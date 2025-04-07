@@ -15,11 +15,12 @@ class RoutesName {
   static const String allProjects = "all-projects";
   static const String fileTransfer = "file-transfer";
   static const String messagingScreen = "messaging-screen";
+  static const String contactUs = "contact-us";
 }
 
 class ApiRoutes {
-  // static const String baseUrl = "https://zenzen.onrender.com/api";
-  static const String baseUrl = "http://localhost:5762/api";
+  static const String baseUrl = "https://zenzen.onrender.com/api";
+  // static const String baseUrl = "http://localhost:5762/api";
   static const String signup = "/auth/signup";
   static const String login = "/auth/login";
   static const String logout = "/auth/logout";

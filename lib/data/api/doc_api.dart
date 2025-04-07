@@ -323,7 +323,10 @@ class DocApiService {
       final response = await dio.post(
         '$baseUrl${ApiRoutes.deleteDocument}',
         data: {'docId': docId},
-        options: Options(headers: headers),
+        options: Options(
+          headers: headers,
+          validateStatus: (status) => status! < 500, // Allow 401 and other client errors
+        ),
       );
 
       try {
@@ -340,10 +343,19 @@ class DocApiService {
         }
         return Left(true); // For backward compatibility
       } else {
-        final errorMsg = response.data is Map<String, dynamic> && response.data.containsKey('message') ? response.data['message'] : 'Failed to delete document';
+        // Extract error message from response
+        final errorMsg = response.data is Map<String, dynamic> && 
+                        response.data.containsKey('error') ? 
+                        response.data['error'] : 
+                        'Failed to delete document';
         return Right(ApiFailure(errorMsg));
       }
     } on DioException catch (e) {
+      // If we have a response with an error message, use that
+      if (e.response?.data is Map<String, dynamic> && 
+          e.response?.data.containsKey('error')) {
+        return Right(ApiFailure(e.response!.data['error']));
+      }
       return Right(ApiFailure.fromDioException(e));
     }
   }

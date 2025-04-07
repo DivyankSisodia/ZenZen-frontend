@@ -27,22 +27,11 @@ class _DragDropContainerState extends State<DragDropContainer> {
         });
         print('Dragging done: ${details.files.length} files dropped');
         
-        final dropItem = details.files.first;
-        print('File path: ${dropItem.path}');
-        
-        try {
-          final platformFile = PlatformFile(
-            name: dropItem.name,
-            size: await dropItem.length(),
-            path: dropItem.path, // Add the path
-            bytes: await dropItem.readAsBytes(), // Read file bytes
-          );
-          
-          widget.onSendFile!(platformFile);
-        } catch (e) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Could not read file: ${dropItem.name}. Error: $e')),
-          );
+        // Check if this appears to be a directory drop (multiple files)
+        if (details.files.length > 1) {
+          await _handleDirectoryDrop(details.files);
+        } else if (details.files.isNotEmpty) {
+          await _handleSingleFileDrop(details.files.first);
         }
       },
       onDragEntered: (details) {
@@ -63,7 +52,10 @@ class _DragDropContainerState extends State<DragDropContainer> {
           height: MediaQuery.of(context).size.height * 0.3,
           width: MediaQuery.of(context).size.width * 0.6,
           decoration: BoxDecoration(
-            border: Border.all(color: Colors.grey),
+            border: Border.all(
+              color: _isDragging ? Colors.blue : Colors.grey,
+              width: _isDragging ? 2 : 1,
+            ),
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
@@ -72,14 +64,14 @@ class _DragDropContainerState extends State<DragDropContainer> {
                 spreadRadius: 1,
               ),
             ],
-            color: Colors.white, // Replace with AppColors.background if defined
+            color: Colors.white,
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Icon(
-                Icons.file_upload,
+                Icons.folder_shared,  // Changed to folder icon to suggest directory support
                 size: 50,
                 color: Colors.blue,
               ),
@@ -87,13 +79,13 @@ class _DragDropContainerState extends State<DragDropContainer> {
               RichText(
                 textAlign: TextAlign.center,
                 text: TextSpan(
-                  text: 'Drag and drop files here',
+                  text: 'Drag and drop files or folders here',  // Updated text to indicate folder support
                   style: TextStyle(fontSize: 16, color: Colors.black),
                   children: [
                     TextSpan(
                         text: ' or ', style: TextStyle(color: Colors.black)),
                     TextSpan(
-                      text: 'click to select files',
+                      text: 'click to select',
                       style: TextStyle(color: Colors.blue),
                     ),
                   ],
@@ -110,5 +102,54 @@ class _DragDropContainerState extends State<DragDropContainer> {
         ),
       ),
     );
+  }
+  
+  Future<void> _handleDirectoryDrop(List<XFile> files) async {
+    // Sort files to try to maintain directory structure
+    // On many browsers, this will preserve the order of files within directories
+    files.sort((a, b) => a.path.compareTo(b.path));
+    
+    // Process each file in the directory
+    for (var file in files) {
+      try {
+        final platformFile = PlatformFile(
+          name: file.name,
+          size: await file.length(),
+          path: file.path,
+          bytes: await file.readAsBytes(),
+        );
+        
+        // Process each file individually
+        widget.onSendFile!(platformFile);
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Could not read file: ${file.name}. Error: $e')),
+        );
+      }
+    }
+    
+    // Show confirmation of directory processing
+    if (files.length > 1) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Processed ${files.length} files from directory')),
+      );
+    }
+  }
+  
+  Future<void> _handleSingleFileDrop(XFile file) async {
+    try {
+      final platformFile = PlatformFile(
+        name: file.name,
+        size: await file.length(),
+        path: file.path,
+        bytes: await file.readAsBytes(),
+      );
+      
+      widget.onSendFile!(platformFile);
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Could not read file: ${file.name}. Error: $e')),
+      );
+    }
   }
 }

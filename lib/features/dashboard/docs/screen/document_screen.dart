@@ -170,10 +170,6 @@ class _NewDocumentScreenState extends ConsumerState<NewDocumentScreen> with Widg
         'userId': currentuser!.id,
       });
     }
-
-    // Clear the currentEditorUserProvider data
-    ref.read(currentEditorUserProvider.notifier).state = [];
-
     repository.disconnect();
     super.dispose();
   }
@@ -425,10 +421,8 @@ class _NewDocumentScreenState extends ConsumerState<NewDocumentScreen> with Widg
     );
 
     final overlay = Overlay.of(context);
-    if (overlay != null) {
-      overlay.insert(_overlayEntry!);
+    overlay.insert(_overlayEntry!);
     }
-  }
 
   Widget _buildInfoRow(BuildContext context, IconData icon, String label, String value) {
     final textColor = Theme.of(context).brightness == Brightness.dark ? Colors.white70 : Colors.black54;
@@ -524,7 +518,7 @@ class _NewDocumentScreenState extends ConsumerState<NewDocumentScreen> with Widg
                     width: SizeConfig.screenWidth,
                     color: AppColors.getBackgroundColor(context),
                     child: Center(
-                      child: Container(
+                      child: SizedBox(
                         width: contentWidth,
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,

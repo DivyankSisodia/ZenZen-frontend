@@ -13,7 +13,6 @@ import 'package:zenzen/utils/common/custom_dialogs.dart';
 import 'package:zenzen/utils/theme.dart';
 
 import '../../../../config/constants/responsive.dart';
-import '../../../../utils/providers/select_user_provider.dart';
 import '../../docs/repo/socket_repo.dart';
 import '../widget/animated_tab.dart';
 import '../widget/feature_card.dart';
@@ -55,9 +54,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    final x = ref.read(selectedUsersProvider);
-    print('prinitng selected users');
-    print(x.map((e) => e.id).toList());
   }
 
   @override

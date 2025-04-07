@@ -13,6 +13,7 @@ import 'package:zenzen/features/dashboard/projects/screen/project_list_screen.da
 
 import '../../features/auth/login/screen/login_screen.dart';
 import '../../features/auth/login/screen/verify_user_screen.dart';
+import '../../features/dashboard/chat/screens/chat_dashboard_screen.dart';
 import '../../features/dashboard/docs/screen/document_list_screen.dart';
 import '../../utils/custom_transition.dart';
 
@@ -139,6 +140,20 @@ class RouteConfig {
               child: const FileTransferScreen(),
               transitionType: PageTransitionType.rightToLeftWithFade,
             );
+          },
+        ),
+        // GoRoute(
+        //   path: '/contact-us',
+        //   name: RoutesName.contactUs,
+        //   pageBuilder: (context, state) {
+        //     return const MaterialPage(child: ContactUsScreen());
+        //   },
+        // ),
+        GoRoute(
+          path: '/messaging-screen',
+          name: RoutesName.messagingScreen,
+          pageBuilder: (context, state) {
+            return MaterialPage(child: ChatDashboard());
           },
         )
       ],
