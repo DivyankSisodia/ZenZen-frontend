@@ -10,7 +10,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:zenzen/data/cache/api_cache.dart';
 import 'package:zenzen/data/failure.dart';
 import 'package:zenzen/features/auth/login/model/user_model.dart';
 import 'package:zenzen/features/auth/user/view-model/user_view_model.dart';
@@ -139,7 +138,6 @@ class CustomDialogs {
   ) {
     final outerContext = context;
 
-    ApiCache apiCache = ApiCache();
 
     showCupertinoDialog(
       context: context,
@@ -202,8 +200,6 @@ class CustomDialogs {
                   ).show(context);
                   return;
                 }
-
-                apiCache.clear();
 
                 final projectViewModel = ref.read(projectViewModelProvider.notifier);
 
@@ -745,8 +741,7 @@ class HoverTrigger extends StatefulWidget {
 
 class _HoverTriggerState extends State<HoverTrigger> {
   bool _showAnimation = false;
-  final ApiCache _cache = ApiCache();
-  
+
   @override
   Widget build(BuildContext context) {
     return MouseRegion(
@@ -771,19 +766,11 @@ class _HoverTriggerState extends State<HoverTrigger> {
     widget.controller.startHoverTimer(() async {
       if (!mounted) return;
       
-      // Check cache first
-      final cachedData = _cache.get('item_${widget.id}');
-      if (cachedData != null) {
-        _showHoverCard(cachedData, globalPosition);
-        return;
-      }
-      
       // Fetch data
       try {
         final data = await widget.fetchData(widget.id);
         if (data != null) {
-          // Cache the result
-          _cache.set('item_${widget.id}', data);
+          
           if (mounted && widget.controller.isHovered) {
             _showHoverCard(data, globalPosition);
           }

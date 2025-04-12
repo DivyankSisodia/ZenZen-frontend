@@ -42,6 +42,7 @@ class DocumentCardWidget extends StatelessWidget {
           onTap: () {
             // Handle document selection/opening
             if (document.id != null) {
+              print('Document ID: ${document.id}');
               context.goNamed(
                 RoutesName.doc,
                 pathParameters: {'id': document.id!},

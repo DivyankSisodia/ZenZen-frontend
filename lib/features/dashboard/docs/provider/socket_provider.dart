@@ -2,7 +2,6 @@ import 'package:socket_io_client/socket_io_client.dart' as io;
 
 // Replace VoidCallback with void Function() if used
 typedef CallbackType = void Function() Function();
-
 class SocketClient {
   io.Socket? socket;
   static SocketClient? _instance;

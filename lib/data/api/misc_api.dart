@@ -4,7 +4,6 @@ import 'package:zenzen/data/failure.dart';
 import 'package:zenzen/features/auth/login/model/user_model.dart';
 
 import '../../config/router/constants.dart';
-import '../cache/api_cache.dart';
 import '../local_data.dart';
 
 class MiscApi {
@@ -13,8 +12,6 @@ class MiscApi {
   final TokenManager tokenManager;
 
   MiscApi(this.baseUrl, this.dio, this.tokenManager);
-
-  final ApiCache _cache = ApiCache();
 
   Future<void> logout() async {
     try {
@@ -84,10 +81,6 @@ class MiscApi {
   }
 
   Future<Either<UserModel, ApiFailure>> getUserById(String userId) async {
-    final cachedData = _cache.get('user_$userId');
-    if (cachedData != null) {
-      return Left(cachedData as UserModel);
-    }
     try {
       final response = await dio.post(
         '$baseUrl${ApiRoutes.getUserById}',
@@ -99,8 +92,7 @@ class MiscApi {
       if (response.statusCode == 200) {
         final user = UserModel.fromJson(response.data['data'] as Map<String, dynamic>);
 
-        // Cache the user data
-        _cache.set('user_$userId', user, duration: const Duration(minutes: 10));
+       
         // Return the user data
         return Left(user);
       } else {

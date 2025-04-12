@@ -135,6 +135,7 @@ class DocumentItem extends StatelessWidget {
             Expanded(
               child: InkWell(
                 onTap: () {
+                  print('Document ID: ${document.id}');
                   context.goNamed(
                     RoutesName.doc,
                     pathParameters: {'id': document.id!},

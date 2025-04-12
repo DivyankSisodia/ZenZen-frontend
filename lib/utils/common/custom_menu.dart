@@ -29,6 +29,14 @@ class _CircularMenuState extends State<CircularMenu> with SingleTickerProviderSt
   late Animation<double> _rotationAnimation;
   late Animation<double> _scaleAnimation;
 
+  List<String> menuItems = [
+    'Home',
+    'Search',
+    'Settings',
+    'Favorite',
+    'Person',
+  ];
+
   @override
   void initState() {
     super.initState();
@@ -143,7 +151,11 @@ class _CircularMenuState extends State<CircularMenu> with SingleTickerProviderSt
                 scale: _scaleAnimation.value,
                 child: Opacity(
                   opacity: _scaleAnimation.value,
-                  child: InkWell(
+                  child: Tooltip(
+                    preferBelow: i == 0 ? true : false,
+                    margin: const EdgeInsets.all(10.0),
+                    message: menuItems[i],
+                    child: InkWell(
                     focusColor: Colors.transparent,
                     hoverColor: Colors.transparent,
                     splashColor: Colors.transparent,
@@ -172,6 +184,7 @@ class _CircularMenuState extends State<CircularMenu> with SingleTickerProviderSt
                       ),
                     ),
                   ),
+                  )
                 ),
               ),
             );

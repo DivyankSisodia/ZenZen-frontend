@@ -57,6 +57,7 @@ class _DocumentEditorState extends ConsumerState<DocumentEditor> {
             )
           : quill.QuillController.basic();
     } catch (e) {
+      print('Error: $e');
       _controller = quill.QuillController.basic();
     }
 

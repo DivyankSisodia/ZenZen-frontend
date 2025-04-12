@@ -2,7 +2,6 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
-import 'package:zenzen/data/cache/api_cache.dart';
 import 'package:zenzen/data/failure.dart';
 import 'package:zenzen/data/local_data.dart';
 // Add this import
@@ -14,7 +13,6 @@ class DocApiService {
   final String baseUrl;
   final Dio dio;
   final TokenManager tokenManager;
-  final ApiCache apiCache = ApiCache();
 
   DocApiService(this.baseUrl, this.dio, this.tokenManager) {
     // Add interceptor for authentication
@@ -183,11 +181,6 @@ class DocApiService {
 
   // get all documents
   Future<Either<List<DocumentModel>, ApiFailure>> getDocuments() async {
-    // fist check if the data is in cache
-    final cachedData = apiCache.get(CacheConstants.getDocs);
-    if (cachedData != null) {
-      return Left(cachedData as List<DocumentModel>);
-    }
     try {
       final accessToken = await tokenManager.getAccessToken();
       final Map<String, dynamic> headers = {};
@@ -207,8 +200,6 @@ class DocApiService {
 
           final documents = documentsData.map((doc) => DocumentModel.fromJson(doc as Map<String, dynamic>)).toList();
 
-          // store the data in cache
-          apiCache.set(CacheConstants.getDocs, documents);
 
           return Left(documents);
         } else {
@@ -229,7 +220,6 @@ class DocApiService {
   }
 
   // get a document by id
-  // get a document by id
   Future<Either<DocumentModel, ApiFailure>> getDocInfo(String id) async {
     print('Getting document info for id: $id');
     try {
@@ -239,29 +229,28 @@ class DocApiService {
         headers['Authorization'] = 'Bearer $accessToken';
       }
 
+      print('Making API request to get document info');
       final response = await dio.post(
         data: {'docId': id},
         '$baseUrl${ApiRoutes.getDocumentInfo}',
         options: Options(headers: headers),
       );
 
+
       if (response.statusCode == 200) {
-        // Debug the response
-        print('API Response: ${response.data}');
 
         // Check if response.data contains 'data' field (common API pattern)
         final responseData = response.data is Map && response.data.containsKey('data') ? response.data['data'] : response.data;
 
         final document = DocumentModel.fromJson(responseData);
 
-        // Debug the parsed document
-        print(document);
-
         return Left(document);
       } else {
+        print('API Error: ${response.data}');
         return Right(ApiFailure(response.data['error']));
       }
     } on DioException catch (e) {
+      print('DioException: $e');
       return Right(ApiFailure.fromDioException(e));
     }
   }
@@ -361,13 +350,6 @@ class DocApiService {
   }
 
   Future<Either<List<DocumentModel>, ApiFailure>> getDocsForProject(String projectId) async {
-    // first check if the data is in cache
-    final cachedData = apiCache.get("${CacheConstants.projectDocs}-$projectId");
-    if (cachedData != null) {
-      return Left(cachedData as List<DocumentModel>);
-    }
-    // if not in cache, make the API call
-
     try {
       final accessToken = await tokenManager.getAccessToken();
       final Map<String, dynamic> headers = {};
@@ -392,8 +374,6 @@ class DocApiService {
           final List<dynamic> documentsData = response.data['data']['documents'] as List<dynamic>;
 
           final documents = documentsData.map((doc) => DocumentModel.fromJson(doc as Map<String, dynamic>)).toList();
-
-          apiCache.set("${CacheConstants.projectDocs}-$projectId", documents);
 
           return Left(documents);
         } else {

@@ -4,7 +4,6 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
-import 'dart:io' show File, Platform, Process;
 import 'package:go_router/go_router.dart';
 import 'package:open_file/open_file.dart';
 // ignore: depend_on_referenced_packages

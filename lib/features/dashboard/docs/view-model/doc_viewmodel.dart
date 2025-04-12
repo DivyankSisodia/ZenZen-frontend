@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:zenzen/data/cache/api_cache.dart';
 import 'package:zenzen/features/dashboard/docs/model/document_model.dart';
 import 'package:zenzen/features/dashboard/docs/repo/document_repo.dart';
 import 'package:zenzen/utils/common/custom_toast.dart';
@@ -15,7 +14,6 @@ import '../provider/doc_provider.dart';
 class DocViewmodel extends StateNotifier<AsyncValue<List<DocumentModel>>> {
   final DocRepository repository;
   final Ref ref;
-  Timer? _debounceTimer;
 
   DocViewmodel(this.repository, this.ref) : super(const AsyncValue.loading());
 
@@ -23,69 +21,59 @@ class DocViewmodel extends StateNotifier<AsyncValue<List<DocumentModel>>> {
 
   CustomToast customToast = CustomToast();
 
-  ApiCache apiCache = ApiCache();
-
   Future<void> getAllDocuments() async {
-    // Cancel any existing timer
-    _debounceTimer?.cancel();
+    if (_isLoading) return;
 
-    // Set up a new timer
-    _debounceTimer = Timer(const Duration(milliseconds: 500), () async {
-      // Skip if already loading
-      if (_isLoading || state is AsyncData<List<DocumentModel>>) return;
-
-      _isLoading = true;
-      state = const AsyncValue.loading();
-
-      try {
-        // Check if cache is available
-        final cachedDocs = await apiCache.get(CacheConstants.getDocs);
-        if (cachedDocs != null) {
-          state = AsyncValue.data(cachedDocs);
-          return;
-        }
-
-        final result = await repository.getDocuments();
-        if (mounted) {
-          result.fold(
-            (documents) => state = AsyncValue.data(documents),
-            (error) => state = AsyncValue.error(error, StackTrace.current),
-          );
-        }
-      } catch (e, stackTrace) {
-        if (mounted) {
-          state = AsyncValue.error(e, stackTrace);
-        }
-      } finally {
-        _isLoading = false;
+    _isLoading = true;
+    state = const AsyncValue.loading();
+    try {
+      final result = await repository.getDocuments();
+      if (mounted) {
+        result.fold(
+          (documents) {
+            state = const AsyncValue.loading();
+            state = AsyncValue.data(documents);
+          },
+          (error) => state = AsyncValue.error(error, StackTrace.current),
+        );
       }
-    });
+    } catch (e, stackTrace) {
+      if (mounted) {
+        state = AsyncValue.error(e, stackTrace);
+      }
+    } finally {
+      _isLoading = false;
+    }
   }
 
   Future<void> getDocumentInfo(String id) async {
-    _debounceTimer?.cancel();
-    _debounceTimer = Timer(const Duration(milliseconds: 500), () async {
-      if (_isLoading || state is AsyncData<List<DocumentModel>>) return;
+    if (_isLoading) return;
 
-      _isLoading = true;
-      state = const AsyncValue.loading();
-      try {
-        final result = await repository.getDocInfo(id);
+    _isLoading = true;
+    state = const AsyncValue.loading();
+    try {
+      final result = await repository.getDocInfo(id);
 
-        if (mounted) {
-          result.fold(
-            (docModel) => state = AsyncValue.data([docModel]),
-            (error) => state = AsyncValue.error(error, StackTrace.current),
-          );
-        }
-      } catch (e, stackTrace) {
-        if (mounted) {
-          state = AsyncValue.error(e, stackTrace);
-        }
-      } finally {
-        _isLoading = false;
+      if (mounted) {
+        result.fold(
+          (docModel) {
+            if (docModel.id != id) {
+              state = AsyncValue.error('Document ID mismatch', StackTrace.current);
+              return;
+            }
+            state = const AsyncValue.loading();
+            state = AsyncValue.data([docModel]);
+          },
+          (error) => state = AsyncValue.error(error, StackTrace.current),
+        );
       }
-    });
+    } catch (e, stackTrace) {
+      if (mounted) {
+        state = AsyncValue.error(e, stackTrace);
+      }
+    } finally {
+      _isLoading = false;
+    }
   }
 
   Future<void> createDocument(
@@ -114,6 +102,7 @@ class DocViewmodel extends StateNotifier<AsyncValue<List<DocumentModel>>> {
           getAllDocuments();
 
           // Navigate to the document screen with the newly created document's ID and title
+          print('Document ID: ${docModel.id}');
           context.goNamed(
             RoutesName.doc,
             pathParameters: {'id': docModel.id!},
@@ -190,51 +179,37 @@ class DocViewmodel extends StateNotifier<AsyncValue<List<DocumentModel>>> {
   }
 
   Future<void> getProjectDocs(String projectId) async {
-    _debounceTimer?.cancel();
     _isLoading = true;
-      state = const AsyncValue.loading();
-    _debounceTimer = Timer(const Duration(milliseconds: 200), () async {
-      try {
-        // first we will check if cache is available
-        final cachedDocs = await apiCache.get("${CacheConstants.projectDocs}-$projectId");
-        if (cachedDocs != null) {
-          state = AsyncValue.data(cachedDocs);
-          return;
-        }
+    state = const AsyncValue.loading();
+    try {
+      final result = await repository.getProjectDocs(projectId);
 
-        final result = await repository.getProjectDocs(projectId);
-
-        result.fold(
-          (listOfDocs) => state = AsyncValue.data(listOfDocs),
-          (error) => state = AsyncValue.error(error, StackTrace.current),
-        );
-      } catch (e, stackTrace) {
-        state = AsyncValue.error(e, stackTrace);
-      } finally {
-        _isLoading = false;
-      }
-    });
+      result.fold(
+        (listOfDocs) => state = AsyncValue.data(listOfDocs),
+        (error) => state = AsyncValue.error(error, StackTrace.current),
+      );
+    } catch (e, stackTrace) {
+      state = AsyncValue.error(e, stackTrace);
+    } finally {
+      _isLoading = false;
+    }
   }
 
   Future<void> getSharedDocs() async {
-    _debounceTimer?.cancel();
-    _debounceTimer = Timer(const Duration(milliseconds: 500), () async {
+    _isLoading = true;
+    state = const AsyncValue.loading();
+    try {
+      final result = await repository.getSharedWithMeDocs();
 
-      _isLoading = true;
-      state = const AsyncValue.loading();
-      try {
-        final result = await repository.getSharedWithMeDocs();
-
-        result.fold(
-          (listOfDocs) => state = AsyncValue.data(listOfDocs),
-          (error) => state = AsyncValue.error(error, StackTrace.current),
-        );
-      } catch (e, stackTrace) {
-        state = AsyncValue.error(e, stackTrace);
-      } finally {
-        _isLoading = false;
-      }
-    });
+      result.fold(
+        (listOfDocs) => state = AsyncValue.data(listOfDocs),
+        (error) => state = AsyncValue.error(error, StackTrace.current),
+      );
+    } catch (e, stackTrace) {
+      state = AsyncValue.error(e, stackTrace);
+    } finally {
+      _isLoading = false;
+    }
   }
 }
 

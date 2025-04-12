@@ -5,7 +5,6 @@ import 'package:zenzen/features/auth/login/model/user_model.dart';
 import 'package:zenzen/features/auth/user/provider/user_provider.dart';
 import 'package:zenzen/features/auth/user/repo/user_repo.dart';
 
-import '../../../../data/cache/api_cache.dart';
 import '../../../../utils/common/custom_toast.dart';
 
 class UserViewModel extends StateNotifier<AsyncValue<List<UserModel>>> {
@@ -17,8 +16,6 @@ class UserViewModel extends StateNotifier<AsyncValue<List<UserModel>>> {
   bool _isLoading = false;
 
   CustomToast customToast = CustomToast();
-
-  final ApiCache _cache = ApiCache();
 
   Future<void> getAllUsers() async {
     // Skip if already loading
