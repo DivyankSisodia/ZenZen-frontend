@@ -13,7 +13,6 @@ class CustomHovercard {
   static bool _isHovered = false;
   OverlayEntry? _overlayEntry;
   bool _isMovingToCard = false;
-  bool _showAnimation = false;
 
   final ApiCache _cache = ApiCache();
   void startHoverTimer({
@@ -50,7 +49,7 @@ class CustomHovercard {
     _hoverTimer?.cancel();
     _isHovered = false;
 
-    _showAnimation = true; // Reset animation state
+// Reset animation state
     
     // Remove overlay and reset reference
     _overlayEntry?.remove();

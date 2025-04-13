@@ -740,7 +740,6 @@ class HoverTrigger extends StatefulWidget {
 }
 
 class _HoverTriggerState extends State<HoverTrigger> {
-  bool _showAnimation = false;
 
   @override
   Widget build(BuildContext context) {
@@ -753,7 +752,6 @@ class _HoverTriggerState extends State<HoverTrigger> {
   
   void _handleMouseEnter(Offset position) {
     setState(() {
-      _showAnimation = false;
     });
     
     if (widget.onHoverChanged != null) {
@@ -783,7 +781,6 @@ class _HoverTriggerState extends State<HoverTrigger> {
   
   void _handleMouseExit() {
     setState(() {
-      _showAnimation = true;
     });
     
     if (widget.onHoverChanged != null) {

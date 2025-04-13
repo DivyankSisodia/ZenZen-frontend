@@ -8,7 +8,7 @@ import 'dart:convert';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_quill_extensions/flutter_quill_extensions.dart';
 import 'package:zenzen/config/constants/app_colors.dart';
-import 'package:zenzen/features/dashboard/docs/repo/socket_repo.dart';
+import 'package:zenzen/data/sockets/socket_repo.dart';
 
 import '../../../../data/local/hive_models/local_user_model.dart';
 

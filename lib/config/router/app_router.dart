@@ -14,6 +14,7 @@ import 'package:zenzen/features/dashboard/projects/screen/project_list_screen.da
 import '../../features/auth/login/screen/login_screen.dart';
 import '../../features/auth/login/screen/verify_user_screen.dart';
 import '../../features/dashboard/chat/screen/chat_dashboard_screen.dart';
+import '../../features/dashboard/chat/screen/chat_list_screen.dart';
 import '../../features/dashboard/docs/screen/document_list_screen.dart';
 import '../../utils/custom_transition.dart';
 
@@ -142,20 +143,26 @@ class RouteConfig {
             );
           },
         ),
-        // GoRoute(
-        //   path: '/contact-us',
-        //   name: RoutesName.contactUs,
-        //   pageBuilder: (context, state) {
-        //     return const MaterialPage(child: ContactUsScreen());
-        //   },
-        // ),
         GoRoute(
-          path: '/messaging-screen',
-          name: RoutesName.messagingScreen,
+          path: '/messages',
+          name: RoutesName.chatScreen,
           pageBuilder: (context, state) {
             return MaterialPage(child: ChatDashboardScreen());
           },
-        )
+        ),
+        GoRoute(
+          path: '/chats/:id',
+          name: RoutesName.chatListScreen,
+          pageBuilder: (context, state) {
+            return MaterialPage(
+              child: ChatListScreen(
+                chatId: state.pathParameters['id'],
+                chatName: state.uri.queryParameters['chatName'],
+                chatImage: state.uri.queryParameters['chatImage'],
+              ),
+            );
+          },
+        ),
       ],
     );
   }

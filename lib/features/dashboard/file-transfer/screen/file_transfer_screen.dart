@@ -21,7 +21,7 @@ import 'package:zenzen/config/constants/app_colors.dart';
 import 'package:zenzen/config/router/constants.dart';
 import 'package:zenzen/utils/common/custom_textfield.dart';
 import 'package:zenzen/utils/theme.dart';
-import '../../docs/repo/socket_repo.dart';
+import '../../../../data/sockets/socket_repo.dart';
 import '../model/file_info_model.dart';
 import '../model/file_transfer_model.dart';
 import '../widget/dropzone_container.dart';
@@ -40,14 +40,13 @@ class _FileTransferScreenState extends ConsumerState<FileTransferScreen> {
   final Map<String, FileTransferProgress> _incomingFiles = {};
   final Map<String, FileTransferProgress> _outgoingFiles = {};
   final Map<String, FileDisplayInfo> _receivedFiles = {};
-  late SocketRepository _socketRepository;
+  SocketRepository socketRepository = SocketRepository();
 
   final FocusNode focusNode = FocusNode();
 
   @override
   void initState() {
     super.initState();
-    _socketRepository = SocketRepository();
     _connectToServer();
   }
 
@@ -56,19 +55,19 @@ class _FileTransferScreenState extends ConsumerState<FileTransferScreen> {
       _isConnected = true;
     });
 
-    _socketRepository.onUserJoined((userId) {
+    socketRepository.onUserJoined((userId) {
       _showSnackBar('User joined: $userId');
     });
 
-    _socketRepository.onFileChunk((data) {
+    socketRepository.onFileChunk((data) {
       _receiveFileChunk(data);
     });
 
-    _socketRepository.onFileTransferComplete((data) {
+    socketRepository.onFileTransferComplete((data) {
       _completeFileTransfer(data);
     });
 
-    _socketRepository.onFileTransferCancel((data) {
+    socketRepository.onFileTransferCancel((data) {
       _cancelFileTransfer(data);
     });
   }
@@ -79,7 +78,7 @@ class _FileTransferScreenState extends ConsumerState<FileTransferScreen> {
       return;
     }
 
-    _socketRepository.createRoom(
+    socketRepository.createFileRoom(
       onSuccess: (roomId) {
         setState(() {
           _currentRoomId = roomId;
@@ -105,7 +104,7 @@ class _FileTransferScreenState extends ConsumerState<FileTransferScreen> {
       return;
     }
 
-    _socketRepository.joinRoom(
+    socketRepository.joinFileRoom(
       roomId,
       onSuccess: () {
         setState(() {
@@ -368,7 +367,7 @@ class _FileTransferScreenState extends ConsumerState<FileTransferScreen> {
       final base64Chunk = base64Encode(chunk);
 
       // Match the structure expected by the server
-      _socketRepository.sendFileChunk({
+      socketRepository.sendFileChunk({
         'roomId': _currentRoomId,
         'fileName': file.name,
         'fileType': file.extension,
@@ -393,7 +392,7 @@ class _FileTransferScreenState extends ConsumerState<FileTransferScreen> {
     //   'fileName': file.name,
     // });
 
-    _socketRepository.sendFileTransferComplete({
+    socketRepository.sendFileTransferComplete({
       'roomId': _currentRoomId,
       'fileId': fileId,
       'fileName': file.name,
@@ -527,8 +526,9 @@ class _FileTransferScreenState extends ConsumerState<FileTransferScreen> {
     // TODO: implement dispose
     super.dispose();
     if (_currentRoomId != null) {
-      _socketRepository.leaveRoom(_currentRoomId!);
+      socketRepository.leaveFileRoom(_currentRoomId!);
     }
+    socketRepository.disconnect();
     _roomIdController.dispose();
     focusNode.dispose();
   }

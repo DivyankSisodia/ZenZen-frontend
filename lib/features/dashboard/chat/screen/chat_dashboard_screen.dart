@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:zenzen/config/constants/app_colors.dart';
 import 'package:zenzen/config/constants/responsive.dart';
 import 'package:zenzen/config/constants/size_config.dart';
 import 'package:zenzen/features/auth/login/model/user_model.dart';
 import 'package:zenzen/features/auth/user/view-model/user_view_model.dart';
 import 'package:zenzen/utils/theme.dart';
+import '../../../../config/router/constants.dart';
 import '../../../../utils/common/custom_menu.dart';
-import '../view-model/chat_viewmodel.dart';
 
 class ChatDashboardScreen extends ConsumerStatefulWidget {
   const ChatDashboardScreen({super.key});
@@ -100,12 +101,12 @@ class _ChatDashboardScreenState extends ConsumerState<ChatDashboardScreen> {
                     child: TextField(
                       controller: _searchController,
                       onChanged: (value) {
-                        if (!_mounted) return;
-                        if (value.isNotEmpty) {
-                          ref.read(chatViewModelProvider.notifier).searchChats(value);
-                        } else {
-                          ref.read(chatViewModelProvider.notifier).getChats();
-                        }
+                        // if (!_mounted) return;
+                        // if (value.isNotEmpty) {
+                        //   ref.read(chatViewModelProvider.notifier).searchChats(value);
+                        // } else {
+                        //   ref.read(chatViewModelProvider.notifier).getChats();
+                        // }
                       },
                       decoration: InputDecoration(
                         hintText: 'Search messages...',
@@ -124,7 +125,6 @@ class _ChatDashboardScreenState extends ConsumerState<ChatDashboardScreen> {
                 ),
               ),
             ),
-            
           ];
         },
         // Main body content
@@ -180,7 +180,14 @@ class _ChatDashboardScreenState extends ConsumerState<ChatDashboardScreen> {
         color: Colors.transparent,
         child: InkWell(
           onTap: () {
-            // Navigate to chat screen
+            context.goNamed(
+              RoutesName.chatListScreen,
+              pathParameters: {'id': chat.id ?? 'chat'},
+              queryParameters: {
+                'chatName': chat.userName,
+                'chatImage': chat.avatar,
+              },
+            );
           },
           borderRadius: BorderRadius.circular(12),
           child: Padding(

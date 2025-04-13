@@ -14,13 +14,20 @@ class RoutesName {
   static const String allDocs = "all-documents";
   static const String allProjects = "all-projects";
   static const String fileTransfer = "file-transfer";
-  static const String messagingScreen = "messaging-screen";
+  static const String chatScreen = "chat-screen";
+  static const String chatListScreen = "chat-list-screen";
+  static const String searchScreen = "search-screen";
+  static const String settings = "settings";
+  static const String aboutUs = "about-us";
+  static const String privacyPolicy = "privacy-policy";
+  static const String termsOfService = "terms-of-service";
+  static const String feedback = "feedback";
   static const String contactUs = "contact-us";
 }
 
 class ApiRoutes {
-  static const String baseUrl = "https://zenzen.onrender.com/api";
-  // static const String baseUrl = "http://localhost:5762/api";
+  // static const String baseUrl = "https://zenzen.onrender.com/api";
+  static const String baseUrl = "http://localhost:5762/api";
   static const String signup = "/auth/signup";
   static const String login = "/auth/login";
   static const String logout = "/auth/logout";

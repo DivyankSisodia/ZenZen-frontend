@@ -9,7 +9,7 @@ import 'package:zenzen/config/constants/app_images.dart';
 import 'package:zenzen/config/constants/responsive.dart';
 import 'package:zenzen/config/constants/size_config.dart';
 import 'package:zenzen/data/local/hive_models/local_user_model.dart';
-import 'package:zenzen/features/dashboard/docs/repo/socket_repo.dart';
+import 'package:zenzen/data/sockets/socket_repo.dart';
 import 'package:zenzen/features/dashboard/docs/widget/editor_widget.dart';
 import 'package:zenzen/utils/theme.dart';
 

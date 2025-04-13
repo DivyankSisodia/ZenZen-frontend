@@ -56,7 +56,7 @@ class _SideDrawerMenuState extends ConsumerState<SideDrawerMenu> {
         break;
       case 3:
         // Navigate to Messages
-        context.goNamed(RoutesName.messagingScreen);
+        context.goNamed(RoutesName.chatScreen);
         print('Messages');
         break;
       case 4:

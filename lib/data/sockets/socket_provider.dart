@@ -6,17 +6,17 @@ class SocketClient {
   static SocketClient? _instance;
 
   SocketClient._internal() {
-    // socket = io.io("http://localhost:5762/", <String, dynamic>{
-    //   'transports': ['websocket'],
-    //   'autoConnect': false,
-    //   'verbose': true,
-    // });
-
-    socket = io.io("https://zenzen.onrender.com/", <String, dynamic>{
+    socket = io.io("http://localhost:5762/", <String, dynamic>{
       'transports': ['websocket'],
       'autoConnect': false,
       'verbose': true,
     });
+
+    // socket = io.io("https://zenzen.onrender.com/", <String, dynamic>{
+    //   'transports': ['websocket'],
+    //   'autoConnect': false,
+    //   'verbose': true,
+    // });
     
     socket!
       ..connect()
