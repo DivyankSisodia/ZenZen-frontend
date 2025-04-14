@@ -16,7 +16,7 @@ import '../../features/auth/login/screen/verify_user_screen.dart';
 import '../../features/dashboard/chat/screen/chat_dashboard_screen.dart';
 import '../../features/dashboard/chat/screen/chat_list_screen.dart';
 import '../../features/dashboard/docs/screen/document_list_screen.dart';
-import '../../utils/custom_transition.dart';
+import '../../utils/common/custom_transition.dart';
 
 class RouteConfig {
   static GoRouter returnRouter() {

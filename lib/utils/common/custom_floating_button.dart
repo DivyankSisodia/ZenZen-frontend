@@ -81,7 +81,7 @@ class _CircularMenuState extends State<CircularMenu> with SingleTickerProviderSt
         children: [
           // Menu items
           ..._buildMenuItems(),
-          
+
           // Main button
           Tooltip(
             margin: const EdgeInsets.all(10.0),
@@ -90,7 +90,7 @@ class _CircularMenuState extends State<CircularMenu> with SingleTickerProviderSt
               highlightColor: Colors.transparent,
               splashColor: Colors.transparent,
               focusColor: Colors.transparent,
-              hoverColor: Colors.transparent  ,
+              hoverColor: Colors.transparent,
               onTap: _toggleMenu,
               child: AnimatedBuilder(
                 animation: _controller,
@@ -130,14 +130,14 @@ class _CircularMenuState extends State<CircularMenu> with SingleTickerProviderSt
   List<Widget> _buildMenuItems() {
     List<Widget> items = [];
     final int count = widget.menuItems.length;
-    
+
     // We want to spread the items in a semi-circle (180 degrees)
     final double angleBetweenItems = pi / (count + 1);
     final double radius = widget.buttonSize * 1.5;
 
     for (int i = 0; i < count; i++) {
       final double angle = pi - (i + 2.5) * angleBetweenItems;
-      
+
       items.add(
         AnimatedBuilder(
           animation: _controller,
@@ -150,49 +150,48 @@ class _CircularMenuState extends State<CircularMenu> with SingleTickerProviderSt
               child: Transform.scale(
                 scale: _scaleAnimation.value,
                 child: Opacity(
-                  opacity: _scaleAnimation.value,
-                  child: Tooltip(
-                    preferBelow: i == 0 ? true : false,
-                    margin: const EdgeInsets.all(10.0),
-                    message: menuItems[i],
-                    child: InkWell(
-                    focusColor: Colors.transparent,
-                    hoverColor: Colors.transparent,
-                    splashColor: Colors.transparent,
-                    highlightColor: Colors.transparent,
-                    onTap: () {
-                      print('Tapped item ${i + 1}');
-                      _toggleMenu();
-                    },
-                    child: Container(
-                      margin: const EdgeInsets.all(10.0),
-                      width: widget.itemButtonSize,
-                      height: widget.itemButtonSize,
-                      decoration: BoxDecoration(
-                        color: widget.itemButtonColor,
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.2),
-                            blurRadius: 5.0,
+                    opacity: _scaleAnimation.value,
+                    child: Tooltip(
+                      verticalOffset: 13,
+                      margin: EdgeInsets.only(left: 15),
+                      message: menuItems[i],
+                      child: InkWell(
+                        focusColor: Colors.transparent,
+                        hoverColor: Colors.transparent,
+                        splashColor: Colors.transparent,
+                        highlightColor: Colors.transparent,
+                        onTap: () {
+                          print('Tapped item ${i + 1}');
+                          _toggleMenu();
+                        },
+                        child: Container(
+                          margin: const EdgeInsets.all(10.0),
+                          width: widget.itemButtonSize,
+                          height: widget.itemButtonSize,
+                          decoration: BoxDecoration(
+                            color: widget.itemButtonColor,
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.2),
+                                blurRadius: 5.0,
+                              ),
+                            ],
                           ),
-                        ],
+                          child: Icon(
+                            widget.menuItems[i],
+                            color: widget.iconColor,
+                          ),
+                        ),
                       ),
-                      child: Icon(
-                        widget.menuItems[i],
-                        color: widget.iconColor,
-                      ),
-                    ),
-                  ),
-                  )
-                ),
+                    )),
               ),
             );
           },
         ),
       );
     }
-    
+
     return items;
   }
 }

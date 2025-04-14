@@ -68,11 +68,11 @@
 //       unreadCount: unreadCount ?? this.unreadCount,
 //     );
 //   }
-// } 
+// }
 
 import 'package:zenzen/features/auth/login/model/user_model.dart';
 
-class ChatRoom{
+class ChatRoom {
   final String? roomId;
   final String? chatType;
   final List<Participants>? participants;
@@ -82,54 +82,35 @@ class ChatRoom{
   final DateTime? updatedAt;
   final bool? callStatus;
 
-  ChatRoom({
-    this.roomId,
-    this.chatType,
-     this.participants,
-    this.lastMessage,
-     this.creater,
-     this.createdAt,
-     this.updatedAt,
-    this.callStatus
-  });
+  ChatRoom({this.roomId, this.chatType, this.participants, this.lastMessage, this.creater, this.createdAt, this.updatedAt, this.callStatus});
 
   factory ChatRoom.fromJson(Map<String, dynamic> json) {
-    return ChatRoom(
-      roomId: json['roomId'] ?? '',
-      chatType: json['chatType'] ?? '',
-      participants: (json['participants'] as List)
-          .map((e) => Participants.fromJson(e))
-          .toList(),
-      lastMessage: json['lastMessage'] != null
-          ? LastMessageModel.fromJson(json['lastMessage'])
-          : null,
-      creater: UserModel.fromJson(json['creater']),
-      createdAt: DateTime.parse(json['createdAt']),
-      updatedAt: DateTime.parse(json['updatedAt']),
-      callStatus: json['callStatus'],
-    );
+    if (json == null) {
+      // Return a default ChatRoom or throw an error
+      return ChatRoom();
+    }
+
+    try {
+      return ChatRoom(
+        roomId: json['roomId'] as String? ?? '',
+        chatType: json['chatType'] as String? ?? '',
+        participants: json['participants'] != null ? (json['participants'] as List?)?.map((e) => e != null ? Participants.fromJson(e as Map<String, dynamic>) : Participants()).toList() ?? [] : [],
+        lastMessage: json['lastMessage'] != null && json['lastMessage'] is Map ? LastMessageModel.fromJson(json['lastMessage'] as Map<String, dynamic>) : null,
+        creater: json['creater'] != null && json['creater'] is Map ? UserModel.fromJson(json['creater'] as Map<String, dynamic>) : null,
+        createdAt: json['createdAt'] != null && json['createdAt'] is String ? DateTime.parse(json['createdAt'] as String) : null,
+        updatedAt: json['updatedAt'] != null && json['updatedAt'] is String ? DateTime.parse(json['updatedAt'] as String) : null,
+        callStatus: json['callStatus'] as bool?,
+      );
+    } catch (e) {
+      print('Error parsing ChatRoom: $e');
+      print('JSON data: $json');
+      // Return a default ChatRoom or rethrow
+      return ChatRoom();
+    }
   }
 
-  ChatRoom copyWith({
-    String? roomId,
-    String? chatType,
-    List<Participants>? participants,
-    LastMessageModel? lastMessage,
-    UserModel? creater,
-    DateTime? createdAt,
-    DateTime? updatedAt,
-    bool? callStatus
-  }) {
-    return ChatRoom(
-      roomId: roomId ?? this.roomId,
-      chatType: chatType ?? this.chatType,
-      participants: participants ?? this.participants,
-      lastMessage: lastMessage ?? this.lastMessage,
-      creater: creater ?? this.creater,
-      createdAt: createdAt ?? this.createdAt,
-      updatedAt: updatedAt ?? this.updatedAt,
-      callStatus: callStatus ?? this.callStatus
-    );
+  ChatRoom copyWith({String? roomId, String? chatType, List<Participants>? participants, LastMessageModel? lastMessage, UserModel? creater, DateTime? createdAt, DateTime? updatedAt, bool? callStatus}) {
+    return ChatRoom(roomId: roomId ?? this.roomId, chatType: chatType ?? this.chatType, participants: participants ?? this.participants, lastMessage: lastMessage ?? this.lastMessage, creater: creater ?? this.creater, createdAt: createdAt ?? this.createdAt, updatedAt: updatedAt ?? this.updatedAt, callStatus: callStatus ?? this.callStatus);
   }
 
   Map<String, dynamic> toJson() {
@@ -146,7 +127,7 @@ class ChatRoom{
   }
 }
 
-class Participants{
+class Participants {
   final String? userId;
   final String? userName;
   final String? userAvatar;
@@ -154,27 +135,16 @@ class Participants{
   final int? unreadCount;
   final DateTime? joinedAt;
 
-  Participants({
-    this.userId,
-    this.userName,
-    this.userAvatar,
-    this.lastReadMessageTime,
-    this.unreadCount,
-    this.joinedAt
-  });
+  Participants({this.userId, this.userName, this.userAvatar, this.lastReadMessageTime, this.unreadCount, this.joinedAt});
 
   factory Participants.fromJson(Map<String, dynamic> json) {
     return Participants(
       userId: json['userId'] ?? '',
       userName: json['userName'] ?? '',
       userAvatar: json['userAvatar'],
-      lastReadMessageTime: json['lastReadMessageTime'] != null
-          ? DateTime.parse(json['lastReadMessageTime'])
-          : DateTime.now(),
+      lastReadMessageTime: json['lastReadMessageTime'] != null ? DateTime.parse(json['lastReadMessageTime']) : DateTime.now(),
       unreadCount: json['unreadCount'] ?? 0,
-      joinedAt: json['joinedAt'] != null
-          ? DateTime.parse(json['joinedAt'])
-          : DateTime.now(),
+      joinedAt: json['joinedAt'] != null ? DateTime.parse(json['joinedAt']) : DateTime.now(),
     );
   }
 
@@ -190,24 +160,18 @@ class Participants{
   }
 }
 
-class LastMessageModel{
+class LastMessageModel {
   final String? content;
   final String? sender;
   final DateTime? timestamp;
 
-  LastMessageModel({
-    this.content,
-    this.sender,
-    this.timestamp
-  });
+  LastMessageModel({this.content, this.sender, this.timestamp});
 
   factory LastMessageModel.fromJson(Map<String, dynamic> json) {
     return LastMessageModel(
       content: json['content'] ?? '',
       sender: json['sender'] ?? '',
-      timestamp: json['timestamp'] != null
-          ? DateTime.parse(json['timestamp'])
-          : DateTime.now(),
+      timestamp: json['timestamp'] != null ? DateTime.parse(json['timestamp']) : DateTime.now(),
     );
   }
   Map<String, dynamic> toJson() {

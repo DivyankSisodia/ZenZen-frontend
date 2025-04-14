@@ -1,8 +1,12 @@
+import 'dart:async';
+
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:socket_io_client/socket_io_client.dart';
 import 'package:zenzen/data/sockets/socket_provider.dart';
 
 class SocketRepository {
   final _socketClient = SocketClient.instance.socket!;
+  final StreamController<List<dynamic>> _dashboardDataController = StreamController<List<dynamic>>.broadcast();
 
   Socket get socketClient => _socketClient;
 
@@ -39,9 +43,9 @@ class SocketRepository {
   }
 
   // Listen for users count updates
-  void onUsersCountUpdate(void Function(String, List,int) callback) {
+  void onUsersCountUpdate(void Function(String, List, int) callback) {
     _socketClient.on('users-list', (data) {
-      callback(data['documentId'] as String, data['users'] ,data['count'] as int);
+      callback(data['documentId'] as String, data['users'], data['count'] as int);
     });
   }
 
@@ -103,10 +107,7 @@ class SocketRepository {
     });
   }
 
-  void joinFileRoom(String roomId, {
-    required void Function() onSuccess, 
-    required void Function(String) onError
-  }) {
+  void joinFileRoom(String roomId, {required void Function() onSuccess, required void Function(String) onError}) {
     _socketClient.emitWithAck('join_room', roomId, ack: (data) {
       if (data['success'] as bool) {
         onSuccess();
@@ -123,6 +124,26 @@ class SocketRepository {
   }
 
   // Chat Room socket evenets
+
+  SocketRepository() {
+    // Listen for dashboardData event from the server
+    _socketClient.on('dashboardData', (data) {
+      if (data['success'] == true) {
+        print('Dashboard data received: ${data['data']}');
+        _dashboardDataController.add(data['data']); // data['data'] is the List
+      } else {
+        _dashboardDataController.addError(Exception(data['error']));
+      }
+    });
+  }
+
+  // Stream to listen for dashboard data updates
+  Stream<List<dynamic>> get dashboardDataStream => _dashboardDataController.stream;
+
+  // Method to request dashboard data
+  void getDashboardData(String userId) {
+    _socketClient.emit('getDashboardData', {'userId': userId});
+  }
 
   void joinChatRoom(Map<String, dynamic> data) {
     print('Joining chat room');
@@ -162,27 +183,36 @@ class SocketRepository {
   void removeChatMessageListener() {
     _socketClient.off('receiveMessage');
   }
+
   void removeUserTypingListener() {
     _socketClient.off('userTyping');
   }
+
   void removeFileChunkListener() {
     _socketClient.off('file_chunk');
   }
+
   void removeFileTransferCompleteListener() {
     _socketClient.off('file_transfer_complete');
   }
+
   void removeFileTransferCancelListener() {
     _socketClient.off('file_transfer_cancel');
   }
+
   void removeUserJoinedListener() {
     _socketClient.off('user_joined');
   }
+
   void removeUsersCountListener() {
     _socketClient.off('users-list');
   }
-  
 
   void disconnect() {
     _socketClient.disconnect();
   }
 }
+
+Provider<SocketRepository> socketRepoProvider = Provider<SocketRepository>((ref) {
+  return SocketRepository();
+});

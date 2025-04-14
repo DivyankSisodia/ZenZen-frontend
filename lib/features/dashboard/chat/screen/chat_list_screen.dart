@@ -17,71 +17,42 @@ class ChatListScreen extends ConsumerStatefulWidget {
 }
 
 class _ChatListScreenState extends ConsumerState<ChatListScreen> {
-  SocketRepository socketRepository = SocketRepository();
   LocalUser? currentuser;
   String? roomId;
+  bool _didInitialize = false;
 
   @override
-  void initState() {
-    super.initState();
-
-    // get current user
-    getCurrentUser();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_didInitialize) {
+      getCurrentUser();
+      _didInitialize = true;
+    }
   }
 
-  void getCurrentUser() async {
+  void getCurrentUser() {
     final hiveService = ref.read(userDataProvider);
     final user = hiveService.userBox.get('currentUser');
     if (mounted) {
       setState(() {
         currentuser = user;
         if (widget.chatId != null && currentuser != null) {
-          List<String> ids = [widget.chatId!, currentuser!.id!];
-          ids.sort();
-          roomId = ids.join('-');
-          print('roomId: $roomId');
-          joinChat(); // Ensure joinChat is called after roomId is set
+          roomId = widget.chatId;
+          print('Chat ID: $roomId');
+          joinChat();
         }
       });
     }
   }
 
   void joinChat() {
-    if (roomId == null || currentuser == null) {
-      return;
-    }
-
-    if (socketRepository.socketClient.connected) {
-      socketRepository.joinChatRoom({
-        'roomId': roomId,
-        'userId': currentuser!.id,
-      });
-    } else {
-      socketRepository.socketClient.connect();
-
-      socketRepository.socketClient.once('connect', (_) {
-        if (currentuser != null) {
-          socketRepository.joinChatRoom({
-            'roomId': roomId,
-            'userId': currentuser!.id,
-          });
-        }
-      });
-    }
-  }
-
-  // listen messages & auto scrolling
-  void setUpSocketListeners() {
-    socketRepository.onChatMessage((data) {
-      // Handle incoming messages
+    ref.read(socketRepoProvider).joinChatRoom({
+      'roomId': roomId,
+      'userId': currentuser!.id,
     });
   }
 
-  @override
-  void dispose() {
-    super.dispose();
-    socketRepository.disconnect();
-  }
+  
 
   @override
   Widget build(BuildContext context) {

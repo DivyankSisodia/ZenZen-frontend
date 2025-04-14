@@ -4,11 +4,16 @@ import 'package:go_router/go_router.dart';
 import 'package:zenzen/config/constants/app_colors.dart';
 import 'package:zenzen/config/constants/responsive.dart';
 import 'package:zenzen/config/constants/size_config.dart';
+import 'package:zenzen/data/local/hive_models/local_user_model.dart';
+import 'package:zenzen/data/sockets/socket_repo.dart';
 import 'package:zenzen/features/auth/login/model/user_model.dart';
 import 'package:zenzen/features/auth/user/view-model/user_view_model.dart';
+import 'package:zenzen/features/dashboard/chat/model/chat_model.dart';
 import 'package:zenzen/utils/theme.dart';
 import '../../../../config/router/constants.dart';
-import '../../../../utils/common/custom_menu.dart';
+import '../../../../data/local/provider/hive_provider.dart';
+import '../../../../utils/common/custom_floating_button.dart';
+import '../provider/dashboard_provider.dart';
 
 class ChatDashboardScreen extends ConsumerStatefulWidget {
   const ChatDashboardScreen({super.key});
@@ -21,15 +26,29 @@ class _ChatDashboardScreenState extends ConsumerState<ChatDashboardScreen> {
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   bool _mounted = true;
+  SocketRepository _socketRepo = SocketRepository();
+
+  LocalUser? currentUser;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_mounted) {
-        ref.read(userViewmodelProvider.notifier).getAllUsers();
+        getCurrentUser();
+        _socketRepo.getDashboardData(currentUser!.id!);
       }
     });
+  }
+
+  void getCurrentUser() async {
+    final hiveService = ref.read(userDataProvider);
+    final user = hiveService.userBox.get('currentUser');
+    if (mounted) {
+      setState(() {
+        currentUser = user;
+      });
+    }
   }
 
   @override
@@ -37,6 +56,7 @@ class _ChatDashboardScreenState extends ConsumerState<ChatDashboardScreen> {
     _mounted = false;
     _searchController.dispose();
     _scrollController.dispose();
+
     super.dispose();
   }
 
@@ -44,7 +64,7 @@ class _ChatDashboardScreenState extends ConsumerState<ChatDashboardScreen> {
   Widget build(BuildContext context) {
     SizeConfig().init(context);
     Responsive.isDesktop(context);
-    final chatState = ref.watch(userViewmodelProvider);
+    final dashboardAsync = ref.watch(dashboardDataProvider);
 
     return Scaffold(
       backgroundColor: AppColors.getBackgroundColor(context),
@@ -128,7 +148,7 @@ class _ChatDashboardScreenState extends ConsumerState<ChatDashboardScreen> {
           ];
         },
         // Main body content
-        body: chatState.when(
+        body: dashboardAsync.when(
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (error, stackTrace) => Center(
             child: Text(
@@ -162,7 +182,7 @@ class _ChatDashboardScreenState extends ConsumerState<ChatDashboardScreen> {
     );
   }
 
-  Widget _buildChatItem(BuildContext context, UserModel chat) {
+  Widget _buildChatItem(BuildContext context, ChatRoom chat) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
@@ -182,10 +202,10 @@ class _ChatDashboardScreenState extends ConsumerState<ChatDashboardScreen> {
           onTap: () {
             context.goNamed(
               RoutesName.chatListScreen,
-              pathParameters: {'id': chat.id ?? 'chat'},
+              pathParameters: {'id': chat.roomId ?? 'chat'},
               queryParameters: {
-                'chatName': chat.userName,
-                'chatImage': chat.avatar,
+                'chatName': chat.participants![0].userName,
+                'chatImage': chat.participants![0].userAvatar,
               },
             );
           },
@@ -203,18 +223,18 @@ class _ChatDashboardScreenState extends ConsumerState<ChatDashboardScreen> {
                     color: AppColors.primary.withOpacity(0.1),
                   ),
                   child: Center(
-                    child: chat.avatar != null
+                    child: chat.participants![0].userAvatar != null
                         ? ClipRRect(
                             borderRadius: BorderRadius.circular(25),
                             child: Image.network(
-                              chat.avatar!,
+                              chat.participants![0].userAvatar!,
                               width: 50,
                               height: 50,
                               fit: BoxFit.cover,
                             ),
                           )
                         : Text(
-                            chat.userName!.substring(0, 2).toUpperCase(),
+                            chat.participants![0].userName!.substring(0, 2).toUpperCase(),
                             style: TextStyle(
                               color: AppColors.primary,
                               fontWeight: FontWeight.bold,
@@ -232,7 +252,7 @@ class _ChatDashboardScreenState extends ConsumerState<ChatDashboardScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            chat.userName!,
+                            chat.participants![0].userName!,
                             style: AppTheme.textMedium(context),
                           ),
                           Text(
@@ -243,7 +263,7 @@ class _ChatDashboardScreenState extends ConsumerState<ChatDashboardScreen> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        chat.email!,
+                        chat.lastMessage!.content!,
                         style: AppTheme.textSmall(context),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -252,7 +272,7 @@ class _ChatDashboardScreenState extends ConsumerState<ChatDashboardScreen> {
                   ),
                 ),
                 // Unread Indicator
-                if (chat.isVerified == true)
+                if (chat.callStatus == true)
                   Container(
                     width: 8,
                     height: 8,
