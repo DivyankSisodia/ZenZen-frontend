@@ -1,9 +1,69 @@
-import 'package:zenzen/features/dashboard/chat/model/chat_model.dart';
 
 class MessageModel {
-  final String roomId;
-  final ChatRoom chatRoom;
-  final String senderId;
+  final String? id;
+  final String? roomId;
+  final String? chatRoom;
+  final List<Chats>? chats;
+   final DateTime? createdAt;
+  final DateTime? updatedAt;
+
+  MessageModel({
+    this.id,
+    this.roomId,
+    this.chatRoom,
+    this.chats,
+    this.createdAt,
+    this.updatedAt,
+  });
+
+  factory MessageModel.fromJson(Map<String, dynamic> json) {
+    return MessageModel(
+      id: json['_id'] ?? '',
+      roomId: json['roomId'] ?? '',
+      chatRoom: json['chatRoom'] ?? '',
+      chats: json['chats'] != null
+          ? (json['chats'] as List)
+              .map((chatJson) => Chats.fromJson(chatJson))
+              .toList()
+          : null,
+      createdAt: json['createdAt'] != null 
+          ? DateTime.parse(json['createdAt']) 
+          : null,
+      updatedAt: json['updatedAt'] != null 
+          ? DateTime.parse(json['updatedAt']) 
+          : null,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      '_id': id,
+      'roomId': roomId,
+      'chatRoom': chatRoom,
+      'chats': chats?.map((chat) => chat.toJson()).toList(),
+      'createdAt': createdAt?.toIso8601String(),
+      'updatedAt': updatedAt?.toIso8601String(),
+    };
+  }
+  
+  MessageModel copyWith({
+    String? roomId,
+    String? chatRoom,
+    List<Chats>? chats, DateTime? updatedAt,
+  }) {
+    return MessageModel(
+      id: this.id,
+      roomId: roomId ?? this.roomId,
+      chatRoom: chatRoom ?? this.chatRoom,
+      chats: chats ?? this.chats,
+      createdAt: this.createdAt,
+      updatedAt: this.updatedAt,
+    );
+  }
+}
+
+class Chats {
+  final String sender; // Changed from senderId to sender to match API
   final String content;
   final MediaData? mediaData;
   final DateTime? timestamp;
@@ -13,14 +73,12 @@ class MessageModel {
   final DateTime? editedAt;
   final String? replyTo;
   final ReplyModel? replyMessage;
-  final List<ReactionModel>? reaction;
+  final List<ReactionModel>? reactions; // Changed from reaction to reactions
   final bool? isSystemMessage;
-  final ReadByModel? readBy;
+  final List<ReadByModel>? readBy; // Changed to List<ReadByModel>
 
-  MessageModel({
-    required this.roomId,
-    required this.chatRoom,
-    required this.senderId,
+  Chats({
+    required this.sender,
     required this.content,
     this.mediaData,
     this.timestamp,
@@ -30,16 +88,14 @@ class MessageModel {
     this.editedAt,
     this.replyTo,
     this.replyMessage,
-    this.reaction,
+    this.reactions,
     this.isSystemMessage,
     this.readBy
   });
 
-  factory MessageModel.fromJson(Map<String, dynamic> json) {
-    return MessageModel(
-      roomId: json['roomId'] ?? '',
-      chatRoom: ChatRoom.fromJson(json['chatRoom']),
-      senderId: json['senderId'] ?? '',
+  factory Chats.fromJson(Map<String, dynamic> json) {
+    return Chats(
+      sender: json['sender'] ?? '',
       content: json['content'] ?? '',
       mediaData: json['mediaData'] != null
           ? MediaData.fromJson(json['mediaData'])
@@ -55,21 +111,19 @@ class MessageModel {
       replyMessage: json['replyMessage'] != null
           ? ReplyModel.fromJson(json['replyMessage'])
           : null,
-      reaction: (json['reaction'] as List?)
+      reactions: (json['reactions'] as List?)
           ?.map((e) => ReactionModel.fromJson(e))
           .toList(),
       isSystemMessage: json['isSystemMessage'],
-      readBy: json['readBy'] != null
-          ? ReadByModel.fromJson(json['readBy'])
-          : null,
+      readBy: (json['readBy'] as List?)
+          ?.map((e) => ReadByModel.fromJson(e))
+          .toList(),
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'roomId': roomId,
-      'chatRoom': chatRoom.toJson(),
-      'senderId': senderId,
+      'sender': sender,
       'content': content,
       'mediaData': mediaData?.toJson(),
       'timestamp': timestamp?.toIso8601String(),
@@ -79,45 +133,10 @@ class MessageModel {
       'editedAt': editedAt?.toIso8601String(),
       'replyTo': replyTo,
       'replyMessage': replyMessage?.toJson(),
-      'reaction': reaction?.map((e) => e.toJson()).toList(),
+      'reactions': reactions?.map((e) => e.toJson()).toList(),
       'isSystemMessage': isSystemMessage,
-      'readBy': readBy?.toJson(),
+      'readBy': readBy?.map((e) => e.toJson()).toList(),
     };
-  }
-  MessageModel copyWith({
-    String? roomId,
-    ChatRoom? chatRoom,
-    String? senderId,
-    String? content,
-    MediaData? mediaData,
-    DateTime? timestamp,
-    String? messageType,
-    bool? isDeleted,
-    bool? isEdited,
-    DateTime? editedAt,
-    String? replyTo,
-    ReplyModel? replyMessage,
-    List<ReactionModel>? reaction,
-    bool? isSystemMessage,
-    ReadByModel? readBy
-  }) {
-    return MessageModel(
-      roomId: roomId ?? this.roomId,
-      chatRoom: chatRoom ?? this.chatRoom,
-      senderId: senderId ?? this.senderId,
-      content: content ?? this.content,
-      mediaData: mediaData ?? this.mediaData,
-      timestamp: timestamp ?? this.timestamp,
-      messageType: messageType ?? this.messageType,
-      isDeleted: isDeleted ?? this.isDeleted,
-      isEdited: isEdited ?? this.isEdited,
-      editedAt: editedAt ?? this.editedAt,
-      replyTo: replyTo ?? this.replyTo,
-      replyMessage: replyMessage ?? this.replyMessage,
-      reaction: reaction ?? this.reaction,
-      isSystemMessage: isSystemMessage ?? this.isSystemMessage,
-      readBy: readBy ?? this.readBy
-    );
   }
 }
 

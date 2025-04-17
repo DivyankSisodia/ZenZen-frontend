@@ -152,7 +152,7 @@ class SocketRepository {
 
   void userTyping(Map<String, dynamic> data) {
     print('User typing: $data');
-    _socketClient.emit('userTyping', data);
+    _socketClient.emit('typing', data);
   }
 
   void onChatMessage(void Function(Map<String, dynamic>) func) {

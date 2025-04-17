@@ -200,7 +200,7 @@ class _ChatDashboardScreenState extends ConsumerState<ChatDashboardScreen> {
                   itemCount: chats.length,
                   itemBuilder: (context, index) {
                     final chat = chats[index];
-                    return _buildChatItem(context, chat);
+                    return _buildChatItem(context, chat, currentUser?.id ?? '');
                   },
                 ),
         ),
@@ -221,7 +221,7 @@ class _ChatDashboardScreenState extends ConsumerState<ChatDashboardScreen> {
     );
   }
 
-  Widget _buildChatItem(BuildContext context, ChatRoom chat) {
+  Widget _buildChatItem(BuildContext context, ChatRoom chat, String currentUserId) {
     // Safely access chat data with null checks
     final unreadCount = chat.unreadCount ?? 0;
     final participants = chat.participants;
@@ -232,7 +232,12 @@ class _ChatDashboardScreenState extends ConsumerState<ChatDashboardScreen> {
       return Container(); // Return empty container for invalid data
     }
 
-    final participant = participants[0];
+    // Find the participant whose userId does not match the currentUserId
+    final participant = participants.firstWhere(
+      (p) => p.userId != currentUserId,
+      orElse: () => participants[0], // Fallback to first participant if no match
+    );
+
     final participantName = participant.userName ?? 'Unknown';
     final participantAvatar = participant.userAvatar;
     final messageContent = lastMessage.content ?? 'No message';
@@ -263,7 +268,7 @@ class _ChatDashboardScreenState extends ConsumerState<ChatDashboardScreen> {
               pathParameters: {'id': chat.roomId ?? 'chat'},
               queryParameters: {
                 'chatName': participantName,
-                'chatImage': participantAvatar,
+                'chatImage': participantAvatar ?? '',
               },
             );
           },

@@ -10,6 +10,7 @@ import '../model/chat_model.dart';
 import '../provider/chatMessage_provider.dart';
 import '../provider/chat_message_provider.dart';
 import '../provider/typing_provider.dart';
+import '../view-model/chat_viewmodel.dart';
 
 class ChatListScreen extends ConsumerStatefulWidget {
   final String? id;
@@ -28,12 +29,12 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
   bool _didInitialize = false;
   final TextEditingController _messageController = TextEditingController();
 
-
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.watch(chatMessageRepositoryProvider).getChatMessages(widget.id!);
+      // Use the same provider that your UI is watching
+      ref.read(chatViewModelProvider.notifier).getChatMessages(widget.id!);
     });
   }
 
@@ -74,19 +75,39 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
     ref.read(socketRepoProvider).onChatMessage((data) {
       print('New message received: $data');
 
-      // Create a MessageModel from the received data
+      final chat = Chats(
+        sender: data['sender'] as String,
+        content: data['message'] as String,
+        timestamp: DateTime.parse(data['timestamp'] as String),
+        messageType: data['messageType'] as String?,
+        mediaData: null,
+        isDeleted: false,
+        isEdited: false,
+        isSystemMessage: false,
+      );
+      print('Created Chats: ${chat.toJson()}'); // Log the Chats object
+
       final MessageModel message = MessageModel(
-        chatRoom: ChatRoom(roomId: data['roomId']),
-        roomId: data['roomId'],
-        senderId: data['userId'],
-        content: data['message'],
-        messageType: data['type'],
-        timestamp: data['timestamp'],
+        id: null,
+        roomId: data['roomId'] as String?,
+        chatRoom: null,
+        chats: [chat],
+        createdAt: DateTime.parse(data['timestamp'] as String),
+        updatedAt: DateTime.parse(data['timestamp'] as String),
       );
 
-      // Update state with the new message using the provider
       if (roomId != null) {
-        ref.read(chatMessagesProvider(roomId!).notifier).addMessage(message);
+        ref.read(chatViewModelProvider.notifier).addMessage(message);
+        // Scroll to bottom
+        // WidgetsBinding.instance.addPostFrameCallback((_) {
+        //   if (_scrollController.hasClients) {
+        //     _scrollController.animateTo(
+        //       _scrollController.position.maxScrollExtent,
+        //       duration: Duration(milliseconds: 300),
+        //       curve: Curves.easeOut,
+        //     );
+        //   }
+        // });
       }
     });
   }
@@ -109,29 +130,33 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
 
       // Create local message model for our UI
       final newMessage = MessageModel(
-        chatRoom: ChatRoom(roomId: roomId!),
+        chatRoom: widget.id!,
         roomId: roomId!,
-        senderId: currentuser!.id!,
-        content: messageText,
-        messageType: 'text',
-        timestamp: DateTime.fromMillisecondsSinceEpoch(timestamp),
+        chats: [
+          Chats(
+            sender: currentuser!.id!,
+            content: messageText,
+            timestamp: DateTime.fromMillisecondsSinceEpoch(timestamp),
+            messageType: 'text',
+          )
+        ],
       );
 
       // Add to our local state
-      ref.read(chatMessagesProvider(roomId!).notifier).addMessage(newMessage);
+      ref.read(chatViewModelProvider.notifier).addMessage(newMessage);
     }
   }
 
   void listenForTypingIndicators() {
-      ref.read(socketRepoProvider).onUserTyping((data) {
-        final userId = data['userId'] as String;
-        final isTyping = data['isTyping'] as bool;
+    ref.read(socketRepoProvider).onUserTyping((data) {
+      final userId = data['userId'] as String;
+      final isTyping = data['isTyping'] as bool;
 
-        if (roomId != null) {
-          ref.read(typingUsersProvider(roomId!).notifier).setTyping(userId, isTyping);
-        }
-      });
-    }
+      if (roomId != null) {
+        ref.read(typingUsersProvider(roomId!).notifier).setTyping(userId, isTyping);
+      }
+    });
+  }
 
   @override
   void dispose() {
@@ -139,18 +164,17 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
     _messageController.dispose();
     if (roomId != null) {
       ref.read(socketRepoProvider).leaveChatRoom(
-        roomId ?? '',
-        currentuser?.id ?? '',
-        currentuser?.userName ?? '', // Assuming 'username' is the correct property
-      );
+            roomId ?? '',
+            currentuser?.id ?? '',
+            currentuser?.userName ?? '', // Assuming 'username' is the correct property
+          );
     }
     // ref.read(socketDisconnetProvider.notifier).state = true;
   }
 
   @override
   Widget build(BuildContext context) {
-    // If the room ID exists, watch the message list
-    final messages = roomId != null ? ref.watch(chatMessagesProvider(roomId!)) : <MessageModel>[];
+    final messagesState = ref.watch(chatViewModelProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -161,41 +185,66 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
       body: Column(
         children: [
           Expanded(
-            child: messages.isEmpty
-                ? const Center(child: Text('No messages yet'))
-                : ListView.builder(
-                    itemCount: messages.length,
-                    itemBuilder: (context, index) {
-                      final message = messages[index];
-                      final bool isMe = message.senderId == currentuser?.id;
+            child: messagesState.when(
+              data: (messageThreads) {
+                // Create a flattened list of all chat messages
+                final List<FlattenedChatMessage> flattenedMessages = [];
 
-                      return Align(
-                        alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
-                        child: Container(
-                          margin: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-                          padding: EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: isMe ? Colors.blue[100] : Colors.grey[200],
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                message.content,
-                                style: TextStyle(fontSize: 16),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                _formatTimestamp(message.timestamp!.millisecondsSinceEpoch),
-                                style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-                              ),
-                            ],
-                          ),
+                for (final thread in messageThreads) {
+                  if (thread.chats != null) {
+                    for (final chat in thread.chats!) {
+                      flattenedMessages.add(FlattenedChatMessage(
+                        chat: chat,
+                        messageModel: thread,
+                      ));
+                    }
+                  }
+                }
+
+                if (flattenedMessages.isEmpty) {
+                  return const Center(child: Text('No messages yet'));
+                }
+
+                // Sort messages by timestamp
+                flattenedMessages.sort((a, b) => (a.chat.timestamp ?? DateTime.now()).compareTo(b.chat.timestamp ?? DateTime.now()));
+
+                return ListView.builder(
+                  itemCount: flattenedMessages.length,
+                  itemBuilder: (context, index) {
+                    final flatMessage = flattenedMessages[index];
+                    final bool isMe = flatMessage.chat.sender == currentuser?.id;
+
+                    return Align(
+                      alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
+                      child: Container(
+                        margin: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                        padding: EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: isMe ? Colors.blue[100] : Colors.grey[200],
+                          borderRadius: BorderRadius.circular(8),
                         ),
-                      );
-                    },
-                  ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              flatMessage.chat.content,
+                              style: TextStyle(fontSize: 16),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              _formatTimestamp(flatMessage.chat.timestamp!.millisecondsSinceEpoch),
+                              style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                );
+              },
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (error, stackTrace) => Center(child: Text('Error: $error')),
+            ),
           ),
           const Gap(8),
           if (roomId != null)
@@ -241,16 +290,17 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                 icon: const Icon(Icons.send),
                 onPressed: () {
                   if (_messageController.text.trim().isNotEmpty && roomId != null && currentuser != null) {
-                    final newMsg = MessageModel(
-                      chatRoom: ChatRoom(roomId: roomId!),
-                      roomId: roomId!,
-                      senderId: currentuser!.id!,
-                      content: _messageController.text.trim(),
-                      messageType: 'text',
-                    );
-
                     onSendMessage(_messageController.text.trim());
                     _messageController.clear();
+
+                    // Reset typing indicator when message is sent
+                    if (roomId != null && currentuser != null) {
+                      ref.read(socketRepoProvider).userTyping({
+                        'roomId': roomId,
+                        'userId': currentuser!.id,
+                        'isTyping': false,
+                      });
+                    }
                   }
                 },
               ),
@@ -260,10 +310,25 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
       ),
     );
   }
+
+  String _formatTimestamp(int timestamp) {
+    final dateTime = DateTime.fromMillisecondsSinceEpoch(timestamp);
+    final now = DateTime.now();
+    if (dateTime.year == now.year && dateTime.month == now.month && dateTime.day == now.day) {
+      return '${dateTime.hour}:${dateTime.minute}';
+    } else {
+      return '${dateTime.day}/${dateTime.month}/${dateTime.year}';
+    }
+  }
 }
 
-// Helper method to format timestamp
-String _formatTimestamp(int timestamp) {
-  final date = DateTime.fromMillisecondsSinceEpoch(timestamp);
-  return '${date.hour}:${date.minute.toString().padLeft(2, '0')}';
+// Helper class to bundle a chat with its parent message
+class FlattenedChatMessage {
+  final Chats chat;
+  final MessageModel messageModel;
+
+  FlattenedChatMessage({
+    required this.chat,
+    required this.messageModel,
+  });
 }
