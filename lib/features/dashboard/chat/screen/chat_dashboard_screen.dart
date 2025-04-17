@@ -5,15 +5,14 @@ import 'package:zenzen/config/constants/app_colors.dart';
 import 'package:zenzen/config/constants/responsive.dart';
 import 'package:zenzen/config/constants/size_config.dart';
 import 'package:zenzen/data/local/hive_models/local_user_model.dart';
-import 'package:zenzen/data/sockets/socket_repo.dart';
-import 'package:zenzen/features/auth/login/model/user_model.dart';
-import 'package:zenzen/features/auth/user/view-model/user_view_model.dart';
 import 'package:zenzen/features/dashboard/chat/model/chat_model.dart';
 import 'package:zenzen/utils/theme.dart';
 import '../../../../config/router/constants.dart';
 import '../../../../data/local/provider/hive_provider.dart';
+import '../../../../data/sockets/socket_repo.dart';
 import '../../../../utils/common/custom_floating_button.dart';
 import '../provider/dashboard_provider.dart';
+import '../view-model/dashboard_viewmodel.dart';
 
 class ChatDashboardScreen extends ConsumerStatefulWidget {
   const ChatDashboardScreen({super.key});
@@ -25,38 +24,47 @@ class ChatDashboardScreen extends ConsumerStatefulWidget {
 class _ChatDashboardScreenState extends ConsumerState<ChatDashboardScreen> {
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
-  bool _mounted = true;
-  SocketRepository _socketRepo = SocketRepository();
+  late bool shallDispose;
 
   LocalUser? currentUser;
+
+  SocketRepository socketRepo = SocketRepository();
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (_mounted) {
-        getCurrentUser();
-        _socketRepo.getDashboardData(currentUser!.id!);
-      }
+      getCurrentUser();
+      // Fetch chat data when the screen loads
+      ref.read(chatDashboardProvider.notifier).getChats();
+      socketRepo.socketClient.connect();
+    });
+
+    Future.microtask(() {
+      ref.read(diconnectSocketHelperProvider.notifier).state = true;
+      shallDispose = ref.read(diconnectSocketHelperProvider);
     });
   }
 
-  void getCurrentUser() async {
+  // Update getCurrentUser to return user immediately
+  LocalUser? getCurrentUser() {
     final hiveService = ref.read(userDataProvider);
     final user = hiveService.userBox.get('currentUser');
     if (mounted) {
-      setState(() {
-        currentUser = user;
-      });
+      setState(() => currentUser = user);
     }
+    return user;
   }
 
   @override
   void dispose() {
-    _mounted = false;
     _searchController.dispose();
     _scrollController.dispose();
-
+    // Check if the socket should be disconnected
+    if (shallDispose) {
+      socketRepo.socketClient.disconnect();
+      socketRepo.socketClient.dispose();
+    }
     super.dispose();
   }
 
@@ -64,7 +72,9 @@ class _ChatDashboardScreenState extends ConsumerState<ChatDashboardScreen> {
   Widget build(BuildContext context) {
     SizeConfig().init(context);
     Responsive.isDesktop(context);
-    final dashboardAsync = ref.watch(dashboardDataProvider);
+
+    // Get the data from the provider - no need to call getChats here
+    final dashboardAsync = ref.watch(chatDashboardProvider);
 
     return Scaffold(
       backgroundColor: AppColors.getBackgroundColor(context),
@@ -151,19 +161,48 @@ class _ChatDashboardScreenState extends ConsumerState<ChatDashboardScreen> {
         body: dashboardAsync.when(
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (error, stackTrace) => Center(
-            child: Text(
-              'Error: ${error.toString()}',
-              style: AppTheme.textMedium(context),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.error_outline, size: 48, color: Colors.red),
+                SizedBox(height: 16),
+                Text(
+                  'Error: ${error.toString()}',
+                  style: AppTheme.textMedium(context),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: () {
+                    // Retry fetching data
+                    ref.read(chatDashboardProvider.notifier).getChats();
+                  },
+                  child: Text('Retry'),
+                ),
+              ],
             ),
           ),
-          data: (chats) => ListView.builder(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-            itemCount: chats.length,
-            itemBuilder: (context, index) {
-              final chat = chats[index];
-              return _buildChatItem(context, chat);
-            },
-          ),
+          data: (chats) => chats.isEmpty
+              ? Center(
+                  child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.chat_bubble_outline, size: 48, color: Colors.grey),
+                    SizedBox(height: 16),
+                    Text(
+                      'No chat messages yet',
+                      style: AppTheme.textMedium(context),
+                    ),
+                  ],
+                ))
+              : ListView.builder(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  itemCount: chats.length,
+                  itemBuilder: (context, index) {
+                    final chat = chats[index];
+                    return _buildChatItem(context, chat);
+                  },
+                ),
         ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.miniEndFloat,
@@ -183,6 +222,22 @@ class _ChatDashboardScreenState extends ConsumerState<ChatDashboardScreen> {
   }
 
   Widget _buildChatItem(BuildContext context, ChatRoom chat) {
+    // Safely access chat data with null checks
+    final unreadCount = chat.unreadCount ?? 0;
+    final participants = chat.participants;
+    final lastMessage = chat.lastMessage;
+
+    // Handle empty participants or null data
+    if (participants == null || participants.isEmpty || lastMessage == null) {
+      return Container(); // Return empty container for invalid data
+    }
+
+    final participant = participants[0];
+    final participantName = participant.userName ?? 'Unknown';
+    final participantAvatar = participant.userAvatar;
+    final messageContent = lastMessage.content ?? 'No message';
+    final messageTimestamp = lastMessage.timestamp ?? DateTime.now();
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
@@ -200,12 +255,15 @@ class _ChatDashboardScreenState extends ConsumerState<ChatDashboardScreen> {
         color: Colors.transparent,
         child: InkWell(
           onTap: () {
+            ref.read(diconnectSocketHelperProvider.notifier).state = false;
+            shallDispose = ref.read(diconnectSocketHelperProvider);
             context.goNamed(
               RoutesName.chatListScreen,
+              extra: chat.id,
               pathParameters: {'id': chat.roomId ?? 'chat'},
               queryParameters: {
-                'chatName': chat.participants![0].userName,
-                'chatImage': chat.participants![0].userAvatar,
+                'chatName': participantName,
+                'chatImage': participantAvatar,
               },
             );
           },
@@ -223,18 +281,25 @@ class _ChatDashboardScreenState extends ConsumerState<ChatDashboardScreen> {
                     color: AppColors.primary.withOpacity(0.1),
                   ),
                   child: Center(
-                    child: chat.participants![0].userAvatar != null
+                    child: participantAvatar != null
                         ? ClipRRect(
                             borderRadius: BorderRadius.circular(25),
                             child: Image.network(
-                              chat.participants![0].userAvatar!,
+                              participantAvatar,
                               width: 50,
                               height: 50,
                               fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) => Text(
+                                participantName.substring(0, min(2, participantName.length)).toUpperCase(),
+                                style: TextStyle(
+                                  color: AppColors.primary,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                             ),
                           )
                         : Text(
-                            chat.participants![0].userName!.substring(0, 2).toUpperCase(),
+                            participantName.substring(0, min(2, participantName.length)).toUpperCase(),
                             style: TextStyle(
                               color: AppColors.primary,
                               fontWeight: FontWeight.bold,
@@ -252,18 +317,37 @@ class _ChatDashboardScreenState extends ConsumerState<ChatDashboardScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            chat.participants![0].userName!,
+                            participantName,
                             style: AppTheme.textMedium(context),
                           ),
-                          Text(
-                            _formatTime(DateTime.now()),
-                            style: AppTheme.tinyText(context),
-                          ),
+                          Column(
+                            children: [
+                              Text(
+                                _formatTime(messageTimestamp),
+                                style: AppTheme.tinyText(context),
+                              ),
+                              if (unreadCount > 0)
+                                Container(
+                                  margin: const EdgeInsets.only(left: 4),
+                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.white,
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Text(
+                                    unreadCount.toString(),
+                                    style: AppTheme.tinyText(context).copyWith(
+                                      color: AppColors.black,
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          )
                         ],
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        chat.lastMessage!.content!,
+                        messageContent,
                         style: AppTheme.textSmall(context),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -272,13 +356,13 @@ class _ChatDashboardScreenState extends ConsumerState<ChatDashboardScreen> {
                   ),
                 ),
                 // Unread Indicator
-                if (chat.callStatus == true)
+                if (chat.callStatus == false)
                   Container(
                     width: 8,
                     height: 8,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: AppColors.primary,
+                      color: AppColors.success,
                     ),
                   ),
               ],
@@ -302,5 +386,10 @@ class _ChatDashboardScreenState extends ConsumerState<ChatDashboardScreen> {
     } else {
       return 'now';
     }
+  }
+
+  // Helper function to prevent substring errors
+  int min(int a, int b) {
+    return a < b ? a : b;
   }
 }

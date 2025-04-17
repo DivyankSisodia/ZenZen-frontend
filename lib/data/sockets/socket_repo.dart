@@ -1,4 +1,3 @@
-import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:socket_io_client/socket_io_client.dart';
@@ -6,7 +5,6 @@ import 'package:zenzen/data/sockets/socket_provider.dart';
 
 class SocketRepository {
   final _socketClient = SocketClient.instance.socket!;
-  final StreamController<List<dynamic>> _dashboardDataController = StreamController<List<dynamic>>.broadcast();
 
   Socket get socketClient => _socketClient;
 
@@ -125,20 +123,17 @@ class SocketRepository {
 
   // Chat Room socket evenets
 
-  SocketRepository() {
-    // Listen for dashboardData event from the server
-    _socketClient.on('dashboardData', (data) {
-      if (data['success'] == true) {
-        print('Dashboard data received: ${data['data']}');
-        _dashboardDataController.add(data['data']); // data['data'] is the List
-      } else {
-        _dashboardDataController.addError(Exception(data['error']));
-      }
-    });
-  }
-
-  // Stream to listen for dashboard data updates
-  Stream<List<dynamic>> get dashboardDataStream => _dashboardDataController.stream;
+  // SocketRepository() {
+  //   // Listen for dashboardData event from the server
+  //   _socketClient.on('dashboardData', (data) {
+  //     if (data['success'] == true) {
+  //       print('Dashboard data received: ${data['data']}');
+  //       _dashboardDataController.add(data['data']); // data['data'] is the List
+  //     } else {
+  //       _dashboardDataController.addError(Exception(data['error']));
+  //     }
+  //   });
+  // }
 
   // Method to request dashboard data
   void getDashboardData(String userId) {
@@ -174,9 +169,14 @@ class SocketRepository {
     });
   }
 
-  void leaveChatRoom(String roomId) {
+  void leaveChatRoom(String roomId,String userId, String userName) {
     print('Leaving chat room');
-    _socketClient.emit('leaveChat', roomId);
+    _socketClient.emit('leaveChat', {
+      'roomId': roomId,
+      'userId': userId,
+      'userName': userName,
+    });
+    print('Left chat room');
   }
 
   // Remove listeners
@@ -210,6 +210,7 @@ class SocketRepository {
 
   void disconnect() {
     _socketClient.disconnect();
+    print('Disconnected from socket server');
   }
 }
 

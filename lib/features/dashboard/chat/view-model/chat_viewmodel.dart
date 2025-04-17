@@ -1,72 +1,54 @@
-// import 'package:flutter_riverpod/flutter_riverpod.dart';
-// import 'package:zenzen/features/dashboard/chat/model/chat_model.dart';
-// import 'package:zenzen/features/dashboard/chat/model/message_model.dart';
+// ignore_for_file: prefer_final_fields
 
-// class ChatViewModel extends StateNotifier<AsyncValue<List<ChatRoom>>> {
-//   ChatViewModel() : super(const AsyncValue.loading());
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-//   bool _isLoading = false;
+import '../model/message_model.dart';
+import '../provider/chatMessage_provider.dart';
+import '../repo/dashboard_repo.dart';
 
-//   Future<void> getChats() async {
-//     if (_isLoading) return;
+class ChatViewmodel extends StateNotifier<AsyncValue<List<MessageModel>>>{
+  final ChatDashboardRepository chatDashboardRepository;
+  final Ref ref;
 
-//     _isLoading = true;
-//     state = const AsyncValue.loading();
+  ChatViewmodel(this.chatDashboardRepository, this.ref) : super(const AsyncLoading());
 
-//     try {
-//       // For now, using dummy data
-//       final dummyChats = List.generate(
-//         20,
-//         (index) => ChatRoom(
-//           roomId: 'chat_$index',
-//           userId: 'user_$index',
-//           userName: 'User $index',
-//           lastMessage: 'This is a sample message $index',
-//           lastMessageTime: DateTime.now().subtract(Duration(hours: index)),
-//           isRead: index % 3 == 0,
-//           unreadCount: index % 3 == 0 ? 0 : index % 3,
-//         ),
-//       );
+  bool _isLoading = false;
 
-//       state = AsyncValue.data(dummyChats);
-//     } catch (e, stackTrace) {
-//       state = AsyncValue.error(e, stackTrace);
-//     } finally {
-//       _isLoading = false;
-//     }
-//   }
+  Future<void> getChatMessages(String roomId) async {
+    if(_isLoading) return;
 
-//   Future<void> searchChats(String query) async {
-//     if (_isLoading) return;
+    _isLoading = true;
+    state = const AsyncLoading();
 
-//     _isLoading = true;
-//     state = const AsyncValue.loading();
+    try {
 
-//     try {
-      
-//       final dummyChats = List.generate(
-//         5,
-//         (index) => ChatModel(
-//           id: 'search_$index',
-//           userId: 'user_$index',
-//           userName: 'Search Result $index',
-//           lastMessage: 'Search result message $index',
-//           lastMessageTime: DateTime.now().subtract(Duration(hours: index)),
-//           isRead: true,
-//           unreadCount: 0,
-//         ),
-//       );
+      final res = await chatDashboardRepository.getChatMessages(roomId);
 
-//       state = AsyncValue.data(dummyChats);
-//     } catch (e, stackTrace) {
-//       state = AsyncValue.error(e, stackTrace);
-//     } finally {
-//       _isLoading = false;
-//     }
-//   }
-// }
+      if (mounted) {
+        res.fold(
+          (messages) {
+            state = AsyncValue.data(messages);
+          },
+          (failure) {
+            // Handle your specific ApiFailure type
+            String errorMessage = failure.error;
+            state = AsyncValue.error(errorMessage, StackTrace.current);
+          },
+        );
+      }
+    } catch (e, stackTrace) {
+      if (mounted) {
+        // Handle general exceptions
+        String errorMessage = e.toString();
+        state = AsyncValue.error(errorMessage, stackTrace);
+      }
+    } finally {
+      _isLoading = false;
+    }
+  }
+}
 
-// final chatViewModelProvider =
-//     StateNotifierProvider<ChatViewModel, AsyncValue<List<ChatModel>>>((ref) {
-//   return ChatViewModel();
-// }); 
+final chatViewModelProvider = StateNotifierProvider<ChatViewmodel, AsyncValue<List<MessageModel>>>((ref) {
+  final repository = ref.watch(chatMessageRepositoryProvider);
+  return ChatViewmodel(repository, ref);
+});

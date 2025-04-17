@@ -6,7 +6,7 @@ class MessageModel {
   final String senderId;
   final String content;
   final MediaData? mediaData;
-  final DateTime timestamp;
+  final DateTime? timestamp;
   final String? messageType;
   final bool? isDeleted;
   final bool? isEdited;
@@ -23,7 +23,7 @@ class MessageModel {
     required this.senderId,
     required this.content,
     this.mediaData,
-    required this.timestamp,
+    this.timestamp,
     this.messageType,
     this.isDeleted,
     this.isEdited,
@@ -44,7 +44,7 @@ class MessageModel {
       mediaData: json['mediaData'] != null
           ? MediaData.fromJson(json['mediaData'])
           : null,
-      timestamp: DateTime.parse(json['timestamp']),
+      timestamp: json['timestamp'] != null ? DateTime.parse(json['timestamp']) : DateTime.now(),
       messageType: json['messageType'] ?? '',
       isDeleted: json['isDeleted'],
       isEdited: json['isEdited'],
@@ -72,7 +72,7 @@ class MessageModel {
       'senderId': senderId,
       'content': content,
       'mediaData': mediaData?.toJson(),
-      'timestamp': timestamp.toIso8601String(),
+      'timestamp': timestamp?.toIso8601String(),
       'messageType': messageType,
       'isDeleted': isDeleted,
       'isEdited': isEdited,

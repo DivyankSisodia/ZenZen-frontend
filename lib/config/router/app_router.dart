@@ -154,9 +154,11 @@ class RouteConfig {
           path: '/chats/:id',
           name: RoutesName.chatListScreen,
           pageBuilder: (context, state) {
+            final _id = state.extra as String;
             return MaterialPage(
               child: ChatListScreen(
-                chatId: state.pathParameters['id'],
+                id: _id,
+                chatRoomId: state.pathParameters['id'],
                 chatName: state.uri.queryParameters['chatName'],
                 chatImage: state.uri.queryParameters['chatImage'],
               ),
