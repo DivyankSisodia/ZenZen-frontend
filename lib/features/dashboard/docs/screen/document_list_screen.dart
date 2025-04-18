@@ -8,7 +8,7 @@ import 'package:zenzen/utils/common/custom_appbar.dart';
 import '../../../../config/constants/responsive.dart';
 import '../../../../config/constants/size_config.dart';
 import '../../../../utils/common/custom_divider.dart';
-import '../../../../utils/common/custom_menu.dart';
+import '../../../../utils/common/custom_floating_button.dart';
 import '../../../../utils/common/custom_searchbar.dart';
 import '../../../../utils/theme.dart';
 import '../../home/widget/document_card.dart';
@@ -56,92 +56,109 @@ class _DocumentScreenState extends ConsumerState<DocumentScreen> {
       ),
       appBar: CustomAppBar(drawerKey: drawerKey),
       body: SafeArea(
-        child: Column(
+        child: Row(
           children: [
-            VoiceSearchBar(
-              controller: searchController,
-              onSearch: (value) {
-                debugPrint('Search submitted: $value');
-                // Implement your search functionality here
-              },
-              onTap: () {
-                debugPrint('Search field tapped');
-              },
-            ),
-            const SizedBox(height: 20),
+            if (Responsive.isDesktop(context))
+              const Expanded(
+                flex: 2,
+                child: SideDrawerMenu(),
+              ),
+            if (Responsive.isTablet(context))
+              const Expanded(
+                flex: 3,
+                child: SideDrawerMenu(),
+              ),
             Expanded(
-              child: SingleChildScrollView(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Column(
-                    children: [
-                      CustomDividerWithText(
-                        title: 'Document',
-                      ),
-                      //
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: IconButton(
-                          onPressed: () {
-                            setState(() {
-                              isGridView = !isGridView;
-                            });
-                          },
-                          icon: isGridView ? Icon(Icons.list) : Icon(Icons.grid_view),
-                        ),
-                      ),
-
-                      // show all the documents for the user
-
-                       documentsAsync.when(
-                        data: (documents) {
-                          return isGridView
-                            ? GridView.builder(
-                                shrinkWrap: true,
-                                physics: const NeverScrollableScrollPhysics(),
-                                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                                  crossAxisCount: 2,
-                                  crossAxisSpacing: 10,
-                                  mainAxisSpacing: 10,
-                                ),
-                                itemCount: documents.length,
-                                itemBuilder: (context, index) {
-                                  return DocumentCardWidget(
-                                    context: context,
-                                    document: documents[index],
-                                  );
+              flex: 8,
+              child: Column(
+                children: [
+                  VoiceSearchBar(
+                    controller: searchController,
+                    onSearch: (value) {
+                      debugPrint('Search submitted: $value');
+                      // Implement your search functionality here
+                    },
+                    onTap: () {
+                      debugPrint('Search field tapped');
+                    },
+                  ),
+                  const SizedBox(height: 20),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: Column(
+                          children: [
+                            CustomDividerWithText(
+                              title: 'Document',
+                            ),
+                            //
+                            Align(
+                              alignment: Alignment.centerRight,
+                              child: IconButton(
+                                onPressed: () {
+                                  setState(() {
+                                    isGridView = !isGridView;
+                                  });
                                 },
-                              )
-                            : DocumentListWidget(documents: documents);
-                        },
-                        loading: () => SizedBox(
-                          height: 500,
-                          child: Skeletonizer(
-                            enabled: true,
-                            enableSwitchAnimation: true,
-                            child: ListView.builder(
-                              itemCount: 6,
-                              padding: const EdgeInsets.all(16),
-                              itemBuilder: (context, index) => Card(
-                                child: ListTile(
-                                  title: Text('Item number $index as title'),
-                                  subtitle: const Text('Subtitle here'),
-                                  trailing: const Icon(
-                                    Icons.ac_unit,
-                                    size: 32,
+                                icon: isGridView ? Icon(Icons.list) : Icon(Icons.grid_view),
+                              ),
+                            ),
+              
+                            // show all the documents for the user
+              
+                             documentsAsync.when(
+                              data: (documents) {
+                                return isGridView
+                                  ? GridView.builder(
+                                      shrinkWrap: true,
+                                      physics: const NeverScrollableScrollPhysics(),
+                                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                                        crossAxisCount: 2,
+                                        crossAxisSpacing: 10,
+                                        mainAxisSpacing: 10,
+                                      ),
+                                      itemCount: documents.length,
+                                      itemBuilder: (context, index) {
+                                        return DocumentCardWidget(
+                                          context: context,
+                                          document: documents[index],
+                                        );
+                                      },
+                                    )
+                                  : DocumentListWidget(documents: documents);
+                              },
+                              loading: () => SizedBox(
+                                height: 500,
+                                child: Skeletonizer(
+                                  enabled: true,
+                                  enableSwitchAnimation: true,
+                                  child: ListView.builder(
+                                    itemCount: 6,
+                                    padding: const EdgeInsets.all(16),
+                                    itemBuilder: (context, index) => Card(
+                                      child: ListTile(
+                                        title: Text('Item number $index as title'),
+                                        subtitle: const Text('Subtitle here'),
+                                        trailing: const Icon(
+                                          Icons.ac_unit,
+                                          size: 32,
+                                        ),
+                                      ),
+                                    ),
                                   ),
                                 ),
                               ),
+                              error: (error, stack) => Center(
+                                child: Text('Error: $error', style: AppTheme.textMedium(context)),
+                              ),
                             ),
-                          ),
-                        ),
-                        error: (error, stack) => Center(
-                          child: Text('Error: $error', style: AppTheme.textMedium(context)),
+                          ],
                         ),
                       ),
-                    ],
+                    ),
                   ),
-                ),
+                ],
               ),
             ),
           ],

@@ -1,4 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:fpdart/fpdart.dart';
+import 'package:zenzen/data/failure.dart';
 import 'package:zenzen/features/auth/login/model/user_model.dart';
 import 'package:zenzen/features/auth/user/provider/user_provider.dart';
 import 'package:zenzen/features/auth/user/repo/user_repo.dart';
@@ -36,6 +38,34 @@ class UserViewModel extends StateNotifier<AsyncValue<List<UserModel>>> {
       }
     } finally {
       _isLoading = false;
+    }
+  }
+
+  Future<Either<UserModel, ApiFailure>> getUser(String id) async {
+    try {
+      final result = await repository.getUser(id);
+      result.fold(
+        (user) => state = AsyncValue.data([user]),
+        (error) => state = AsyncValue.error(error, StackTrace.current),
+      );
+      return result;
+    } catch (e, stackTrace) {
+      state = AsyncValue.error(e, stackTrace);
+      return right(ApiFailure(e.toString()));
+    }
+  }
+
+  Future<Either<List<UserModel>, ApiFailure>> getMultipleUser(List<String> id) async {
+    try {
+      final result = await repository.getMultipleUser(id);
+      result.fold(
+        (user) => state = AsyncValue.data(user),
+        (error) => state = AsyncValue.error(error, StackTrace.current),
+      );
+      return result;
+    } catch (e, stackTrace) {
+      state = AsyncValue.error(e, stackTrace);
+      return right(ApiFailure(e.toString()));
     }
   }
 }

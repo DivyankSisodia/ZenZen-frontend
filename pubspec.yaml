@@ -32,16 +32,19 @@ dependencies:
   animated_custom_dropdown: ^3.1.1
   auto_size_text: ^3.0.0
   cached_network_image: ^3.4.1
+  cross_file: ^0.3.4+2
   cupertino_icons: ^1.0.8
   delightful_toast: ^1.1.0
   desktop_drop: ^0.5.0
   device_preview: null
   dio: ^5.8.0+1
   file_picker: ^9.0.2
+  filesystem_picker: ^4.1.0
   firebase_auth: ^5.5.1
   firebase_core: ^3.12.1
   flutter:
     sdk: flutter
+  flutter_dropzone: ^4.2.1
   flutter_quill: null
   flutter_quill_extensions: null
   flutter_riverpod: ^2.6.1
@@ -55,7 +58,7 @@ dependencies:
   google_fonts: ^6.2.1
   google_sign_in: ^6.2.2
   hive_ce_flutter: null
-  internet_connection_checker_plus: ^2.7.0
+  internet_connection_checker_plus: ^2.7.1
   intl: null
   json_annotation: ^4.9.0
   logger: null
@@ -63,7 +66,7 @@ dependencies:
   page_transition: ^2.2.1
   path_provider: ^2.1.5
   pdf: ^3.11.3
-  permission_handler: ^11.4.0
+  permission_handler: ^12.0.0
   pinput: ^5.0.1
   pretty_dio_logger: ^1.4.0
   pull_down_button: ^0.10.2

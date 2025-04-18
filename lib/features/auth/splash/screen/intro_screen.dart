@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:zenzen/config/constants/app_colors.dart';
 
 import '../widgets/desktop_intro.dart';
 import '../widgets/mobile_intro.dart';
@@ -15,6 +16,7 @@ class _IntroScreensState extends ConsumerState<IntroScreens> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.getBackgroundColor(context),
       body: LayoutBuilder(
         builder: (context, contraints) {
           if (contraints.maxWidth < 800) {

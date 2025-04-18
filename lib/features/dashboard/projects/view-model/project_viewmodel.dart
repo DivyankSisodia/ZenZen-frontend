@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:zenzen/data/failure.dart';
@@ -10,12 +12,17 @@ import '../repo/project_repo.dart';
 class ProjectViewmodel extends StateNotifier<AsyncValue<List<ProjectModel>>> {
   final ProjectRepository repository;
   final Ref ref;
+  Timer? _debounceTimer;
 
-  ProjectViewmodel(this.repository, this.ref) : super(const AsyncValue.loading());
+  ProjectViewmodel(this.repository, this.ref)
+      : super(const AsyncValue.loading());
 
   CustomToast customToast = CustomToast();
 
-  Future<void> createProject(String title, String? description, BuildContext context) async {
+    bool _isLoading = false;
+
+  Future<void> createProject(
+      String title, String? description, BuildContext context) async {
     try {
       if (!state.isLoading) {
         state = const AsyncValue.loading();
@@ -35,20 +42,26 @@ class ProjectViewmodel extends StateNotifier<AsyncValue<List<ProjectModel>>> {
   }
 
   Future<void> getProjects() async {
-    try {
-      if (!state.isLoading) {
+    
+    _debounceTimer?.cancel();
+    _debounceTimer = Timer(const Duration(milliseconds: 500), () async {
+       if (_isLoading || state is AsyncData<List<ProjectModel>>) return;
+
+      _isLoading = true;
+      state = const AsyncValue.loading();
+      try {
         state = const AsyncValue.loading();
+
+        final result = await repository.getProjects();
+
+        result.fold(
+          (listOfProjects) => state = AsyncValue.data(listOfProjects),
+          (error) => state = AsyncValue.error(error, StackTrace.current),
+        );
+      } catch (e, stackTrace) {
+        state = AsyncValue.error(e, stackTrace);
       }
-
-      final result = await repository.getProjects();
-
-      result.fold(
-        (listOfProjects) => state = AsyncValue.data(listOfProjects),
-        (error) => state = AsyncValue.error(error, StackTrace.current),
-      );
-    } catch (e, stackTrace) {
-      state = AsyncValue.error(e, stackTrace);
-    }
+    });
   }
 
   Future<void> addUserToProject(String projectId, List<String> userId) async {
@@ -84,7 +97,7 @@ class ProjectViewmodel extends StateNotifier<AsyncValue<List<ProjectModel>>> {
       result.fold(
         (success) {
           // Success case - Show success toast
-          customToast.showToast('Document deleted successfully ☑️', context);
+          customToast.showToast('Project deleted successfully ☑️', context);
 
           getProjects();
         },
@@ -100,8 +113,8 @@ class ProjectViewmodel extends StateNotifier<AsyncValue<List<ProjectModel>>> {
       );
     } catch (e) {
       // Catch unexpected errors and show a toast
-      if(e is ApiFailure){
-        print('Error deleting document: ${e.error}');
+      if (e is ApiFailure) {
+        print('Error deleting project: ${e.error}');
       }
       customToast.showToast(
         e is ApiFailure ? e.error : e.toString(),
@@ -111,7 +124,9 @@ class ProjectViewmodel extends StateNotifier<AsyncValue<List<ProjectModel>>> {
   }
 }
 
-final projectViewModelProvider = StateNotifierProvider<ProjectViewmodel, AsyncValue<List<ProjectModel>>>((ref) {
+final projectViewModelProvider =
+    StateNotifierProvider<ProjectViewmodel, AsyncValue<List<ProjectModel>>>(
+        (ref) {
   final repository = ref.watch(projectRepositoryProvider);
   return ProjectViewmodel(repository, ref);
 });

@@ -28,6 +28,12 @@ void main() async {
       child: MyApp(),
     ),
   );
+  // runApp(
+  //   DevicePreview(
+  //     enabled: !kReleaseMode,
+  //     builder: (context) => ProviderScope(child: MyApp()), // Wrap your app
+  //   ),
+  // );
 }
 
 class MyApp extends ConsumerStatefulWidget {
@@ -56,7 +62,6 @@ class _MyAppState extends ConsumerState<MyApp> {
       theme: AppTheme.lightTheme(context),
       // darkTheme: AppTheme.darkTheme(context),
 
-      // Add these lines to support localization for Flutter Quill
       localizationsDelegates: const [
         ...GlobalMaterialLocalizations.delegates,
         FlutterQuillLocalizations.delegate,

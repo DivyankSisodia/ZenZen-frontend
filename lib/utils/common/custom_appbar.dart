@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../config/constants/app_colors.dart';
 import '../../config/constants/responsive.dart';
 import '../../features/dashboard/home/widget/header_action_item.dart';
-import '../theme.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final GlobalKey<ScaffoldState>? drawerKey;
@@ -18,8 +16,6 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
             child: SizedBox(),
           )
         : AppBar(
-            backgroundColor: AppColors.lightGrey.withOpacity(0.2),
-            elevation: 0,
             leading: Responsive.isMobile(context)
                 ? IconButton(
                     onPressed: () {
@@ -27,7 +23,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                     },
                     icon: Icon(
                       Icons.menu,
-                      color: AppColors.getIconsColor(context),
+                      color: Theme.of(context).iconTheme.color,
                     ),
                   )
                 : const SizedBox.shrink(),
@@ -35,7 +31,6 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
             title: !Responsive.isDesktop(context)
                 ? Text(
                     'ZenZen',
-                    style: AppTheme.textTitleLarge(context),
                   )
                 : null,
             actions: const [

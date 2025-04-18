@@ -13,8 +13,7 @@ import 'package:zenzen/utils/common/custom_dialogs.dart';
 import 'package:zenzen/utils/theme.dart';
 
 import '../../../../config/constants/responsive.dart';
-import '../../../../utils/providers/select_user_provider.dart';
-import '../../docs/repo/socket_repo.dart';
+import '../../chat/provider/dashboard_provider.dart';
 import '../widget/animated_tab.dart';
 import '../widget/feature_card.dart';
 import '../widget/side_drawer_menu.dart';
@@ -50,14 +49,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     FontAwesomeIcons.fileExport,
   ];
 
-  SocketRepository repository = SocketRepository();
-
   @override
   void initState() {
+    print(ref.read(diconnectSocketHelperProvider));
     super.initState();
-    final x = ref.read(selectedUsersProvider);
-    print('prinitng selected users');
-    print(x.map((e) => e.id).toList());
   }
 
   @override
@@ -73,7 +68,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget build(BuildContext context) {
     SizeConfig().init(context);
     return Scaffold(
-      backgroundColor: AppColors.white,
+      backgroundColor: AppColors.getBackgroundColor(context),
       key: drawerKey,
       drawer: SizedBox(
         width: SizeConfig.screenWidth / 2,
@@ -130,7 +125,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           if (Responsive.isMobile(context))
                             Expanded(
                               child: Divider(
-                                color: AppColors.primary.withOpacity(0.3),
+                                color: AppColors.getNegativeBackgroundColor(context).withOpacity(0.5),
                                 thickness: 2,
                               ),
                             ),
@@ -177,6 +172,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                     );
                                     break;
                                   case 2:
+                                    context.goNamed(RoutesName.chatScreen);
                                     // Navigator.pushNamed(context, AppRouter.addMembers);
                                     break;
                                   case 3:
@@ -215,7 +211,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           if (Responsive.isMobile(context))
                             Expanded(
                               child: Divider(
-                                color: AppColors.primary.withOpacity(0.3),
+                                color: AppColors.getNegativeBackgroundColor(context).withOpacity(0.5),
                                 thickness: 2,
                               ),
                             ),

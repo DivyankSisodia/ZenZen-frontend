@@ -41,13 +41,13 @@ class _HomeFeatureCardState extends State<HomeFeatureCard> {
             widget.onTap!();
           }
         },
-        splashColor: AppColors.black.withOpacity(0.9),
+        splashColor: AppColors.shadowColor(context),
         borderRadius: BorderRadius.circular(20),
         child: Container(
           height: widget.isMobile ? 120 : 160,
           width: widget.width,
           decoration: BoxDecoration(
-            color: AppColors.white,
+            color: AppColors.getContainerColor(context),
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
               color: AppColors.primary.withOpacity(0.1),
@@ -55,14 +55,14 @@ class _HomeFeatureCardState extends State<HomeFeatureCard> {
             boxShadow: _isHovered
                 ? [
                     BoxShadow(
-                      color: AppColors.black.withOpacity(0.2),
+                      color: AppColors.shadowColor( context),
                       blurRadius: 5,
                       spreadRadius: 2,
                     ),
                   ]
                 : [
                     BoxShadow(
-                      color: AppColors.black.withOpacity(0.1),
+                      color: AppColors.shadowColor(context).withOpacity(0.2),
                       blurRadius: 2,
                       spreadRadius: 1,
                     ),
@@ -76,7 +76,7 @@ class _HomeFeatureCardState extends State<HomeFeatureCard> {
               children: [
                 FaIcon(
                   widget.icon,
-                  color: AppColors.black.withOpacity(0.6),
+                  color: AppColors.getIconsColor(context),
                   size: widget.isMobile ? 25 : 30,
                 ),
                 Gap(widget.isMobile ? 20 : 10),

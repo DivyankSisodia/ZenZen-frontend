@@ -60,8 +60,8 @@ class MiscApi {
         options: Options(headers: headers),
       );
 
-      if(response.statusCode == 200){
-        if(response.data is Map<String, dynamic> && response.data.containsKey('data')){
+      if (response.statusCode == 200) {
+        if (response.data is Map<String, dynamic> && response.data.containsKey('data')) {
           final List<dynamic> documentsData = response.data['data'] as List<dynamic>;
 
           final users = documentsData.map((doc) => UserModel.fromJson(doc as Map<String, dynamic>)).toList();
@@ -76,6 +76,58 @@ class MiscApi {
         return Right(ApiFailure(errorMsg));
       }
     } on DioError catch (e) {
+      return Right(ApiFailure.fromDioException(e));
+    }
+  }
+
+  Future<Either<UserModel, ApiFailure>> getUserById(String userId) async {
+    try {
+      final response = await dio.post(
+        '$baseUrl${ApiRoutes.getUserById}',
+        data: {
+          'id': userId,
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final user = UserModel.fromJson(response.data['data'] as Map<String, dynamic>);
+
+       
+        // Return the user data
+        return Left(user);
+      } else {
+        return Right(ApiFailure.custom(response.data['message'] ?? 'Unknown error'));
+      }
+    } on DioException catch (e) {
+      return Right(ApiFailure.fromDioException(e));
+    }
+  }
+
+  Future<Either<List<UserModel>, ApiFailure>> getMultipleUsers(List<String> ids) async {
+    try {
+      final response = await dio.post(
+        '$baseUrl${ApiRoutes.getMultipleUsers}',
+        data: {
+          'userIds': ids,
+        },
+      );
+
+      if (response.statusCode == 200) {
+        // Access the 'data' array from the response
+        if (response.data is Map<String, dynamic> && response.data.containsKey('data')) {
+          final List<dynamic> documentsData = response.data['data'] as List<dynamic>;
+
+          final documents = documentsData.map((doc) => UserModel.fromJson(doc as Map<String, dynamic>)).toList();
+
+          print('Documents: $documents');
+
+          return Left(documents);
+        } else {
+          return Right(ApiFailure('Response missing "data" field or has incorrect format'));
+        }
+      }
+      return Right(ApiFailure('Unexpected response status code'));
+    } on DioException catch (e) {
       return Right(ApiFailure.fromDioException(e));
     }
   }

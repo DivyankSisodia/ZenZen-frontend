@@ -115,13 +115,18 @@ class _VoiceSearchBarState extends State<VoiceSearchBar> {
         Padding(
           padding: const EdgeInsets.all(16.0),
           child: CupertinoSearchTextField(
+            prefixIcon: Icon(
+              CupertinoIcons.search,
+              color: AppColors.misc1(context),
+              
+            ),
             style: TextStyle(
-              color: AppColors.primary,
+              color: AppColors.misc1(context),
               fontSize: 16,
               fontFamily: 'SpaceGrotesk',
             ),
             placeholderStyle: TextStyle(
-              color: AppColors.primary,
+              color: AppColors.misc1(context),
               fontSize: 16,
               fontFamily: 'SpaceGrotesk',
             ),
@@ -138,7 +143,7 @@ class _VoiceSearchBarState extends State<VoiceSearchBar> {
             suffixMode: OverlayVisibilityMode.always,
             suffixIcon: Icon(
               _isListening ? FontAwesomeIcons.stop : FontAwesomeIcons.microphone,
-              color: _isListening ? Colors.red : null,
+              color: _isListening ? Colors.red : AppColors.misc1(context),
             ),
             onSuffixTap: _startListening,
             suffixInsets: const EdgeInsets.only(right: 20),

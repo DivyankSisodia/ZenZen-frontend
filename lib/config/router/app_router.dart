@@ -13,8 +13,10 @@ import 'package:zenzen/features/dashboard/projects/screen/project_list_screen.da
 
 import '../../features/auth/login/screen/login_screen.dart';
 import '../../features/auth/login/screen/verify_user_screen.dart';
+import '../../features/dashboard/chat/screen/chat_dashboard_screen.dart';
+import '../../features/dashboard/chat/screen/chat_list_screen.dart';
 import '../../features/dashboard/docs/screen/document_list_screen.dart';
-import '../../utils/custom_transition.dart';
+import '../../utils/common/custom_transition.dart';
 
 class RouteConfig {
   static GoRouter returnRouter() {
@@ -140,7 +142,29 @@ class RouteConfig {
               transitionType: PageTransitionType.rightToLeftWithFade,
             );
           },
-        )
+        ),
+        GoRoute(
+          path: '/messages',
+          name: RoutesName.chatScreen,
+          pageBuilder: (context, state) {
+            return MaterialPage(child: ChatDashboardScreen());
+          },
+        ),
+        GoRoute(
+          path: '/chats/:id',
+          name: RoutesName.chatListScreen,
+          pageBuilder: (context, state) {
+            final _id = state.extra as String;
+            return MaterialPage(
+              child: ChatListScreen(
+                id: _id,
+                chatRoomId: state.pathParameters['id'],
+                chatName: state.uri.queryParameters['chatName'],
+                chatImage: state.uri.queryParameters['chatImage'],
+              ),
+            );
+          },
+        ),
       ],
     );
   }

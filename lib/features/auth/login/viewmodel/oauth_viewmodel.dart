@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:zenzen/config/router/constants.dart';
+import 'package:zenzen/data/local_data.dart';
 
 import '../../../../data/failure.dart';
 import '../model/user_model.dart';
@@ -43,9 +44,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<void> signInWithGoogle(bool isLogin, BuildContext context) async {
     state = state.copyWith(isLoading: true, failure: null);
 
-    final result = isLogin == true
-        ? await _repository.signInWithGoogle(true)
-        : await _repository.signInWithGoogle(false);
+    final result = isLogin == true ? await _repository.signInWithGoogle(true) : await _repository.signInWithGoogle(false);
 
     print('result: $result');
 
@@ -58,12 +57,23 @@ class AuthNotifier extends StateNotifier<AuthState> {
     result.fold(
       (failure) => state = state.copyWith(isLoading: false, failure: failure),
       (userCredential) {
+
+        TokenManager tokenManager = TokenManager();
+
+        print('Access Token: ${userCredential.credential!.accessToken}');
+        print('Refresh Token: ${userCredential.user!.refreshToken}');
+
+        if (userCredential.credential!.accessToken != null && userCredential.user!.refreshToken != null) {
+          tokenManager.saveTokens(
+            accessToken: userCredential.credential!.accessToken!,
+            refreshToken: userCredential.user!.refreshToken!,
+          );
+        }
+
         final userModel = UserModel.fromUserCredential(userCredential);
-        state =
-            state.copyWith(isLoading: false, user: userModel, failure: null);
-        x
-            ? context.goNamed(RoutesName.home)
-            : context.goNamed(RoutesName.registerInfo);
+
+        state = state.copyWith(isLoading: false, user: userModel, failure: null);
+        x ? context.goNamed(RoutesName.home) : context.goNamed(RoutesName.registerInfo);
       },
     );
   }
@@ -75,6 +85,35 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
     state = AuthState();
   }
+
+  // // OAuth login
+  // Future<void> loginWithOAuth(String email, String password, BuildContext context) async {
+  //   state = state.copyWith(isLoading: true, failure: null);
+
+  //   final result = await _repository.loginWithOAuth(email, password);
+
+  //   result.fold(
+  //     (userModel) {
+  //       TokenManager tokenManager = TokenManager();
+
+  //       print('Access Token: ${userCredential.credential!.accessToken}');
+  //       print('Refresh Token: ${userCredential!.user!.refreshToken}');
+
+  //       if (userCredential.credential!.accessToken != null && userCredential!.user!.refreshToken != null) {
+  //         tokenManager.saveTokens(
+  //           accessToken: userCredential.credential!.accessToken!,
+  //           refreshToken: userCredential!.user!.refreshToken!,
+  //         );
+  //       }
+
+  //       final userModel = UserModel.fromUserCredential(userCredential);
+
+  //       state = state.copyWith(isLoading: false, user: userModel, failure: null);
+  //       context.goNamed(RoutesName.home);
+  //     },
+  //     (failure) => state = state.copyWith(isLoading: false, failure: failure),
+  //   );
+  // }
 }
 
 final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {

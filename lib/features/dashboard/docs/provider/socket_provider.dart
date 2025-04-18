@@ -1,13 +1,17 @@
 import 'package:socket_io_client/socket_io_client.dart' as io;
 
-// Replace VoidCallback with void Function() if used
-typedef void Function() CallbackType();
-
+typedef CallbackType = void Function() Function();
 class SocketClient {
   io.Socket? socket;
   static SocketClient? _instance;
 
   SocketClient._internal() {
+    // socket = io.io("http://localhost:5762/", <String, dynamic>{
+    //   'transports': ['websocket'],
+    //   'autoConnect': false,
+    //   'verbose': true,
+    // });
+
     socket = io.io("https://zenzen.onrender.com/", <String, dynamic>{
       'transports': ['websocket'],
       'autoConnect': false,

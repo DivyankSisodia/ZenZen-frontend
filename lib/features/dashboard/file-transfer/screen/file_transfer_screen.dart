@@ -4,7 +4,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
-import 'dart:io' show File, Platform, Process;
+import 'package:go_router/go_router.dart';
 import 'package:open_file/open_file.dart';
 // ignore: depend_on_referenced_packages
 import 'package:path/path.dart' as path;
@@ -17,11 +17,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:universal_html/html.dart' as html;
 import 'package:uuid/uuid.dart';
+import 'package:zenzen/config/constants/app_colors.dart';
+import 'package:zenzen/config/router/constants.dart';
 import 'package:zenzen/utils/common/custom_textfield.dart';
 import 'package:zenzen/utils/theme.dart';
-import '../../docs/repo/socket_repo.dart';
+import '../../../../data/sockets/socket_repo.dart';
 import '../model/file_info_model.dart';
 import '../model/file_transfer_model.dart';
+import '../widget/dropzone_container.dart';
 
 class FileTransferScreen extends ConsumerStatefulWidget {
   const FileTransferScreen({super.key});
@@ -37,14 +40,13 @@ class _FileTransferScreenState extends ConsumerState<FileTransferScreen> {
   final Map<String, FileTransferProgress> _incomingFiles = {};
   final Map<String, FileTransferProgress> _outgoingFiles = {};
   final Map<String, FileDisplayInfo> _receivedFiles = {};
-  late SocketRepository _socketRepository;
+  SocketRepository socketRepository = SocketRepository();
 
   final FocusNode focusNode = FocusNode();
 
   @override
   void initState() {
     super.initState();
-    _socketRepository = SocketRepository();
     _connectToServer();
   }
 
@@ -53,19 +55,19 @@ class _FileTransferScreenState extends ConsumerState<FileTransferScreen> {
       _isConnected = true;
     });
 
-    _socketRepository.onUserJoined((userId) {
+    socketRepository.onUserJoined((userId) {
       _showSnackBar('User joined: $userId');
     });
 
-    _socketRepository.onFileChunk((data) {
+    socketRepository.onFileChunk((data) {
       _receiveFileChunk(data);
     });
 
-    _socketRepository.onFileTransferComplete((data) {
+    socketRepository.onFileTransferComplete((data) {
       _completeFileTransfer(data);
     });
 
-    _socketRepository.onFileTransferCancel((data) {
+    socketRepository.onFileTransferCancel((data) {
       _cancelFileTransfer(data);
     });
   }
@@ -76,7 +78,7 @@ class _FileTransferScreenState extends ConsumerState<FileTransferScreen> {
       return;
     }
 
-    _socketRepository.createRoom(
+    socketRepository.createFileRoom(
       onSuccess: (roomId) {
         setState(() {
           _currentRoomId = roomId;
@@ -102,7 +104,7 @@ class _FileTransferScreenState extends ConsumerState<FileTransferScreen> {
       return;
     }
 
-    _socketRepository.joinRoom(
+    socketRepository.joinFileRoom(
       roomId,
       onSuccess: () {
         setState(() {
@@ -165,7 +167,8 @@ class _FileTransferScreenState extends ConsumerState<FileTransferScreen> {
     }
   }
 
-  Future<void> _saveAndDisplayReceivedFile(String fileId, String fileName) async {
+  Future<void> _saveAndDisplayReceivedFile(
+      String fileId, String fileName) async {
     final progress = _incomingFiles[fileId]!;
 
     // Combine all chunks
@@ -184,27 +187,25 @@ class _FileTransferScreenState extends ConsumerState<FileTransferScreen> {
       filePath = await _saveFileNative(fileName, fileData);
     }
 
-    if (filePath != null) {
-      // Determine file type
-      final fileType = fileName.split('.').last.toLowerCase();
+    // Determine file type
+    final fileType = fileName.split('.').last.toLowerCase();
 
-      // Create FileDisplayInfo
-      final displayInfo = FileDisplayInfo(
-        fileName: fileName,
-        filePath: filePath,
-        fileType: fileType,
-        fileData: fileData,
-      );
+    // Create FileDisplayInfo
+    final displayInfo = FileDisplayInfo(
+      fileName: fileName,
+      filePath: filePath,
+      fileType: fileType,
+      fileData: fileData,
+    );
 
-      // Add to received files map
-      _receivedFiles[fileId] = displayInfo;
+    // Add to received files map
+    _receivedFiles[fileId] = displayInfo;
 
-      setState(() {});
+    setState(() {});
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('File received: $fileName')),
-      );
-    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('File received: $fileName')),
+    );
   }
 
   String? _lastSavedFilePath;
@@ -250,12 +251,79 @@ class _FileTransferScreenState extends ConsumerState<FileTransferScreen> {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       allowMultiple: true,
       withData: true,
+      type: FileType.any,
     );
 
     if (result != null) {
       for (PlatformFile file in result.files) {
         _sendFile(file);
       }
+    }
+  }
+
+  Future<void> _pickAndSendFolder() async {
+    if (_currentRoomId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please create or join a room first')),
+      );
+      return;
+    }
+
+    // Check if we're running on web
+    if (kIsWeb) {
+      try {
+        // For web, we need to use a different approach
+        final result = await FilePicker.platform.pickFiles(
+          allowMultiple: true,
+          type: FileType.any,
+          withData: true,
+        );
+
+        if (result != null && result.files.isNotEmpty) {
+          // Process the selected files directly
+          for (var platformFile in result.files) {
+            _sendFile(platformFile);
+          }
+        }
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error selecting files: $e')),
+        );
+      }
+    } else {
+      // Original code for mobile/desktop platforms
+      String? selectedDirectory = await FilePicker.platform.getDirectoryPath();
+
+      if (selectedDirectory != null) {
+        final directory = Directory(selectedDirectory);
+        await _sendFolder(directory);
+      }
+    }
+  }
+
+  Future<void> _sendFolder(Directory directory) async {
+    try {
+      // Only used for non-web platforms
+      final files = await directory
+          .list(recursive: true)
+          .where((entity) => entity is File)
+          .toList();
+
+      for (var file in files) {
+        if (file is File) {
+          final platformFile = PlatformFile(
+            name: path.basename(file.path),
+            path: file.path,
+            size: await file.length(),
+            bytes: await file.readAsBytes(),
+          );
+          _sendFile(platformFile);
+        }
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error sending folder: $e')),
+      );
     }
   }
 
@@ -299,7 +367,7 @@ class _FileTransferScreenState extends ConsumerState<FileTransferScreen> {
       final base64Chunk = base64Encode(chunk);
 
       // Match the structure expected by the server
-      _socketRepository.sendFileChunk({
+      socketRepository.sendFileChunk({
         'roomId': _currentRoomId,
         'fileName': file.name,
         'fileType': file.extension,
@@ -324,7 +392,7 @@ class _FileTransferScreenState extends ConsumerState<FileTransferScreen> {
     //   'fileName': file.name,
     // });
 
-    _socketRepository.sendFileTransferComplete({
+    socketRepository.sendFileTransferComplete({
       'roomId': _currentRoomId,
       'fileId': fileId,
       'fileName': file.name,
@@ -457,9 +525,12 @@ class _FileTransferScreenState extends ConsumerState<FileTransferScreen> {
   void dispose() {
     // TODO: implement dispose
     super.dispose();
+    if (_currentRoomId != null) {
+      socketRepository.leaveFileRoom(_currentRoomId!);
+    }
+    socketRepository.disconnect();
     _roomIdController.dispose();
     focusNode.dispose();
-    _socketRepository.leaveRoom(_currentRoomId!);
   }
 
   @override
@@ -467,6 +538,13 @@ class _FileTransferScreenState extends ConsumerState<FileTransferScreen> {
     print('Received files: ${_receivedFiles.keys}');
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+            onPressed: () {
+              context.goNamed(RoutesName.home);
+              // context.pop();
+            },
+            icon: const Icon(Icons.arrow_back)),
+        automaticallyImplyLeading: true,
         title: const Text('File Transfer App'),
         actions: [
           Container(
@@ -501,17 +579,21 @@ class _FileTransferScreenState extends ConsumerState<FileTransferScreen> {
                               borderRadius: BorderRadius.circular(8),
                             ),
                             shadowColor: Colors.grey[700],
-                            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 12, horizontal: 24),
                           ),
                           child: Text(
                             'Create Room',
-                            style: AppTheme.buttonText(context),
+                            style: AppTheme.textLarge(context),
                           ),
                         ),
                         const SizedBox(height: 16),
                         const Text('OR'),
                         const SizedBox(height: 16),
-                        CustomTextField(controller: _roomIdController, focusNode: focusNode, hint: 'Enter Room Id'),
+                        CustomTextField(
+                            controller: _roomIdController,
+                            focusNode: focusNode,
+                            hint: 'Enter Room Id'),
                         const SizedBox(height: 16),
                         ElevatedButton(
                           onPressed: _joinRoom,
@@ -520,11 +602,12 @@ class _FileTransferScreenState extends ConsumerState<FileTransferScreen> {
                               borderRadius: BorderRadius.circular(8),
                             ),
                             shadowColor: Colors.grey[700],
-                            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 12, horizontal: 24),
                           ),
                           child: Text(
                             'Join Room',
-                            style: AppTheme.buttonText(context),
+                            style: AppTheme.textLarge(context),
                           ),
                         ),
                       ],
@@ -534,6 +617,8 @@ class _FileTransferScreenState extends ConsumerState<FileTransferScreen> {
               )
             else
               Card(
+                elevation: 5,
+                color: AppColors.background,
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Column(
@@ -543,19 +628,58 @@ class _FileTransferScreenState extends ConsumerState<FileTransferScreen> {
                         style: AppTheme.textSmall(context),
                       ),
                       const SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: _pickAndSendFiles,
-                        style: ElevatedButton.styleFrom(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
+                      DragDropContainer(
+                        onTap: _pickAndSendFiles,
+                        onSendFile: _sendFile,
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          ElevatedButton(
+                            onPressed: _pickAndSendFiles,
+                            style: ElevatedButton.styleFrom(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              shadowColor: Colors.grey[700],
+                              padding: const EdgeInsets.symmetric(
+                                  vertical: 12, horizontal: 24),
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.upload_file),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'Upload Files',
+                                  style: AppTheme.textLarge(context),
+                                ),
+                              ],
+                            ),
                           ),
-                          shadowColor: Colors.grey[700],
-                          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
-                        ),
-                        child: Text(
-                          'Select Files to Send',
-                          style: AppTheme.smallBodyTheme(context),
-                        ),
+                          const SizedBox(width: 16),
+                          ElevatedButton(
+                            onPressed: _pickAndSendFolder,
+                            style: ElevatedButton.styleFrom(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              shadowColor: Colors.grey[700],
+                              padding: const EdgeInsets.symmetric(
+                                  vertical: 12, horizontal: 24),
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.folder),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'Upload Folder',
+                                  style: AppTheme.textLarge(context),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 16),
                       ElevatedButton(
@@ -570,14 +694,29 @@ class _FileTransferScreenState extends ConsumerState<FileTransferScreen> {
                           ),
                           shadowColor: Colors.grey[700],
                           backgroundColor: Colors.red,
-                          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 12, horizontal: 24),
                         ),
-                        child: Text('Leave Room', style: AppTheme.buttonText(context)),
+                        child: Text('Leave Room',
+                            style: AppTheme.textLarge(context)),
                       ),
                     ],
                   ),
                 ),
               ),
+            if (_receivedFiles.isNotEmpty) ...[
+              Text('Received Files', style: AppTheme.largeBodyTheme(context)),
+              const SizedBox(height: 15),
+              SizedBox(
+                height: 120,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: _receivedFiles.length,
+                  itemBuilder: (context, index) =>
+                      _buildFileDisplay(_receivedFiles.values.elementAt(index)),
+                ),
+              ),
+            ],
             const SizedBox(height: 16),
             if (_incomingFiles.isNotEmpty || _outgoingFiles.isNotEmpty) ...[
               Text(
@@ -590,72 +729,99 @@ class _FileTransferScreenState extends ConsumerState<FileTransferScreen> {
                   children: [
                     ..._outgoingFiles.entries.map((entry) {
                       final progress = entry.value;
-                      final percentage = (progress.receivedChunks.length / progress.totalChunks * 100).toStringAsFixed(1);
+                      final percentage = (progress.receivedChunks.length /
+                              progress.totalChunks *
+                              100)
+                          .toStringAsFixed(1);
 
                       return Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 8, horizontal: 16),
                         child: ListTile(
-                          title: Text(progress.fileName, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                          title: Text(progress.fileName,
+                              style: TextStyle(
+                                  fontSize: 16, fontWeight: FontWeight.bold)),
                           subtitle: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              if (progress.receivedChunks.length / progress.totalChunks < 1)
+                              if (progress.receivedChunks.length /
+                                      progress.totalChunks <
+                                  1)
                                 Row(
                                   children: [
                                     CircularProgressIndicator(
-                                      value: progress.receivedChunks.length / progress.totalChunks,
+                                      value: progress.receivedChunks.length /
+                                          progress.totalChunks,
                                       strokeWidth: 4,
                                     ),
                                     const SizedBox(width: 8),
-                                    Text('${progress.receivedChunks.length / progress.totalChunks * 100}%'),
+                                    Text(
+                                        '${progress.receivedChunks.length / progress.totalChunks * 100}%'),
                                   ],
                                 )
                               else
                                 Row(
                                   children: [
-                                    Icon(Icons.check_circle, color: Colors.green),
+                                    Icon(Icons.check_circle,
+                                        color: Colors.green),
                                     const SizedBox(width: 8),
-                                    const Text('File Received', style: TextStyle(color: Colors.green)),
+                                    const Text(
+                                      'File sent',
+                                      style: TextStyle(
+                                        color: Colors.blue,
+                                      ),
+                                    ),
                                   ],
                                 ),
                             ],
                           ),
-                          leading: Icon(progress.receivedChunks.length / progress.totalChunks < 1 ? Icons.upload_file : Icons.done, color: Colors.blueAccent),
+                          leading: Icon(
+                            progress.receivedChunks.length /
+                                        progress.totalChunks <
+                                    1
+                                ? Icons.upload_file
+                                : Icons.done,
+                            color: Colors.blueAccent,
+                          ),
                         ),
                       );
                     }),
                     ..._incomingFiles.entries.map((entry) {
                       final progress = entry.value;
-                      final percentage = (progress.receivedChunks.length / progress.totalChunks * 100).toStringAsFixed(1);
+                      final percentage = (progress.receivedChunks.length /
+                              progress.totalChunks *
+                              100)
+                          .toStringAsFixed(1);
 
                       return ListTile(
                         title: Text(progress.fileName),
                         subtitle: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('Receiving... $percentage%'),
-                            LinearProgressIndicator(
-                              value: progress.receivedChunks.length / progress.totalChunks,
-                            ),
-                            ElevatedButton(
-                              onPressed: openSavedFile,
-                              child: const Text('Open Saved File'),
-                            ),
-                            if (_receivedFiles.isNotEmpty) ...[
-                              Text(
-                                'Received Files',
-                                style: Theme.of(context).textTheme.bodyMedium,
+                            if (progress.receivedChunks.length /
+                                    progress.totalChunks <
+                                1)
+                              Row(
+                                children: [
+                                  CircularProgressIndicator(
+                                    value: progress.receivedChunks.length /
+                                        progress.totalChunks,
+                                    strokeWidth: 4,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                      '${progress.receivedChunks.length / progress.totalChunks * 100}%'),
+                                ],
+                              )
+                            else
+                              Row(
+                                children: [
+                                  Icon(Icons.check_circle, color: Colors.green),
+                                  const SizedBox(width: 8),
+                                  const Text('File received',
+                                      style: TextStyle(color: Colors.green)),
+                                ],
                               ),
-                              const SizedBox(height: 8),
-                              SingleChildScrollView(
-                                scrollDirection: Axis.horizontal,
-                                child: Row(
-                                  children: _receivedFiles.values.map((fileInfo) {
-                                    return _buildFileDisplay(fileInfo);
-                                  }).toList(),
-                                ),
-                              ),
-                            ],
                           ],
                         ),
                         leading: const Icon(Icons.download_rounded),
@@ -682,14 +848,14 @@ class _FileTransferScreenState extends ConsumerState<FileTransferScreen> {
           if (imageExtensions.contains(fileInfo.fileType))
             Image.memory(
               fileInfo.fileData,
-              width: 100,
-              height: 100,
+              width: 70,
+              height: 70,
               fit: BoxFit.cover,
             )
           else
             const Icon(
               Icons.insert_drive_file,
-              size: 100,
+              size: 70,
               color: Colors.grey,
             ),
           const SizedBox(height: 8),
@@ -700,7 +866,7 @@ class _FileTransferScreenState extends ConsumerState<FileTransferScreen> {
           ),
           ElevatedButton(
             onPressed: () => _openSavedFileLocation(fileInfo.filePath),
-            child: const Text('Open File'),
+            child: Text('Open File', style: AppTheme.smallBodyTheme(context)),
           ),
         ],
       ),

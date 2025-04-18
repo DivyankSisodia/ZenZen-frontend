@@ -2,6 +2,7 @@ import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:zenzen/utils/theme.dart';
 
 import '../../../../config/constants/app_colors.dart';
 import '../../../../config/router/constants.dart';
@@ -27,18 +28,21 @@ class DocumentCardWidget extends StatelessWidget {
       delay: const Duration(milliseconds: 100),
       duration: const Duration(milliseconds: 1500),
       child: Card(
+        color: AppColors.getContainerColor(context),
         elevation: 2,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
           side: BorderSide(
-            color: AppColors.primary.withOpacity(0.2),
+            color: AppColors.getNegativeBackgroundColor(context).withOpacity(0.2),
             width: 1,
           ),
         ),
         child: InkWell(
+          splashColor: AppColors.getContainerColor(context),
           onTap: () {
             // Handle document selection/opening
             if (document.id != null) {
+              print('Document ID: ${document.id}');
               context.goNamed(
                 RoutesName.doc,
                 pathParameters: {'id': document.id!},
@@ -57,20 +61,17 @@ class DocumentCardWidget extends StatelessWidget {
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(Icons.description, color: AppColors.primary),
+                    Icon(Icons.description, color: AppColors.getIconsColor(context)),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
                         document.title,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
+                        style: AppTheme.buttonTheme(context),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    document.isPrivate ? Tooltip(message: 'Private Document', child: Icon(Icons.lock, size: 16, color: Colors.grey[600])) : Tooltip(message: 'Public Document', child: Icon(Icons.public, size: 16, color: Colors.grey[600])),
+                    document.isPrivate ? Tooltip(message: 'Private Document', child: Icon(Icons.lock, size: 16, color: AppColors.getIconsColor(context))) : Tooltip(message: 'Public Document', child: Icon(Icons.public, size: 16, color: AppColors.getIconsColor(context))),
                   ],
                 ),
                 const Spacer(),
@@ -79,10 +80,7 @@ class DocumentCardWidget extends StatelessWidget {
                     Expanded(
                       child: Text(
                         'Created: $formattedDate',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey[600],
-                        ),
+                        style: AppTheme.tinyText(context)
                       ),
                     ),
                   ],
@@ -93,10 +91,7 @@ class DocumentCardWidget extends StatelessWidget {
                   children: [
                     Text(
                       '${document.users.length} users',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey[600],
-                      ),
+                      style: AppTheme.tinyText(context),
                     ),
                     Row(
                       children: [

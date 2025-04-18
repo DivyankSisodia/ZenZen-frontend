@@ -56,12 +56,12 @@ class _SideDrawerMenuState extends ConsumerState<SideDrawerMenu> {
         break;
       case 3:
         // Navigate to Messages
-        // Navigator.pushNamed(context, '/messages');
+        context.goNamed(RoutesName.chatScreen);
         print('Messages');
         break;
       case 4:
         // Open Contact Us page
-        // Navigator.pushNamed(context, '/contact');
+        context.goNamed(RoutesName.contactUs);
         print('Contact Us');
         break;
       default:
@@ -82,6 +82,14 @@ class _SideDrawerMenuState extends ConsumerState<SideDrawerMenu> {
     AppImages.messageLight,
     AppImages.menuLight
   ];
+
+  // List<String> darkIcons = [
+  //   AppImages.homeDark,
+  //   AppImages.docDark,
+  //   AppImages.folderDark,
+  //   AppImages.messageDark,
+  //   AppImages.menuDark
+  // ];
 
   TokenManager tokenManager = TokenManager();
 
@@ -288,7 +296,7 @@ class _SideDrawerMenuState extends ConsumerState<SideDrawerMenu> {
 
             // Support and Logout
             OtherItems(
-              color: AppColors.primary,
+              color: AppColors.getTextColor(context),
               title: 'Support',
               icon: FontAwesomeIcons.question,
               isCompact: isLowHeight,
@@ -342,7 +350,7 @@ class MenuItem extends ConsumerWidget {
         width: double.infinity,
         decoration: BoxDecoration(
           color:
-              index == selectedIndex ? AppColors.lightGrey : AppColors.onAccent,
+              index == selectedIndex ? AppColors.shadowColor(context) : AppColors.lightContainerColor(context),
           borderRadius: const BorderRadius.all(
             Radius.circular(10),
           ),
@@ -427,7 +435,7 @@ class OtherItems extends ConsumerWidget {
               flex: 3,
               child: FaIcon(
                 icon,
-                color: AppColors.getIconsColor(context),
+                color: AppColors.black,
                 size: isCompact ? 16 : 20,
               ),
             ),
@@ -439,7 +447,7 @@ class OtherItems extends ConsumerWidget {
                 child: Text(
                   title,
                   style: style ??
-                      AppTheme.buttonText(context).copyWith(
+                      AppTheme.textLarge(context).copyWith(
                         fontSize: isCompact ? 14 : 16,
                       ),
                   overflow: TextOverflow.ellipsis,

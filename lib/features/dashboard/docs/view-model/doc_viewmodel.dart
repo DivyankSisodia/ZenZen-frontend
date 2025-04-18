@@ -1,4 +1,5 @@
 // ignore_for_file: unnecessary_cast, unused_catch_stack, unnecessary_type_check
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -21,17 +22,18 @@ class DocViewmodel extends StateNotifier<AsyncValue<List<DocumentModel>>> {
   CustomToast customToast = CustomToast();
 
   Future<void> getAllDocuments() async {
-    // Skip if already loading
     if (_isLoading) return;
 
     _isLoading = true;
     state = const AsyncValue.loading();
-
     try {
       final result = await repository.getDocuments();
       if (mounted) {
         result.fold(
-          (documents) => state = AsyncValue.data(documents),
+          (documents) {
+            state = const AsyncValue.loading();
+            state = AsyncValue.data(documents);
+          },
           (error) => state = AsyncValue.error(error, StackTrace.current),
         );
       }
@@ -45,17 +47,23 @@ class DocViewmodel extends StateNotifier<AsyncValue<List<DocumentModel>>> {
   }
 
   Future<void> getDocumentInfo(String id) async {
-    try {
-      // Only set loading if not already in progress
-      if (!state.isLoading) {
-        state = const AsyncValue.loading();
-      }
+    if (_isLoading) return;
 
+    _isLoading = true;
+    state = const AsyncValue.loading();
+    try {
       final result = await repository.getDocInfo(id);
 
       if (mounted) {
         result.fold(
-          (docModel) => state = AsyncValue.data([docModel]),
+          (docModel) {
+            if (docModel.id != id) {
+              state = AsyncValue.error('Document ID mismatch', StackTrace.current);
+              return;
+            }
+            state = const AsyncValue.loading();
+            state = AsyncValue.data([docModel]);
+          },
           (error) => state = AsyncValue.error(error, StackTrace.current),
         );
       }
@@ -63,6 +71,8 @@ class DocViewmodel extends StateNotifier<AsyncValue<List<DocumentModel>>> {
       if (mounted) {
         state = AsyncValue.error(e, stackTrace);
       }
+    } finally {
+      _isLoading = false;
     }
   }
 
@@ -92,6 +102,7 @@ class DocViewmodel extends StateNotifier<AsyncValue<List<DocumentModel>>> {
           getAllDocuments();
 
           // Navigate to the document screen with the newly created document's ID and title
+          print('Document ID: ${docModel.id}');
           context.goNamed(
             RoutesName.doc,
             pathParameters: {'id': docModel.id!},
@@ -168,11 +179,9 @@ class DocViewmodel extends StateNotifier<AsyncValue<List<DocumentModel>>> {
   }
 
   Future<void> getProjectDocs(String projectId) async {
+    _isLoading = true;
+    state = const AsyncValue.loading();
     try {
-      if (!state.isLoading) {
-        state = const AsyncValue.loading();
-      }
-
       final result = await repository.getProjectDocs(projectId);
 
       result.fold(
@@ -181,25 +190,25 @@ class DocViewmodel extends StateNotifier<AsyncValue<List<DocumentModel>>> {
       );
     } catch (e, stackTrace) {
       state = AsyncValue.error(e, stackTrace);
+    } finally {
+      _isLoading = false;
     }
   }
 
   Future<void> getSharedDocs() async {
+    _isLoading = true;
+    state = const AsyncValue.loading();
     try {
-      if (!state.isLoading) {
-        state = const AsyncValue.loading();
-      }
-
       final result = await repository.getSharedWithMeDocs();
 
       result.fold(
-        (listOfDocs) {
-          state = AsyncValue.data(listOfDocs);
-        },
+        (listOfDocs) => state = AsyncValue.data(listOfDocs),
         (error) => state = AsyncValue.error(error, StackTrace.current),
       );
     } catch (e, stackTrace) {
       state = AsyncValue.error(e, stackTrace);
+    } finally {
+      _isLoading = false;
     }
   }
 }

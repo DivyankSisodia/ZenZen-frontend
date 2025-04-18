@@ -39,7 +39,7 @@ class CustomAuthTextField extends StatelessWidget {
           borderSide: BorderSide(
             style: BorderStyle.solid,
             width: 4, // Adjusted border width
-            color: AppColors.primary,
+            color: AppColors.getNegativeBackgroundColor(context),
           ),
           borderRadius: BorderRadius.circular(8),
         ),
@@ -47,7 +47,7 @@ class CustomAuthTextField extends StatelessWidget {
           borderSide: BorderSide(
             style: BorderStyle.solid,
             width: 2,
-            color: AppColors.primary,
+            color: AppColors.getNegativeBackgroundColor(context),
           ),
           borderRadius: BorderRadius.circular(8),
         ),
@@ -110,21 +110,21 @@ class CustomTextField extends StatelessWidget {
       decoration: InputDecoration(
         enabledBorder: OutlineInputBorder(
           borderSide: BorderSide(
-            color: Colors.white, // Normal border color
+            color: AppColors.getNegativeBackgroundColor(context), // Normal border color
             width: 1,
           ),
           borderRadius: BorderRadius.circular(8),
         ),
         border: OutlineInputBorder(
           borderSide: BorderSide(
-            color: Colors.white, // Fallback border
+            color: AppColors.getNegativeBackgroundColor(context), // Fallback border
             width: 1,
           ),
           borderRadius: BorderRadius.circular(8),
         ),
         focusedBorder: OutlineInputBorder(
           borderSide: BorderSide(
-            color: AppColors.primary, // Focused border color
+            color: AppColors.getNegativeBackgroundColor(context), // Focused border color
             width: 2,
           ),
           borderRadius: BorderRadius.circular(8),
@@ -144,7 +144,7 @@ class CustomTextField extends StatelessWidget {
           borderRadius: BorderRadius.circular(8),
         ),
         hintText: hint,
-        fillColor: Colors.white,
+        fillColor: AppColors.getNegativeBackgroundColor(context),
         filled: true,
       ),
       autofillHints: autofillHints,

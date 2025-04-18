@@ -2,6 +2,7 @@
 
 import 'dart:async';
 
+import 'package:animate_do/animate_do.dart';
 import 'package:animated_custom_dropdown/custom_dropdown.dart';
 import 'package:delightful_toast/delight_toast.dart';
 import 'package:delightful_toast/toast/components/toast_card.dart';
@@ -28,8 +29,7 @@ import '../theme.dart';
 // typedef void Function() CallbackType;
 
 class CustomDialogs {
-  void createDocCustomDialog(
-      BuildContext context, WidgetRef ref, String title) {
+  void createDocCustomDialog(BuildContext context, WidgetRef ref, String title) {
     // Use the outer context for navigation, not the dialog's context
     final outerContext = context;
     final projectViewmodel = ref.read(projectViewModelProvider.notifier);
@@ -46,9 +46,7 @@ class CustomDialogs {
           content: Padding(
             padding: const EdgeInsets.only(top: 16.0),
             child: SizedBox(
-              width: Responsive.isMobile(dialogContext)
-                  ? SizeConfig.screenWidth / 2.5
-                  : SizeConfig.screenWidth / 4.5,
+              width: Responsive.isMobile(dialogContext) ? SizeConfig.screenWidth / 2.5 : SizeConfig.screenWidth / 4.5,
               height: 100,
               // Watch for changes in the projects state
               child: Consumer(
@@ -56,8 +54,7 @@ class CustomDialogs {
                   final projectsState = ref.watch(projectViewModelProvider);
 
                   return projectsState.when(
-                    loading: () =>
-                        const Center(child: CupertinoActivityIndicator()),
+                    loading: () => const Center(child: CupertinoActivityIndicator()),
                     error: (err, stack) {
                       if (err is ApiFailure) {
                         print('Error loading projects: ${err.error}');
@@ -71,18 +68,12 @@ class CustomDialogs {
                           padding: const EdgeInsets.symmetric(horizontal: 8.0),
                           child: Text(
                             hint,
-                            style: TextStyle(
-                                color: CupertinoColors.systemGrey,
-                                fontSize: 16,
-                                fontFamily: 'SpaceGrotesk'),
+                            style: TextStyle(color: CupertinoColors.systemGrey, fontSize: 16, fontFamily: 'SpaceGrotesk'),
                           ),
                         );
                       },
                       hintText: 'Select Project',
-                      items: projects
-                          .map((project) => project.title)
-                          .whereType<String>()
-                          .toList(),
+                      items: projects.map((project) => project.title).whereType<String>().toList(),
                       decoration: CustomDropdownDecoration(
                         hintStyle: TextStyle(color: CupertinoColors.systemGrey),
                         listItemStyle: TextStyle(color: CupertinoColors.black),
@@ -91,12 +82,10 @@ class CustomDialogs {
                         // Find the selected project's ID
                         final selectedProject = projects.firstWhere(
                           (project) => project.title == value,
-                          orElse: () =>
-                              ProjectModel(id: '', title: '', description: ''),
+                          orElse: () => ProjectModel(id: '', title: '', description: ''),
                         );
 
-                        ref.read(selectedProjectIdProvider.notifier).state =
-                            selectedProject.id!;
+                        ref.read(selectedProjectIdProvider.notifier).state = selectedProject.id!;
 
                         print('Selected Project: $value');
                         print('Selected Project ID: ${selectedProject.id}');
@@ -107,8 +96,7 @@ class CustomDialogs {
                         // Then use the outer context for document creation and navigation
                         // Use a slight delay to ensure the dialog is fully closed
                         Future.microtask(() {
-                          final docViewModel =
-                              ref.read(docViewmodelProvider.notifier);
+                          final docViewModel = ref.read(docViewmodelProvider.notifier);
                           final projectId = ref.read(selectedProjectIdProvider);
                           print(projectId);
                           docViewModel.createDocument(
@@ -150,6 +138,7 @@ class CustomDialogs {
   ) {
     final outerContext = context;
 
+
     showCupertinoDialog(
       context: context,
       builder: (BuildContext dialogContext) {
@@ -170,16 +159,14 @@ class CustomDialogs {
                   controller: controller,
                   focusNode: focusNode,
                   placeholder: hint,
-                  padding:
-                      const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
                 ),
                 const SizedBox(height: 15),
                 CupertinoTextField(
                   controller: descriptionController,
                   focusNode: descriptionFocusNode,
                   placeholder: descriptionHint,
-                  padding:
-                      const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
                 ),
               ],
             ),
@@ -195,8 +182,7 @@ class CustomDialogs {
               isDefaultAction: true,
               child: const Text('OK'),
               onPressed: () {
-                if (controller.text.isEmpty ||
-                    descriptionController.text.isEmpty) {
+                if (controller.text.isEmpty || descriptionController.text.isEmpty) {
                   DelightToastBar(
                     builder: (context) => const ToastCard(
                       leading: Icon(
@@ -215,8 +201,7 @@ class CustomDialogs {
                   return;
                 }
 
-                final projectViewModel =
-                    ref.read(projectViewModelProvider.notifier);
+                final projectViewModel = ref.read(projectViewModelProvider.notifier);
 
                 projectViewModel.createProject(
                   controller.text,
@@ -321,15 +306,12 @@ class CustomDialogs {
                 style: AppTheme.textMedium(context),
               ),
               const SizedBox(height: 10),
-              Text(
-                  'Created: ${DateFormat.yMMMd().format(creationDate ?? DateTime.now())}',
-                  style: AppTheme.textMedium(context).copyWith(fontSize: 16)),
+              Text('Created: ${DateFormat.yMMMd().format(creationDate ?? DateTime.now())}', style: AppTheme.textMedium(context).copyWith(fontSize: 16)),
 
               // Display collaborators
               if (userDetails.isNotEmpty) ...[
                 const SizedBox(height: 10),
-                Text('Collaborators:',
-                    style: AppTheme.mediumBodyTheme(context)),
+                Text('Collaborators:', style: AppTheme.mediumBodyTheme(context)),
                 const SizedBox(height: 5),
                 ...userDetails.map<Widget>(
                   (user) => _buildUserRow(context, user),
@@ -378,9 +360,7 @@ class CustomDialogs {
         children: [
           CircleAvatar(
             radius: 15,
-            backgroundImage: user['avatar']!.isNotEmpty
-                ? NetworkImage(user['avatar']!)
-                : null,
+            backgroundImage: user['avatar']!.isNotEmpty ? NetworkImage(user['avatar']!) : null,
             child: user['avatar']!.isEmpty
                 ? Text(
                     user['name']!.substring(0, 1).toUpperCase(),
@@ -392,8 +372,7 @@ class CustomDialogs {
                 : null,
           ),
           const SizedBox(width: 10),
-          Text(user['name']!,
-              style: AppTheme.textMedium(context).copyWith(fontSize: 16)),
+          Text(user['name']!, style: AppTheme.textMedium(context).copyWith(fontSize: 16)),
         ],
       ),
     );
@@ -425,36 +404,8 @@ class CustomDialogs {
     });
   }
 
-  static void showAlertDialog({
-    required BuildContext context,
-    required String title,
-    required String message,
-    required String buttonText,
-    void Function()? onButtonPressed,
-  }) {
-    showDialog(
-      context: context,
-      builder: (context) => CupertinoAlertDialog(
-        title: Text(title),
-        content: Text(message),
-        actions: [
-          CupertinoDialogAction(
-            onPressed: () {
-              Navigator.of(context).pop();
-              if (onButtonPressed != null) {
-                onButtonPressed();
-              }
-            },
-            child: Text(buttonText),
-          ),
-        ],
-      ),
-    );
-  }
-
   // show all users dialog
-  void showMultiSelectUsersBottomSheet(String projectId, BuildContext context,
-      WidgetRef ref, Function(List<UserModel>) onUsersSelected) {
+  void showMultiSelectUsersBottomSheet(String projectId, BuildContext context, WidgetRef ref, Function(List<UserModel>) onUsersSelected) {
     final userViewmodel = ref.read(userViewmodelProvider.notifier);
     userViewmodel.getAllUsers();
 
@@ -558,9 +509,7 @@ class _MultiSelectUsersBottomSheet extends StatelessWidget {
                         Navigator.pop(context);
 
                         // Clear selection state
-                        ref
-                            .read(selectedUsersProvider.notifier)
-                            .clearSelection();
+                        ref.read(selectedUsersProvider.notifier).clearSelection();
                       },
                       child: Text(
                         'Done',
@@ -639,24 +588,15 @@ class _MultiSelectUsersBottomSheet extends StatelessWidget {
 
                             return Consumer(
                               builder: (context, ref, _) {
-                                final selectedUsers =
-                                    ref.watch(selectedUsersProvider);
-                                final isSelected =
-                                    selectedUsers.any((u) => u.id == user.id);
+                                final selectedUsers = ref.watch(selectedUsersProvider);
+                                final isSelected = selectedUsers.any((u) => u.id == user.id);
 
                                 return CupertinoListTile(
                                   leading: CircleAvatar(
-                                    backgroundImage: user.avatar != null
-                                        ? NetworkImage(user.avatar!)
-                                        : null,
+                                    backgroundImage: user.avatar != null ? NetworkImage(user.avatar!) : null,
                                     child: user.avatar == null
                                         ? Text(
-                                            user.userName != null &&
-                                                    user.userName!.isNotEmpty
-                                                ? user.userName!
-                                                    .substring(0, 1)
-                                                    .toUpperCase()
-                                                : '?',
+                                            user.userName != null && user.userName!.isNotEmpty ? user.userName!.substring(0, 1).toUpperCase() : '?',
                                             style: TextStyle(
                                               color: CupertinoColors.white,
                                               fontWeight: FontWeight.bold,
@@ -670,27 +610,17 @@ class _MultiSelectUsersBottomSheet extends StatelessWidget {
                                     value: isSelected,
                                     onChanged: (bool? value) {
                                       if (value == true) {
-                                        ref
-                                            .read(
-                                                selectedUsersProvider.notifier)
-                                            .addUser(user);
+                                        ref.read(selectedUsersProvider.notifier).addUser(user);
                                       } else {
-                                        ref
-                                            .read(
-                                                selectedUsersProvider.notifier)
-                                            .removeUser(user);
+                                        ref.read(selectedUsersProvider.notifier).removeUser(user);
                                       }
                                     },
                                   ),
                                   onTap: () {
                                     if (isSelected) {
-                                      ref
-                                          .read(selectedUsersProvider.notifier)
-                                          .removeUser(user);
+                                      ref.read(selectedUsersProvider.notifier).removeUser(user);
                                     } else {
-                                      ref
-                                          .read(selectedUsersProvider.notifier)
-                                          .addUser(user);
+                                      ref.read(selectedUsersProvider.notifier).addUser(user);
                                     }
                                   },
                                 );
@@ -711,5 +641,179 @@ class _MultiSelectUsersBottomSheet extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+class HoverCardController {
+  Timer? _hoverTimer;
+  bool _isHovered = false;
+  bool _isMovingToCard = false;
+  OverlayEntry? _overlayEntry;
+  final Duration hoverDelay;
+  final Duration exitDelay;
+  
+  HoverCardController({
+    this.hoverDelay = const Duration(milliseconds: 500),
+    this.exitDelay = const Duration(milliseconds: 400),
+  });
+
+  bool get isHovered => _isHovered;
+  bool get hasOverlay => _overlayEntry != null;
+
+  void cancelHover() {
+    if (_isMovingToCard) return;
+    
+    _hoverTimer?.cancel();
+    _isHovered = false;
+    
+    // Remove overlay and reset reference
+    _overlayEntry?.remove();
+    _overlayEntry = null;
+  }
+  
+  void startHoverTimer(VoidCallback onHoverActive) {
+    _hoverTimer?.cancel();
+    _hoverTimer = Timer(hoverDelay, () {
+      _isHovered = true;
+      onHoverActive();
+    });
+  }
+  
+  void showOverlay(BuildContext context, OverlayEntry entry) {
+    // Remove existing overlay entry if present
+    _overlayEntry?.remove();
+    
+    // Set new overlay entry
+    _overlayEntry = entry;
+    
+    // Insert into overlay
+    final overlay = Overlay.of(context);
+    overlay.insert(_overlayEntry!);
+    }
+  
+  void handleCardEnter() {
+    _isMovingToCard = true;
+    _isHovered = true;
+  }
+  
+  void handleCardExit() {
+    _isMovingToCard = false;
+    _isHovered = false;
+    
+    // Delay removal to allow for card interaction
+    Future.delayed(exitDelay, () {
+      if (!_isMovingToCard && !_isHovered) {
+        _overlayEntry?.remove();
+        _overlayEntry = null;
+      }
+    });
+  }
+  
+  void dispose() {
+    _hoverTimer?.cancel();
+    _overlayEntry?.remove();
+    _overlayEntry = null;
+  }
+}
+
+// Generic hover trigger widget
+class HoverTrigger extends StatefulWidget {
+  final Widget child;
+  final String id;
+  final HoverCardController controller;
+  final Future<dynamic> Function(String id) fetchData;
+  final Widget Function(BuildContext context, dynamic data, Offset position) buildCard;
+  final ValueChanged<bool>? onHoverChanged;
+  
+  const HoverTrigger({
+    super.key,
+    required this.child,
+    required this.id,
+    required this.controller,
+    required this.fetchData,
+    required this.buildCard,
+    this.onHoverChanged,
+  });
+
+  @override
+  State<HoverTrigger> createState() => _HoverTriggerState();
+}
+
+class _HoverTriggerState extends State<HoverTrigger> {
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      onEnter: (event) => _handleMouseEnter(event.position),
+      onExit: (_) => _handleMouseExit(),
+      child: widget.child,
+    );
+  }
+  
+  void _handleMouseEnter(Offset position) {
+    setState(() {
+    });
+    
+    if (widget.onHoverChanged != null) {
+      widget.onHoverChanged!(true);
+    }
+    
+    final RenderBox renderBox = context.findRenderObject() as RenderBox;
+    final Offset globalPosition = renderBox.localToGlobal(Offset.zero);
+    
+    widget.controller.startHoverTimer(() async {
+      if (!mounted) return;
+      
+      // Fetch data
+      try {
+        final data = await widget.fetchData(widget.id);
+        if (data != null) {
+          
+          if (mounted && widget.controller.isHovered) {
+            _showHoverCard(data, globalPosition);
+          }
+        }
+      } catch (error) {
+        debugPrint('Error fetching data: $error');
+      }
+    });
+  }
+  
+  void _handleMouseExit() {
+    setState(() {
+    });
+    
+    if (widget.onHoverChanged != null) {
+      widget.onHoverChanged!(false);
+    }
+    
+    widget.controller.cancelHover();
+  }
+  
+  void _showHoverCard(dynamic data, Offset position) {
+    if (!widget.controller.isHovered || !mounted) return;
+    
+    final overlayEntry = OverlayEntry(
+      builder: (context) => Positioned(
+        left: position.dx - 250, // Adjust positioning based on your needs
+        top: position.dy + 10,
+        child: MouseRegion(
+          onEnter: (_) => widget.controller.handleCardEnter(),
+          onExit: (_) => widget.controller.handleCardExit(),
+          child: FadeIn(
+            curve: Curves.easeIn,
+            animate: true,
+            child: widget.buildCard(context, data, position),
+          ),
+        ),
+      ),
+    );
+    
+    widget.controller.showOverlay(context, overlayEntry);
+  }
+  
+  @override
+  void dispose() {
+    super.dispose();
   }
 }

@@ -1,5 +1,7 @@
+
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:socket_io_client/socket_io_client.dart';
-import 'package:zenzen/features/dashboard/docs/provider/socket_provider.dart';
+import 'package:zenzen/data/sockets/socket_provider.dart';
 
 class SocketRepository {
   final _socketClient = SocketClient.instance.socket!;
@@ -39,9 +41,9 @@ class SocketRepository {
   }
 
   // Listen for users count updates
-  void onUsersCountUpdate(void Function(String, int) callback) {
-    _socketClient.on('users-count', (data) {
-      callback(data['documentId'] as String, data['count'] as int);
+  void onUsersCountUpdate(void Function(String, List, int) callback) {
+    _socketClient.on('users-list', (data) {
+      callback(data['documentId'] as String, data['users'], data['count'] as int);
     });
   }
 
@@ -52,7 +54,6 @@ class SocketRepository {
   // From here onwards we have events
   // for file-transfer.
 
-  // File Transfer Methods
   void sendFileChunk(Map<String, dynamic> data) {
     _socketClient.emit('file_chunk', data);
   }
@@ -89,8 +90,7 @@ class SocketRepository {
     });
   }
 
-  // Room Management
-  void createRoom({
+  void createFileRoom({
     required void Function(String roomId) onSuccess,
     required void Function(String error) onError,
   }) {
@@ -105,10 +105,7 @@ class SocketRepository {
     });
   }
 
-  void joinRoom(String roomId, {
-    required void Function() onSuccess, 
-    required void Function(String) onError
-  }) {
+  void joinFileRoom(String roomId, {required void Function() onSuccess, required void Function(String) onError}) {
     _socketClient.emitWithAck('join_room', roomId, ack: (data) {
       if (data['success'] as bool) {
         onSuccess();
@@ -118,11 +115,105 @@ class SocketRepository {
     });
   }
 
-  void leaveRoom(String roomId) {
+  void leaveFileRoom(String roomId) {
+    print('Leaving room $roomId');
     _socketClient.emit('leave_file_room', roomId);
+    print('Left room $roomId');
+  }
+
+  // Chat Room socket evenets
+
+  // SocketRepository() {
+  //   // Listen for dashboardData event from the server
+  //   _socketClient.on('dashboardData', (data) {
+  //     if (data['success'] == true) {
+  //       print('Dashboard data received: ${data['data']}');
+  //       _dashboardDataController.add(data['data']); // data['data'] is the List
+  //     } else {
+  //       _dashboardDataController.addError(Exception(data['error']));
+  //     }
+  //   });
+  // }
+
+  // Method to request dashboard data
+  void getDashboardData(String userId) {
+    _socketClient.emit('getDashboardData', {'userId': userId});
+  }
+
+  void joinChatRoom(Map<String, dynamic> data) {
+    print('Joining chat room');
+    _socketClient.emit('joinChat', data);
+  }
+
+  void sendChatMessage(Map<String, dynamic> data) {
+    print('Sending chat message: $data');
+    _socketClient.emit('sendMessage', data);
+  }
+
+  void userTyping(Map<String, dynamic> data) {
+    print('User typing: $data');
+    _socketClient.emit('typing', data);
+  }
+
+  void onChatMessage(void Function(Map<String, dynamic>) func) {
+    print('Listening for chat messages');
+    _socketClient.on('receiveMessage', (data) {
+      func(data as Map<String, dynamic>);
+    });
+  }
+
+  void onUserTyping(void Function(Map<String, dynamic>) func) {
+    print('Listening for user typing');
+    _socketClient.on('userTyping', (data) {
+      func(data as Map<String, dynamic>);
+    });
+  }
+
+  void leaveChatRoom(String roomId,String userId, String userName) {
+    print('Leaving chat room');
+    _socketClient.emit('leaveChat', {
+      'roomId': roomId,
+      'userId': userId,
+      'userName': userName,
+    });
+    print('Left chat room');
+  }
+
+  // Remove listeners
+  void removeChatMessageListener() {
+    _socketClient.off('receiveMessage');
+  }
+
+  void removeUserTypingListener() {
+    _socketClient.off('userTyping');
+  }
+
+  void removeFileChunkListener() {
+    _socketClient.off('file_chunk');
+  }
+
+  void removeFileTransferCompleteListener() {
+    _socketClient.off('file_transfer_complete');
+  }
+
+  void removeFileTransferCancelListener() {
+    _socketClient.off('file_transfer_cancel');
+  }
+
+  void removeUserJoinedListener() {
+    _socketClient.off('user_joined');
+  }
+
+  void removeUsersCountListener() {
+    _socketClient.off('users-list');
   }
 
   void disconnect() {
     _socketClient.disconnect();
+    print('Disconnected from socket server');
   }
 }
+
+Provider<SocketRepository> socketRepoProvider = Provider<SocketRepository>((ref) {
+  return SocketRepository();
+});

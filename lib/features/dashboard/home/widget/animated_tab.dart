@@ -81,6 +81,7 @@ class _AnimatedTabState extends ConsumerState<AnimatedTab> {
                   : SizeConfig.screenWidth / 2.5,
           padding: const EdgeInsets.symmetric(vertical: 8),
           child: CupertinoSlidingSegmentedControl<int>(
+            padding: const EdgeInsets.all(4),
             groupValue: _selectedIndex,
             children: {
               for (int i = 0; i < _tabLabels.length; i++)
@@ -90,7 +91,7 @@ class _AnimatedTabState extends ConsumerState<AnimatedTab> {
                   child: Text(
                     _tabLabels[i],
                     style: TextStyle(
-                      color: _selectedIndex == i ? AppColors.primary : null,
+                      color: _selectedIndex == i ? AppColors.black : AppColors.primary,
                       fontWeight: _selectedIndex == i
                           ? FontWeight.bold
                           : FontWeight.normal,

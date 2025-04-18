@@ -180,7 +180,6 @@ class DocApiService {
   }
 
   // get all documents
-  // get all documents
   Future<Either<List<DocumentModel>, ApiFailure>> getDocuments() async {
     try {
       final accessToken = await tokenManager.getAccessToken();
@@ -201,6 +200,7 @@ class DocApiService {
 
           final documents = documentsData.map((doc) => DocumentModel.fromJson(doc as Map<String, dynamic>)).toList();
 
+
           return Left(documents);
         } else {
           return Right(ApiFailure('Response missing "data" field or has incorrect format'));
@@ -220,7 +220,6 @@ class DocApiService {
   }
 
   // get a document by id
-  // get a document by id
   Future<Either<DocumentModel, ApiFailure>> getDocInfo(String id) async {
     print('Getting document info for id: $id');
     try {
@@ -230,29 +229,28 @@ class DocApiService {
         headers['Authorization'] = 'Bearer $accessToken';
       }
 
+      print('Making API request to get document info');
       final response = await dio.post(
         data: {'docId': id},
         '$baseUrl${ApiRoutes.getDocumentInfo}',
         options: Options(headers: headers),
       );
 
+
       if (response.statusCode == 200) {
-        // Debug the response
-        print('API Response: ${response.data}');
 
         // Check if response.data contains 'data' field (common API pattern)
         final responseData = response.data is Map && response.data.containsKey('data') ? response.data['data'] : response.data;
 
         final document = DocumentModel.fromJson(responseData);
 
-        // Debug the parsed document
-        print(document);
-
         return Left(document);
       } else {
+        print('API Error: ${response.data}');
         return Right(ApiFailure(response.data['error']));
       }
     } on DioException catch (e) {
+      print('DioException: $e');
       return Right(ApiFailure.fromDioException(e));
     }
   }
@@ -314,7 +312,10 @@ class DocApiService {
       final response = await dio.post(
         '$baseUrl${ApiRoutes.deleteDocument}',
         data: {'docId': docId},
-        options: Options(headers: headers),
+        options: Options(
+          headers: headers,
+          validateStatus: (status) => status! < 500, // Allow 401 and other client errors
+        ),
       );
 
       try {
@@ -331,10 +332,19 @@ class DocApiService {
         }
         return Left(true); // For backward compatibility
       } else {
-        final errorMsg = response.data is Map<String, dynamic> && response.data.containsKey('message') ? response.data['message'] : 'Failed to delete document';
+        // Extract error message from response
+        final errorMsg = response.data is Map<String, dynamic> && 
+                        response.data.containsKey('error') ? 
+                        response.data['error'] : 
+                        'Failed to delete document';
         return Right(ApiFailure(errorMsg));
       }
     } on DioException catch (e) {
+      // If we have a response with an error message, use that
+      if (e.response?.data is Map<String, dynamic> && 
+          e.response?.data.containsKey('error')) {
+        return Right(ApiFailure(e.response!.data['error']));
+      }
       return Right(ApiFailure.fromDioException(e));
     }
   }
