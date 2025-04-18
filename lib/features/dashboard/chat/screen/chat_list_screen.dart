@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
@@ -6,9 +8,6 @@ import 'package:zenzen/features/dashboard/chat/model/message_model.dart';
 
 import '../../../../data/local/hive_models/local_user_model.dart';
 import '../../../../data/local/provider/hive_provider.dart';
-import '../model/chat_model.dart';
-import '../provider/chatMessage_provider.dart';
-import '../provider/chat_message_provider.dart';
 import '../provider/typing_provider.dart';
 import '../view-model/chat_viewmodel.dart';
 
@@ -17,7 +16,8 @@ class ChatListScreen extends ConsumerStatefulWidget {
   final String? chatRoomId;
   final String? chatName;
   final String? chatImage;
-  const ChatListScreen({super.key, this.chatRoomId, this.chatName, this.chatImage, this.id});
+  const ChatListScreen(
+      {super.key, this.chatRoomId, this.chatName, this.chatImage, this.id});
 
   @override
   ConsumerState<ConsumerStatefulWidget> createState() => _ChatListScreenState();
@@ -28,6 +28,8 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
   String? roomId;
   bool _didInitialize = false;
   final TextEditingController _messageController = TextEditingController();
+  Timer? _typingTimer;
+  bool _isCurrentlyTyping = false;
 
   @override
   void initState() {
@@ -120,7 +122,8 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
       // Create the message object to send
       final messageData = {
         'roomId': roomId!,
-        'userId': currentuser!.id, // Your server handles either userId or sender
+        'userId':
+            currentuser!.id, // Your server handles either userId or sender
         'message': messageText,
         'type': 'text', // Your server handles either type or messageType
       };
@@ -150,26 +153,35 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
   void listenForTypingIndicators() {
     ref.read(socketRepoProvider).onUserTyping((data) {
       final userId = data['userId'] as String;
-      final isTyping = data['isTyping'] as bool;
+      final roomId = data['roomId'] as String;
+      // Assume typing is true when the event is received
+      final isTyping = data['isTyping'] as bool? ?? true;
 
-      if (roomId != null) {
-        ref.read(typingUsersProvider(roomId!).notifier).setTyping(userId, isTyping);
-      }
+      ref
+          .read(typingUsersProvider(roomId).notifier)
+          .setTyping(userId, roomId, isTyping);
     });
   }
 
   @override
   void dispose() {
-    super.dispose();
+    _typingTimer?.cancel(); // Cancel typing timer
     _messageController.dispose();
-    if (roomId != null) {
+
+    // Remove socket listeners
+    ref.read(socketRepoProvider).removeUserTypingListener();
+    ref.read(socketRepoProvider).removeChatMessageListener();
+
+    // Leave chat room
+    if (roomId != null && currentuser != null) {
       ref.read(socketRepoProvider).leaveChatRoom(
-            roomId ?? '',
-            currentuser?.id ?? '',
-            currentuser?.userName ?? '', // Assuming 'username' is the correct property
+            roomId!,
+            currentuser!.id!,
+            currentuser!.userName,
           );
     }
-    // ref.read(socketDisconnetProvider.notifier).state = true;
+
+    super.dispose();
   }
 
   @override
@@ -206,18 +218,23 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                 }
 
                 // Sort messages by timestamp
-                flattenedMessages.sort((a, b) => (a.chat.timestamp ?? DateTime.now()).compareTo(b.chat.timestamp ?? DateTime.now()));
+                flattenedMessages.sort((a, b) =>
+                    (a.chat.timestamp ?? DateTime.now())
+                        .compareTo(b.chat.timestamp ?? DateTime.now()));
 
                 return ListView.builder(
                   itemCount: flattenedMessages.length,
                   itemBuilder: (context, index) {
                     final flatMessage = flattenedMessages[index];
-                    final bool isMe = flatMessage.chat.sender == currentuser?.id;
+                    final bool isMe =
+                        flatMessage.chat.sender == currentuser?.id;
 
                     return Align(
-                      alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
+                      alignment:
+                          isMe ? Alignment.centerRight : Alignment.centerLeft,
                       child: Container(
-                        margin: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                        margin:
+                            EdgeInsets.symmetric(vertical: 4, horizontal: 8),
                         padding: EdgeInsets.all(12),
                         decoration: BoxDecoration(
                           color: isMe ? Colors.blue[100] : Colors.grey[200],
@@ -232,8 +249,10 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              _formatTimestamp(flatMessage.chat.timestamp!.millisecondsSinceEpoch),
-                              style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                              _formatTimestamp(flatMessage
+                                  .chat.timestamp!.millisecondsSinceEpoch),
+                              style: TextStyle(
+                                  fontSize: 12, color: Colors.grey[600]),
                             ),
                           ],
                         ),
@@ -243,7 +262,8 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                 );
               },
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (error, stackTrace) => Center(child: Text('Error: $error')),
+              error: (error, stackTrace) =>
+                  Center(child: Text('Error: $error')),
             ),
           ),
           const Gap(8),
@@ -274,14 +294,50 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
                       border: OutlineInputBorder(),
                     ),
                     onChanged: (value) {
-                      // Implement user typing indicator
-                      if (roomId != null && currentuser != null) {
-                        ref.read(socketRepoProvider).userTyping({
-                          'roomId': roomId,
-                          'userId': currentuser!.id,
-                          'isTyping': value.isNotEmpty,
-                        });
+                      // Cancel any previous timer
+                      _typingTimer?.cancel();
+
+                      if (!mounted) return; // Check if widget is still mounted
+
+                      // Handle empty message case immediately
+                      if (value.isEmpty && _isCurrentlyTyping) {
+                        _isCurrentlyTyping = false;
+                        if (roomId != null && currentuser != null && mounted) {
+                          ref.read(socketRepoProvider).userTyping({
+                            'roomId': roomId,
+                            'userId': currentuser!.id,
+                            'isTyping': false,
+                          });
+                        }
+                        return;
                       }
+
+                      // Handle non-empty message case
+                      if (value.isNotEmpty && (!_isCurrentlyTyping)) {
+                        _isCurrentlyTyping = true;
+                        if (roomId != null && currentuser != null && mounted) {
+                          ref.read(socketRepoProvider).userTyping({
+                            'roomId': roomId,
+                            'userId': currentuser!.id,
+                            'isTyping': true,
+                          });
+                        }
+                      }
+
+                      // Set timer to clear typing status after inactivity
+                      _typingTimer = Timer(const Duration(seconds: 2), () {
+                        if (mounted && _isCurrentlyTyping) {
+                          // Check if widget is still mounted
+                          _isCurrentlyTyping = false;
+                          if (roomId != null && currentuser != null) {
+                            ref.read(socketRepoProvider).userTyping({
+                              'roomId': roomId,
+                              'userId': currentuser!.id,
+                              'isTyping': false,
+                            });
+                          }
+                        }
+                      });
                     },
                   ),
                 ),
@@ -289,7 +345,9 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
               IconButton(
                 icon: const Icon(Icons.send),
                 onPressed: () {
-                  if (_messageController.text.trim().isNotEmpty && roomId != null && currentuser != null) {
+                  if (_messageController.text.trim().isNotEmpty &&
+                      roomId != null &&
+                      currentuser != null) {
                     onSendMessage(_messageController.text.trim());
                     _messageController.clear();
 
@@ -314,7 +372,9 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
   String _formatTimestamp(int timestamp) {
     final dateTime = DateTime.fromMillisecondsSinceEpoch(timestamp);
     final now = DateTime.now();
-    if (dateTime.year == now.year && dateTime.month == now.month && dateTime.day == now.day) {
+    if (dateTime.year == now.year &&
+        dateTime.month == now.month &&
+        dateTime.day == now.day) {
       return '${dateTime.hour}:${dateTime.minute}';
     } else {
       return '${dateTime.day}/${dateTime.month}/${dateTime.year}';

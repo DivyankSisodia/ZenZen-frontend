@@ -10,8 +10,6 @@ class ChatViewmodel extends StateNotifier<AsyncValue<List<MessageModel>>> {
   final ChatDashboardRepository chatDashboardRepository;
   final Ref ref;
 
-  List<MessageModel> _messages = [];
-
   ChatViewmodel(this.chatDashboardRepository, this.ref) : super(const AsyncLoading());
 
   bool _isLoading = false;
