@@ -214,6 +214,6 @@ class SocketRepository {
   }
 }
 
-Provider<SocketRepository> socketRepoProvider = Provider<SocketRepository>((ref) {
+final socketRepoProvider = Provider<SocketRepository>((ref) {
   return SocketRepository();
 });

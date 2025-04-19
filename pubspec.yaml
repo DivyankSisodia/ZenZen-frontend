@@ -30,8 +30,10 @@ environment:
 dependencies:
   animate_do: ^4.2.0
   animated_custom_dropdown: ^3.1.1
+  archive: ^4.0.6
   auto_size_text: ^3.0.0
   cached_network_image: ^3.4.1
+  chat_bubbles: null
   cross_file: ^0.3.4+2
   cupertino_icons: ^1.0.8
   delightful_toast: ^1.1.0
@@ -45,6 +47,7 @@ dependencies:
   flutter:
     sdk: flutter
   flutter_dropzone: ^4.2.1
+  flutter_image_compress: ^2.4.0
   flutter_quill: null
   flutter_quill_extensions: null
   flutter_riverpod: ^2.6.1
@@ -75,6 +78,7 @@ dependencies:
   smooth_page_indicator: ^1.2.1
   socket_io_client: ^3.0.2
   speech_to_text: ^7.0.0
+  swipe_to: ^1.0.6
   universal_html: ^2.2.4
   url_launcher: ^6.3.1
   uuid: ^4.5.1

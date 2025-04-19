@@ -52,11 +52,11 @@ class MessageModel {
     List<Chats>? chats, DateTime? updatedAt,
   }) {
     return MessageModel(
-      id: this.id,
+      id: id,
       roomId: roomId ?? this.roomId,
       chatRoom: chatRoom ?? this.chatRoom,
       chats: chats ?? this.chats,
-      createdAt: this.createdAt,
+      createdAt: createdAt,
       updatedAt: this.updatedAt,
     );
   }
@@ -212,18 +212,18 @@ class ReactionModel{
 }
 
 class MediaData {
-  final String url;
-  final String thumbnailUrl;
-  final String fileName;
-  final int fileSize;
+  final String? url;
+  final String? thumbnailUrl;
+  final String? fileName;
+  final int? fileSize;
   final int? duration; // for audio/video
   final Dimensions? dimensions;
 
   MediaData({
-    required this.url,
-    required this.thumbnailUrl,
-    required this.fileName,
-    required this.fileSize,
+    this.url,
+    this.thumbnailUrl,
+    this.fileName,
+    this.fileSize,
     this.duration,
     this.dimensions,
   });
